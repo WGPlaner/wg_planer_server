@@ -1,0 +1,70 @@
+swagger: "2.0"
+info:
+  description: "This is the API documentation for the android application WGPlaner."
+  version: "0.0.1"
+  title: "WGPlaner API Documentation"
+  contact:
+    email: "andre@ameyering.de"
+  license:
+    name: "MIT"
+    url: "https://github.com/WGPlaner/wg_planer_server/blob/master/LICENSE"
+host: "wgplaner.ameyering.de"
+basePath: "/v0.1"
+tags:
+- name: group
+  description: Group related endpoints
+schemes:
+  - http
+consumes:
+  - application/json
+
+produces:
+  - application/json
+  - image/jpeg
+
+paths:
+  /groups/{groupId}:
+    x-swagger-router-controller: groups
+    get:
+      tags:
+      - group
+      description: Return group object
+      operationId: getGroup
+      parameters:
+        - name: groupId
+          in: path
+          description: The internal ID of the group
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/Group"
+        "400":
+          description: Invalid groupId
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /swagger:
+    x-swagger-pipe: swagger_raw
+
+definitions:
+  Group:
+    required:
+      - id
+    properties:
+      id:
+        type: string
+  ErrorResponse:
+    required:
+      - status
+      - message
+    properties:
+      status:
+        type: integer
+      message:
+        type: string
