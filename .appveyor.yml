@@ -39,17 +39,6 @@ install:
   - go version
   - go env
 
-  # get the dependencies etc
-  - go get -u github.com/stretchr/testify/assert
-  - go get -u github.com/davecgh/go-spew/spew
-  - go get -u github.com/axw/gocov/gocov
-  - go get -u gopkg.in/matm/v1/gocov-html
-  - go get -u github.com/cee-dub/go-junit-report
-  - go get -u github.com/go-openapi/loads
-  - go get -u github.com/go-openapi/runtime
-  - go get -u github.com/tylerb/graceful
-  - go get -u github.com/jessevdk/go-flags
-
   # install swagger
   - appveyor DownloadFile https://github.com/go-swagger/go-swagger/releases/download/0.12.0/swagger_windows_amd64.exe -FileName swagger.exe
   - ps: Move-Item .\swagger.exe C:\swagger.exe
@@ -57,7 +46,7 @@ install:
   - ps: New-Item -ItemType "directory" -Name "gen"
   - C:\swagger.exe version
   - C:\swagger.exe generate server -t gen -f .\swagger\swagger.yml --exclude-main -A wgplaner
-  - go get .\gen\...
+  - go get -v .\gen\...
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
