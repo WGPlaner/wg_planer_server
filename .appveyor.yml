@@ -47,7 +47,7 @@ build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
   - echo %PATH%
   - echo %GOPATH%
-  - go install %APPVEYOR_BUILD_FOLDER%
+  - go install .
 
 test_script:
   - ps: go test -race -v $(go list ./... | sls -n "vendor")
