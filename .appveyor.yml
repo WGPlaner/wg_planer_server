@@ -15,7 +15,6 @@ skip_branch_with_pr: true
 
 environment:
   GOPATH: C:\gopath
-  GOVERSION: 1.9.1
   GOCOVMODE: "mode: atomic"
   PATH: C:\gopath\bin;%PATH%
 
@@ -29,11 +28,6 @@ install:
   - set PATH=%GOPATH%\bin;c:\go\bin;C:\msys64\mingw64\bin;%PATH%
   - gcc --version
   - g++ --version
-
-  # upgrade go
-  - rmdir c:\go /s /q
-  - appveyor DownloadFile https://storage.googleapis.com/golang/go%GOVERSION%.windows-amd64.zip
-  - 7z x go%GOVERSION%.windows-amd64.zip -y -oC:\ > NUL
 
   # some helpful output for debugging builds
   - go version
