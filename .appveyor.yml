@@ -57,7 +57,6 @@ install:
   - ps: New-Item -ItemType "directory" -Name "gen"
   - C:\swagger.exe version
   - C:\swagger.exe generate server -t gen -f .\swagger\swagger.yml --exclude-main -A wgplaner
-  - go get -u -f .\gen\...
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
