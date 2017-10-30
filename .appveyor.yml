@@ -3,7 +3,7 @@
 version: "0.0.{build}"
 
 # Operating system (build VM template)
-os: Windows Server 2016
+os: Windows Server 2012 R2
 
 clone_folder: C:\gopath\src\github.com\wgplaner\wg_planer_server
 shallow_clone: true # for startup speed
