@@ -15,7 +15,6 @@ skip_branch_with_pr: true
 
 environment:
   GOPATH: C:\gopath
-  GOVERSION: 1.9.1
   GOCOVMODE: "mode: atomic"
   PATH: C:\gopath\bin;%PATH%
 
@@ -30,33 +29,28 @@ install:
   - gcc --version
   - g++ --version
 
-  # upgrade go
-  - rmdir c:\go /s /q
-  - appveyor DownloadFile https://storage.googleapis.com/golang/go%GOVERSION%.windows-amd64.zip
-  - 7z x go%GOVERSION%.windows-amd64.zip -y -oC:\ > NUL
-
   # some helpful output for debugging builds
   - go version
   - go env
 
-  # get the dependencies etc
-  - go get -u github.com/stretchr/testify/assert
-  - go get -u github.com/davecgh/go-spew/spew
-  - go get -u github.com/axw/gocov/gocov
-  - go get -u gopkg.in/matm/v1/gocov-html
-  - go get -u github.com/cee-dub/go-junit-report
-  - go get -u github.com/go-openapi/runtime
-  - go get -u github.com/tylerb/graceful
-  - go get -u github.com/jessevdk/go-flags
+  # install swagger
+  - appveyor DownloadFile https://github.com/go-swagger/go-swagger/releases/download/0.12.0/swagger_windows_amd64.exe -FileName swagger.exe
+  - ps: Move-Item .\swagger.exe C:\swagger.exe
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - ps: New-Item -ItemType "directory" -Name "gen"
+  - C:\swagger.exe version
+  - C:\swagger.exe generate server -t gen -f .\swagger\swagger.yml --exclude-main -A wgplaner
+  - go get -v .\gen\...
 
 build_script:
+  - echo %APPVEYOR_BUILD_FOLDER%
   - cd %APPVEYOR_BUILD_FOLDER%
   - echo %PATH%
   - echo %GOPATH%
+  - go build -o "wg_planer_server.exe" main.go
 
 test_script:
   - ps: go test -race -v $(go list ./... | sls -n "vendor")
 
-#artifacts:
-#  - path: '%GOPATH%\bin\*.exe'
-deploy: off
+artifacts:
+  - path: '*.exe'
