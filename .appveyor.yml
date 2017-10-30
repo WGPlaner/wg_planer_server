@@ -47,10 +47,10 @@ build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
   - echo %PATH%
   - echo %GOPATH%
-  - go install .
+  - go build -o "wg_planer_server.exe" main.go
 
 test_script:
   - ps: go test -race -v $(go list ./... | sls -n "vendor")
 
 artifacts:
-  - path: '%GOPATH%\bin\*.exe'
+  - path: '*.exe'
