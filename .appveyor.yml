@@ -44,6 +44,7 @@ install:
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
+  - echo %APPVEYOR_BUILD_FOLDER%
   - echo %PATH%
   - echo %GOPATH%
   - go build C:\gopath\src\github.com\wgplaner\wg_planer_server\cmd\main.go
@@ -51,6 +52,5 @@ build_script:
 test_script:
   - ps: go test -race -v $(go list ./... | sls -n "vendor")
 
-#artifacts:
-#  - path: '%GOPATH%\bin\*.exe'
-deploy: off
+artifacts:
+  - path: '%GOPATH%\bin\*.exe'
