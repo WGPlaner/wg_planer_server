@@ -6,5 +6,7 @@
 To create the go API, install `go-swagger` and run:
 
 ```bash
-swagger generate server -t gen -f ./swagger/swagger.yml --exclude-main -A wgplaner
+rm -rf gen # Delete old generated files
+mkdir gen  # Create gen directory
+swagger generate server -t gen -f ./swagger.yml --exclude-main -A wgplaner
 ```

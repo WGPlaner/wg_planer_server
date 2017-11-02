@@ -9,22 +9,24 @@ info:
   license:
     name: "MIT"
     url: "https://github.com/WGPlaner/wg_planer_server/blob/master/LICENSE"
-host: "wgplaner.ameyering.de"
+host: "api.wgplaner.ameyering.de"
 basePath: "/v0.1"
+
 tags:
 - name: group
   description: Group related endpoints
+- name: user
+  description: User related endpoints
+
 schemes:
   - http
 consumes:
   - application/json
 produces:
   - application/json
-  - image/jpeg
 
 paths:
   /groups/{groupId}:
-    x-swagger-router-controller: groups
     get:
       tags:
       - group
@@ -49,16 +51,64 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResponse"
+  /users/{userId}:
+    get:
+      tags:
+      - user
+      description: Returns the user object
+      operationId: getUser
+      parameters:
+        - name: userId
+          in: path
+          description: The internal ID of the user
+          required: true
+          type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "#/definitions/User"
+        400:
+          description: Invalid userId
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          description: "User not found"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /users:
+    post:
+      tags:
+      - user
+      description: Creates a new user
+      operationId: createUser
+      parameters:
+      - in: body
+        name: body
+        description: The name of the user to display
+        required: true
+        schema:
+          $ref: "#/definitions/User"
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/User"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
   /swagger:
     x-swagger-pipe: swagger_raw
 
 definitions:
   User:
     required:
-      - uid
       - displayName
-      - createdAt
-      - updatedAt
     properties:
       uid:
         type: string
@@ -76,11 +126,8 @@ definitions:
         type: string
   Group:
     required:
-      - uid
       - displayName
       - admins
-      - createdAt
-      - updatedAt
     properties:
       uid:
         type: string
@@ -100,8 +147,6 @@ definitions:
     required:
       - title
       - category
-      - createdAt
-      - updatedAt
     properties:
       title:
         type: string
@@ -126,8 +171,6 @@ definitions:
       - items
       - state
       - createdBy
-      - createdAt
-      - updatedAt
     properties:
       state:
         type: string
