@@ -28,5 +28,7 @@ deploy:
   file: wg_planer_server
   skip_cleanup: true
   on:
-    repo: WGPlaner/wg_planer_server
-    branch: master
+    branches:
+      only:
+      - master
+      - /^v\d+(\.\d+)+$/
