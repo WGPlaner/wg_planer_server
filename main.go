@@ -39,6 +39,7 @@ func main() {
 
 	// load configuration and initialize ----------------------------------------
 	wgplaner.LoadAppConfiguration()
+	wgplaner.CreateSqlConnection()
 	initializeControllers(api)
 	controllers.InitialiseFirebaseConnection()
 
