@@ -7,6 +7,7 @@ go:
 before_install:
   - go get -u github.com/go-swagger/go-swagger/cmd/swagger
   - go install github.com/go-swagger/go-swagger/cmd/swagger
+  - mkdir gen
   - swagger version
   - swagger generate server -t gen -f swagger.yml --exclude-main -A wgplaner
   - go get -v
