@@ -1,5 +1,9 @@
 
+# Generated stuff
 gen
+html_api_doc
+android_client
+swagger-codegen-cli.jar
 
 .idea
 *.log
