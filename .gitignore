@@ -1,3 +1,6 @@
+# Config that should not be published
+config/serviceAccountKey.json
+config/config.toml
 
 # Generated stuff
 gen

@@ -7,6 +7,8 @@ import (
 	"github.com/wgplaner/wg_planer_server/gen/restapi"
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations"
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/user"
+	"github.com/wgplaner/wg_planer_server/wgplaner"
+
 	"log"
 )
 
@@ -35,6 +37,8 @@ func main() {
 	// set the port this service will be run on
 	server.Port = *portFlag
 
+	// load configuration and initialize ----------------------------------------
+	wgplaner.LoadAppConfiguration()
 	initializeControllers(api)
 	controllers.InitialiseFirebaseConnection()
 

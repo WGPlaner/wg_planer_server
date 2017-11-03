@@ -1,0 +1,8 @@
+# WGPlaner Configuration File
+
+[database]
+server = "localhost"
+port = 3306
+user = "WGPlaner"
+password = "secret"
+databaseName = "wgplaner_db"
