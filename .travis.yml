@@ -28,7 +28,4 @@ deploy:
   file: wg_planer_server
   skip_cleanup: true
   on:
-    branches:
-      only:
-      - master
-      - /^v\d+(\.\d+)+$/
+    tags: true
