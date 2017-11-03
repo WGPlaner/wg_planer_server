@@ -40,7 +40,8 @@ install:
   - ps: New-Item -ItemType "directory" -Name "gen"
   - C:\swagger.exe version
   - C:\swagger.exe generate server -t gen -f .\swagger.yml --exclude-main -A wgplaner
-  - go get -v
+  # Currently one package has a vendor directory which conflicts with another one. We have to force this to succeed.
+  - cmd: go get -v && exit 0
   # Remove vendor package that contains legacy models
   - ps: Remove-Item -r "..\..\acoshift\go-firebase-admin\vendor"
 
