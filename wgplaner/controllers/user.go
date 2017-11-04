@@ -27,25 +27,48 @@ func validateUser(theUser *models.User) (bool, error) {
 }
 
 func CreateUser(params user.CreateUserParams) middleware.Responder {
-	log.Println("[Controller][User] Creating User")
+	log.Println("[User][POST] Creating User")
 
-	displayName := swag.StringValue(params.Body.DisplayName)
-	creationTime := strfmt.DateTime(time.Now().UTC())
+	uid := strings.TrimSpace(params.Body.UID)
+	theUser := models.User{UID: uid}
 
-	// TODO: Trim strings
-	if displayName == "" {
-		displayName = "John Doe"
+	// Check if the user is already registered
+	if isRegistered, err := wgplaner.OrmEngine.Get(&theUser); err != nil {
+		log.Println("[User][POST] Database Error!", err)
+		return userInternalServerError
+
+	} else if isRegistered {
+		log.Println("[User][POST] User already exists!")
+		return user.NewCreateUserOK().WithPayload(&theUser)
 	}
 
-	// TODO: Remove Example Data
-	theUser := models.User{
-		UID:         params.Body.UID,
+	// Create new user
+	displayName := strings.TrimSpace(swag.StringValue(params.Body.DisplayName))
+	creationTime := strfmt.DateTime(time.Now().UTC())
+
+	theUser = models.User{
+		UID:         uid,
 		DisplayName: &displayName,
-		Email:       "test@example.com",
-		GroupUID:    "",
-		PhotoURL:    "",
+		Email:       params.Body.Email,
+		GroupUID:    params.Body.GroupUID,
+		PhotoURL:    "TODO",
 		CreatedAt:   creationTime,
 		UpdatedAt:   creationTime,
+	}
+
+	// Validate user
+	if isValid, err := validateUser(&theUser); !isValid {
+		log.Println("[User][POST] Error validating user!", err)
+		return user.NewGetUserBadRequest().WithPayload(&models.ErrorResponse{
+			Message: swag.String(fmt.Sprintf("Invalid userId: \"%s\"", err.Error())),
+			Status:  swag.Int64(400),
+		})
+	}
+
+	// Insert new user into database
+	if _, err := wgplaner.OrmEngine.InsertOne(&theUser); err != nil {
+		log.Println("[User][POST] Database error!", err)
+		return userInternalServerError
 	}
 
 	return user.NewCreateUserOK().WithPayload(&theUser)
