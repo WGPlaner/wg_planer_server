@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/acoshift/go-firebase-admin"
@@ -17,6 +19,12 @@ var userInternalServerError = user.NewGetUserDefault(500).WithPayload(&models.Er
 	Message: swag.String("Internal Server error!"),
 	Status:  swag.Int64(500),
 })
+
+// TODO: Validate user id (length, etc)
+func validateUser(theUser *models.User) (bool, error) {
+	//return theUser.Validate()
+	return true, nil
+}
 
 func CreateUser(params user.CreateUserParams) middleware.Responder {
 	log.Println("[Controller][User] Creating User")
@@ -44,32 +52,37 @@ func CreateUser(params user.CreateUserParams) middleware.Responder {
 }
 
 func GetUser(params user.GetUserParams) middleware.Responder {
-	// TODO: Validate user id (length, etc)
+	theUser := models.User{UID: params.UserID}
+
+	if isValid, err := validateUser(&theUser); !isValid {
+		return user.NewGetUserBadRequest().WithPayload(&models.ErrorResponse{
+			Message: swag.String(fmt.Sprintf("Invalid userId: \"%s\"", err.Error())),
+			Status:  swag.Int64(400),
+		})
+	}
 
 	// Firebase Auth
-	myUser, err := wgplaner.FireBaseApp.Auth().
-		GetUser(params.HTTPRequest.Context(), params.UserID)
+	_, err := wgplaner.FireBaseApp.Auth().
+		GetUser(params.HTTPRequest.Context(), theUser.UID)
 
 	if err == firebase.ErrUserNotFound {
-		log.Printf("[Controller][User][GET] Can't find firebase user with id \"%s\"!", params.UserID)
-		return user.NewGetUserNotFound().WithPayload(&models.ErrorResponse{
+		log.Printf("[User][GET] Can't find firebase user with id \"%s\"!", params.UserID)
+		return user.NewGetUserUnauthorized().WithPayload(&models.ErrorResponse{
 			Message: swag.String("User not authorized!"),
 			Status:  swag.Int64(401),
 		})
 	} else if err != nil {
-		log.Println("[Controller][User][GET] Firebase SDK Error!", err)
+		log.Println("[User][GET] Firebase SDK Error!", err)
 		return userInternalServerError
 	}
 
 	// Database
-	theUser := models.User{UID: myUser.UserID}
-
 	if isRegistered, err := wgplaner.OrmEngine.Get(&theUser); err != nil {
-		log.Println("[Controller][User][GET] Database Error!", err)
+		log.Println("[User][GET] Database Error!", err)
 		return userInternalServerError
 	} else if !isRegistered {
-		log.Printf("[Controller][User][GET] Can't find databse user with id \"%s\"!", params.UserID)
-		return user.NewGetUserUnauthorized().WithPayload(&models.ErrorResponse{
+		log.Printf("[User][GET] Can't find databse user with id \"%s\"!", params.UserID)
+		return user.NewGetUserNotFound().WithPayload(&models.ErrorResponse{
 			Message: swag.String("User not found on server"),
 			Status:  swag.Int64(404),
 		})
