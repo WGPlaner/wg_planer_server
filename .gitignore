@@ -1,3 +1,6 @@
+# Config that should not be published
+config/serviceAccountKey.json
+config/config.toml
 
 # Generated stuff
 gen
@@ -5,6 +8,7 @@ html_api_doc
 android_client
 swagger-codegen-cli.jar
 
+*.sqlite
 .idea
 *.log
 

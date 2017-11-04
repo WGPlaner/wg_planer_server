@@ -1,17 +1,19 @@
-package controllers
+package wgplaner
 
 import (
+	"log"
+	"os"
+
 	"context"
 	"github.com/acoshift/go-firebase-admin"
 	"google.golang.org/api/option"
-	"os"
-	"log"
 )
 
-var fireBaseApp *firebase.App
-var fireBaseAuth *firebase.Auth
+var FireBaseApp *firebase.App
 
-func InitialiseFirebaseConnection() {
+func CreateFirebaseConnection() *firebase.App {
+
+	var fireBaseApp *firebase.App
 	var err error
 
 	if _, err := os.Stat("./config/serviceAccountKey.json"); os.IsNotExist(err) {
@@ -22,9 +24,11 @@ func InitialiseFirebaseConnection() {
 		ProjectID: "wgplaner-se",
 	}, option.WithCredentialsFile("./config/serviceAccountKey.json"))
 
-	fireBaseAuth = fireBaseApp.Auth()
-
 	if err != nil {
-		panic(err)
+		log.Fatalln("[Firebase] Creation using key failed")
+		return nil
 	}
+
+	return fireBaseApp
+
 }

@@ -1,16 +1,19 @@
 package main
 
 import (
-	"flag"
+	"log"
+
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
+
 	"github.com/go-openapi/loads"
-	"github.com/wgplaner/wg_planer_server/controllers"
 	"github.com/wgplaner/wg_planer_server/gen/restapi"
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations"
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/user"
-	"log"
+	"github.com/wgplaner/wg_planer_server/wgplaner"
+	"github.com/wgplaner/wg_planer_server/wgplaner/controllers"
 )
-
-var portFlag = flag.Int("port", 3000, "Port to run this service on")
 
 func initializeControllers(api *operations.WgplanerAPI) {
 	// Create API handlers
@@ -30,13 +33,14 @@ func main() {
 	server := restapi.NewServer(api)
 	defer server.Shutdown()
 
-	// parse flags --------------------------------------------------------------
-	flag.Parse()
-	// set the port this service will be run on
-	server.Port = *portFlag
-
+	// load configuration and initialize ----------------------------------------
+	wgplaner.AppConfig = wgplaner.LoadAppConfiguration()
+	wgplaner.OrmEngine = wgplaner.CreateOrmEngine(&wgplaner.AppConfig.Database)
+	wgplaner.FireBaseApp = wgplaner.CreateFirebaseConnection()
 	initializeControllers(api)
-	controllers.InitialiseFirebaseConnection()
+
+	// set the port this service will be run on ---------------------------------
+	server.Port = wgplaner.AppConfig.Server.Port
 
 	// serve API
 	if err := server.Serve(); err != nil {

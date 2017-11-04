@@ -1,0 +1,17 @@
+# WGPlaner Configuration File
+
+[server]
+port = 3000
+
+[database]
+driver = "sqlite"
+
+# Set if driver == "sqlite"
+sqlite_file = "database.sqlite"
+
+# Set if driver == "mysql"
+mysql_server   = "localhost"
+mysql_port     = 3306
+mysql_user     = "WGPlaner"
+mysql_password = "my_secret"
+mysql_db_name  = "wgplaner_db"

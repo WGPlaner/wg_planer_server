@@ -72,8 +72,12 @@ paths:
           description: Invalid userId
           schema:
             $ref: "#/definitions/ErrorResponse"
+        401:
+          description: Unauthorized User
+          schema:
+            $ref: "#/definitions/ErrorResponse"
         404:
-          description: "User not found"
+          description: User not found on server
           schema:
             $ref: "#/definitions/ErrorResponse"
         default:
@@ -135,16 +139,25 @@ definitions:
         type: string
       displayName:
         type: string
+        maxLength: 20
+        minLength: 3
       groupUid:
         type: string
+        format: uuid
       photoUrl:
         type: string
+        format: uri
       email:
         type: string
+        format: email
       createdAt:
         type: string
+        format: date-time
+        readOnly: true
       updatedAt:
         type: string
+        format: date-time
+        readOnly: true
   Group:
     required:
       - displayName
@@ -162,8 +175,12 @@ definitions:
           type: string
       createdAt:
         type: string
+        format: date-time
+        readOnly: true
       updatedAt:
         type: string
+        format: date-time
+        readOnly: true
   ListItem:
     required:
       - title
@@ -185,8 +202,12 @@ definitions:
         type: string
       createdAt:
         type: string
+        format: date-time
+        readOnly: true
       updatedAt:
         type: string
+        format: date-time
+        readOnly: true
   Bill:
     required:
       - items
@@ -207,8 +228,12 @@ definitions:
         type: string
       createdAt:
         type: string
+        format: date-time
+        readOnly: true
       updatedAt:
         type: string
+        format: date-time
+        readOnly: true
   ErrorResponse:
     required:
       - status
