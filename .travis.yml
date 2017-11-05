@@ -24,6 +24,7 @@ before_deploy:
   - wget -O swagger-codegen-cli.jar https://oss.sonatype.org/content/repositories/releases/io/swagger/swagger-codegen-cli/2.2.3/swagger-codegen-cli-2.2.3.jar
   - java -jar swagger-codegen-cli.jar generate -i swagger.yml -l java --library=okhttp-gson -o build/android_client
   - java -jar swagger-codegen-cli.jar generate -i swagger.yml -l html2 -o build/api_doc_html
+  - tar -zcvf wg_planer_server.tar.gz build
 
 notifications:
   email:
@@ -34,8 +35,7 @@ deploy:
   provider: releases
   api_key:
     secure: HZjzgdGqZwL3GZOAdsyKacdn96HnCJ8CnmB4x+AHmnSQwz2iWUQU0/kK/JDz7cdIEFdWSQzd0ugaJv8LpNoRdo/4LgWF0eKQw32IFqVzE37Ie+zyTdM7XaRGm9bkZRwo3rsoFNydrKV3Wkufb27oZCUEgddp+cCCfZtkbt3LfDiZHHjHR9GFFveIFPQGps/Y/wEwExgZeEd/mlItKUIJvdNe8rlNPjeAG+CzbZzHrDknktouvfPjDHD+G2ItaBsaV5YCenSBQrWKyxkHQQjb/M/xtfxeS+4/BLZ7mBDkkufo1kPJMa394hueBPhnA0rwtrTVZZy8/1T70wbZQ/INgmeHF5Vi89rpugzn0OOh3Zw2ZoKg8IfxzHapUw8D5qz9x3zVoVXCCfF5ST3aY9N+zCxBgjuG6gE7uao/fHfEV0TFCKpWXu81f5Kbcny5qT1qwE5Bs2BGILMPrvfqTQ35yn3FkoHoFuxz0CjTj8jewWSEWWPKB2dSPevxSqgNBuiW/qrqHzO+JVHej9YJlk6X4HaSlzSR6CgfcoHwSJDEEhJxwy9dfFVeHEMgY/kBTQJQTRye3CYeFV2aUP4j2sHrVzMpHoQqhuUG90gT58enXlmPwuRc+i6CURkxDYyLIvF3v661xajeyExOVLhwnZ7L9k65pH01Pd7v/EwjMpfQyvY=
-  file_glob: true
-  file: build/*
+  file: wg_planer_server.tar.gz
   skip_cleanup: true
   on:
     tags: true
