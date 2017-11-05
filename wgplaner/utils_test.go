@@ -15,3 +15,14 @@ func TestStringInSlice(t *testing.T) {
 		t.Error("Expected false")
 	}
 }
+
+func TestIntInSlice(t *testing.T) {
+	ints := []int{-10, 80, 443, 25, 22, 20, 21}
+
+	if IntInSlice(-10, ints) != true {
+		t.Error("Matching should work for negative numbers")
+	}
+	if IntInSlice(0, ints) != false && IntInSlice(100, ints) != false {
+		t.Error("Expected false")
+	}
+}

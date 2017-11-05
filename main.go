@@ -38,6 +38,7 @@ func main() {
 	wgplaner.OrmEngine = wgplaner.CreateOrmEngine(&wgplaner.AppConfig.Database)
 	wgplaner.FireBaseApp = wgplaner.CreateFirebaseConnection()
 	initializeControllers(api)
+	wgplaner.SendTestMail()
 
 	// set the port this service will be run on ---------------------------------
 	server.Port = wgplaner.AppConfig.Server.Port

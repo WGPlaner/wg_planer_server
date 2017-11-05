@@ -26,22 +26,29 @@ type databaseConfig struct {
 	MysqlDatabaseName string `toml:"mysql_db_name"`
 }
 
+type mailConfig struct {
+	SmtpPort     int    `toml:"smtp_port"`
+	SmtpHost     string `toml:"smtp_host"`
+	SmtpIdentity string `toml:"smtp_identity"`
+	SmtpUser     string `toml:"smtp_user"`
+	SmtpPassword string `toml:"smtp_password"`
+}
+
 type appConfigType struct {
 	Server   serverConfig
 	Database databaseConfig
+	Mail     mailConfig
 }
 
 func validateConfiguration(config *appConfigType) error {
 	if !isValidDriverName(config.Database.Driver) {
 		return errors.New("error in configuration: Invalid driver name")
 	}
-	//if config.Database.Driver == DRIVER_SQLITE {
-	//	if _, err := os.Stat(config.Database.SqliteFile); os.IsNotExist(err) {
-	//		log.Fatal("File is missing: config/serviceAccountKey.json") // exit program
-	//	}
-	//}
 	if config.Server.Port < 80 {
 		return errors.New("error in configuration: Portnumber is not valid (must be > 80)")
+	}
+	if !IntInSlice(config.Mail.SmtpPort, []int{25, 465, 587}) {
+		log.Println("[WARNING][Configuration] SMTP Port is not a default port!")
 	}
 	return nil
 }
