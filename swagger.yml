@@ -25,6 +25,13 @@ consumes:
 produces:
   - application/json
 
+securityDefinitions:
+  UserIDAuth:
+    description: For accessing user related parts of the API a valid userID must be passed in 'Authorization' header.
+    type: apiKey
+    name: Authorization
+    in: header
+
 paths:
   /groups/{groupId}:
     get:
@@ -45,6 +52,38 @@ paths:
             $ref: "#/definitions/Group"
         "400":
           description: Invalid groupId
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /groups:
+    post:
+      tags:
+      - group
+      description: Creates a new group
+      operationId: createGroup
+      parameters:
+        - in: body
+          name: body
+          description: The name of the group to create
+          required: true
+          schema:
+            $ref: "#/definitions/Group"
+      security:
+        - UserIDAuth: []
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "#/definitions/Group"
+        400:
+          description: Invalid group data
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          description: Unauthorized User
           schema:
             $ref: "#/definitions/ErrorResponse"
         default:
@@ -93,15 +132,19 @@ paths:
       parameters:
       - in: body
         name: body
-        description: The name of the user to display
+        description: The name of the user to create
         required: true
         schema:
           $ref: "#/definitions/User"
       responses:
-        "200":
+        200:
           description: Success
           schema:
             $ref: "#/definitions/User"
+        400:
+          description: Invalid user data
+          schema:
+            $ref: "#/definitions/ErrorResponse"
         default:
           description: Error
           schema:
@@ -161,7 +204,6 @@ definitions:
   Group:
     required:
       - displayName
-      - admins
     properties:
       uid:
         type: string

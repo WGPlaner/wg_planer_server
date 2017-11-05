@@ -54,6 +54,6 @@ func SendTestMail() {
 		"If you get this mail, it means that the server was started successfully!",
 	)
 	if err != nil {
-		log.Fatalln("[Mail] Sending Test Mail failed! Configure the SMTP server!")
+		log.Fatalln("[Mail] Sending Test Mail failed! Configure the SMTP server! ", err)
 	}
 }

@@ -10,13 +10,16 @@ import (
 	"github.com/go-openapi/loads"
 	"github.com/wgplaner/wg_planer_server/gen/restapi"
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations"
+	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/group"
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/user"
 	"github.com/wgplaner/wg_planer_server/wgplaner"
 	"github.com/wgplaner/wg_planer_server/wgplaner/controllers"
 )
 
 func initializeControllers(api *operations.WgplanerAPI) {
+	api.UserIDAuthAuth = controllers.UserIDAuth
 	// Create API handlers
+	api.GroupCreateGroupHandler = group.CreateGroupHandlerFunc(controllers.CreateGroup)
 	api.UserCreateUserHandler = user.CreateUserHandlerFunc(controllers.CreateUser)
 	api.UserGetUserHandler = user.GetUserHandlerFunc(controllers.GetUser)
 }
