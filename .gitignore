@@ -4,8 +4,7 @@ config/config.toml
 
 # Generated stuff
 gen
-html_api_doc
-android_client
+build
 swagger-codegen-cli.jar
 
 *.sqlite
