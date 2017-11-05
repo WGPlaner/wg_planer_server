@@ -3,11 +3,13 @@ package controllers
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"net/mail"
 	"strings"
 	"time"
 
 	"github.com/acoshift/go-firebase-admin"
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -20,6 +22,28 @@ var userInternalServerError = user.NewGetUserDefault(500).WithPayload(&models.Er
 	Message: swag.String("Internal Server error!"),
 	Status:  swag.Int64(500),
 })
+
+func UserIDAuth(token string) (interface{}, error) {
+	theUser := models.User{UID: token}
+	if isRegistered, err := isUserRegistered(&theUser); err != nil {
+		log.Println("[Controller][User][Auth] Error with isUserRegistered ", err.Error())
+		return nil, errors.New(http.StatusInternalServerError, "Internal Server Error")
+
+	} else if !isRegistered {
+		return nil, errors.Unauthenticated("invalid credentials")
+	}
+	return theUser, nil
+}
+
+// True, if the user is registered in the database. The users' data will be written
+// to `theUser`
+func isUserRegistered(theUser *models.User) (bool, error) {
+	if isRegistered, err := wgplaner.OrmEngine.Get(theUser); err != nil {
+		return false, err
+	} else {
+		return isRegistered, nil
+	}
+}
 
 // TODO: Validate user id (length, etc)
 func validateUser(theUser *models.User) (bool, error) {
@@ -65,7 +89,7 @@ func CreateUser(params user.CreateUserParams) middleware.Responder {
 	// Validate user
 	if isValid, err := validateUser(&theUser); !isValid {
 		log.Println("[User][POST] Error validating user!", err)
-		return user.NewGetUserBadRequest().WithPayload(&models.ErrorResponse{
+		return user.NewCreateUserBadRequest().WithPayload(&models.ErrorResponse{
 			Message: swag.String(fmt.Sprintf("Invalid userId: \"%s\"", err.Error())),
 			Status:  swag.Int64(400),
 		})
