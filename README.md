@@ -24,7 +24,7 @@ To create the Java Android Library, download `swagger-codegen`.
 
 ```bash
 wget -O swagger-codegen-cli.jar https://oss.sonatype.org/content/repositories/releases/io/swagger/swagger-codegen-cli/2.2.3/swagger-codegen-cli-2.2.3.jar
-java -jar swagger-codegen-cli.jar generate -i swagger.yml -l java --library=okhttp-gson -o android_client
+java -jar swagger-codegen-cli.jar generate -i build/swagger.yml -l java --library=okhttp-gson -o android_client
 ```
 
 ### API Documentation
@@ -32,6 +32,6 @@ To create the API documentation, download `swagger-codegen`.
 
 ```bash
 wget -O swagger-codegen-cli.jar https://oss.sonatype.org/content/repositories/releases/io/swagger/swagger-codegen-cli/2.2.3/swagger-codegen-cli-2.2.3.jar
-java -jar swagger-codegen-cli.jar generate -i swagger.yml -l html2 -o html_api_doc
+java -jar swagger-codegen-cli.jar generate -i swagger.yml -l html2 -o build/api_doc_html
 ```
 
