@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"log"
+	"net/mail"
 	"strings"
 	"time"
 
@@ -23,6 +24,11 @@ var userInternalServerError = user.NewGetUserDefault(500).WithPayload(&models.Er
 // TODO: Validate user id (length, etc)
 func validateUser(theUser *models.User) (bool, error) {
 	//return theUser.Validate()
+	if theUser.Email != "" {
+		if _, err := mail.ParseAddress(string(theUser.Email)); err != nil {
+			return false, err
+		}
+	}
 	return true, nil
 }
 

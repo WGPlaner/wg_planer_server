@@ -15,3 +15,10 @@ mysql_port     = 3306
 mysql_user     = "WGPlaner"
 mysql_password = "my_secret"
 mysql_db_name  = "wgplaner_db"
+
+[mail]
+smtp_port     = 25
+smtp_host     = "mail.example.com"
+smtp_user     = "info@example.com"
+smtp_identity = "info@example.com"
+smtp_password = "my_secret"
