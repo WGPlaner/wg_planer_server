@@ -19,7 +19,7 @@ tags:
   description: User related endpoints
 
 schemes:
-  - http
+  - https
 consumes:
   - application/json
 produces:
