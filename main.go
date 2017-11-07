@@ -22,6 +22,7 @@ func initializeControllers(api *operations.WgplanerAPI) {
 	api.GroupCreateGroupHandler = group.CreateGroupHandlerFunc(controllers.CreateGroup)
 	api.UserCreateUserHandler = user.CreateUserHandlerFunc(controllers.CreateUser)
 	api.UserGetUserHandler = user.GetUserHandlerFunc(controllers.GetUser)
+	api.UserUpdateUserHandler = user.UpdateUserHandlerFunc(controllers.UpdateUser)
 }
 
 func main() {

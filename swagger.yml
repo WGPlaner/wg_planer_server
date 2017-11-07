@@ -162,10 +162,14 @@ paths:
         schema:
           $ref: "#/definitions/User"
       responses:
-        "200":
+        200:
           description: Success
           schema:
             $ref: "#/definitions/User"
+        400:
+          description: Invalid user data
+          schema:
+            $ref: "#/definitions/ErrorResponse"
         default:
           description: Error
           schema:
