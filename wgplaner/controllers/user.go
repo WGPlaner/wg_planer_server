@@ -37,7 +37,7 @@ func isUserOnFirebase(theUser *models.User) (bool, error) {
 	_, err := wgplaner.FireBaseApp.Auth().GetUser(context.Background(), *theUser.UID)
 
 	if err == firebase.ErrUserNotFound {
-		log.Printf("Can't find firebase user with id \"%s\"!", theUser.UID)
+		log.Printf("Can't find firebase user with id \"%s\"!", *theUser.UID)
 		return false, nil
 	} else if err != nil {
 		log.Println("Firebase SDK Error!", err)

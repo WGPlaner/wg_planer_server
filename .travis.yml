@@ -16,6 +16,7 @@ before_install:
   - go get -v
 
 script:
+  - go tool vet .
   - go build -o "build/wg_planer_server" main.go
   - go test -race -v ./...
 
