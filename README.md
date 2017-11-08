@@ -30,7 +30,7 @@ To create the Java Android Library, download `swagger-codegen`.
 
 ```bash
 wget -O swagger-codegen-cli.jar https://oss.sonatype.org/content/repositories/releases/io/swagger/swagger-codegen-cli/2.2.3/swagger-codegen-cli-2.2.3.jar
-java -jar swagger-codegen-cli.jar generate -i swagger.yml -l android --library=volley -o build/android_client
+java -jar swagger-codegen-cli.jar generate -i swagger.yml -l java --library=okhttp-gson -o build/android_client
 ```
 
 ### API Documentation
