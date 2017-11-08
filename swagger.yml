@@ -232,10 +232,12 @@ definitions:
       uid:
         type: string
         format: uuid
+        readOnly: true
       displayName:
         type: string
       currency:
         type: string
+        maxLength: 4
       photoUrl:
         type: string
         format: uri
@@ -243,6 +245,12 @@ definitions:
         type: array
         items:
           type: string
+        readOnly: true
+      members:
+        type: array
+        items:
+          type: string
+        readOnly: true
       createdAt:
         type: string
         format: date-time

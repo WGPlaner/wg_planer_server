@@ -50,12 +50,18 @@ func CreateGroup(params group.CreateGroupParams, principal interface{}) middlewa
 	// Create new group
 	displayName := strings.TrimSpace(swag.StringValue(params.Body.DisplayName))
 	creationTime := strfmt.DateTime(time.Now().UTC())
+	currency := strings.TrimSpace(params.Body.Currency)
+
+	if currency == "" {
+		currency = "€"
+	}
 
 	theGroup = models.Group{
 		UID:         strfmt.UUID(uuid.NewV4().String()),
 		Admins:      []string{*principal.(models.User).UID},
+		Members:     []string{*principal.(models.User).UID},
 		DisplayName: &displayName,
-		Currency:    "€",
+		Currency:    currency,
 		CreatedAt:   creationTime,
 		UpdatedAt:   creationTime,
 	}
