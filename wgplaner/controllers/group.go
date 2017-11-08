@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"strings"
 	"time"
 
@@ -20,6 +21,27 @@ func validateGroup(_ *models.Group) (bool, error) {
 	return true, nil
 }
 
+func GetGroup(params group.GetGroupParams, principal interface{}) middleware.Responder {
+	theGroup := models.Group{UID: strfmt.UUID(params.GroupID)}
+
+	// TODO: Validate
+	// validateGroup(&theGroup)
+
+	// Database
+	if isRegistered, err := wgplaner.OrmEngine.Get(&theGroup); err != nil {
+		log.Println("[Group][GET] Database Error!", err)
+		return userInternalServerError
+	} else if !isRegistered {
+		log.Printf("[Group][GET] Can't find databse group with id \"%s\"!", theGroup.UID)
+		return group.NewGetGroupNotFound().WithPayload(&models.ErrorResponse{
+			Message: swag.String("Group not found on server"),
+			Status:  swag.Int64(http.StatusNotFound),
+		})
+	}
+
+	return group.NewGetGroupOK().WithPayload(&theGroup)
+}
+
 func CreateGroup(params group.CreateGroupParams, principal interface{}) middleware.Responder {
 	log.Println("[Group][POST] Creating group")
 
@@ -30,8 +52,8 @@ func CreateGroup(params group.CreateGroupParams, principal interface{}) middlewa
 	creationTime := strfmt.DateTime(time.Now().UTC())
 
 	theGroup = models.Group{
-		UID:         uuid.NewV4().String(),
-		Admins:      []string{principal.(models.User).UID},
+		UID:         strfmt.UUID(uuid.NewV4().String()),
+		Admins:      []string{*principal.(models.User).UID},
 		DisplayName: &displayName,
 		Currency:    "€",
 		CreatedAt:   creationTime,
@@ -54,6 +76,8 @@ func CreateGroup(params group.CreateGroupParams, principal interface{}) middlewa
 		log.Println("[Group][POST] Database error!", err)
 		return userInternalServerError
 	}
+
+	log.Println("[Group][POST] Created group")
 
 	return group.NewCreateGroupOK().WithPayload(&theGroup)
 }

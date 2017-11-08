@@ -53,12 +53,16 @@ paths:
           required: true
           type: string
       responses:
-        "200":
+        200:
           description: Success
           schema:
             $ref: "#/definitions/Group"
-        "400":
+        400:
           description: Invalid groupId
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          description: Group not found
           schema:
             $ref: "#/definitions/ErrorResponse"
         default:
@@ -193,6 +197,7 @@ paths:
 definitions:
   User:
     required:
+      - uid
       - displayName
     properties:
       uid:
@@ -204,6 +209,8 @@ definitions:
       groupUid:
         type: string
         format: uuid
+      locale:
+        type: string
       photoUrl:
         type: string
         format: uri
@@ -224,10 +231,14 @@ definitions:
     properties:
       uid:
         type: string
+        format: uuid
       displayName:
         type: string
       currency:
         type: string
+      photoUrl:
+        type: string
+        format: uri
       admins:
         type: array
         items:

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,7 +10,6 @@ import (
 	"time"
 
 	"github.com/acoshift/go-firebase-admin"
-	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -23,18 +23,6 @@ var userInternalServerError = user.NewGetUserDefault(500).WithPayload(&models.Er
 	Status:  swag.Int64(500),
 })
 
-func UserIDAuth(token string) (interface{}, error) {
-	theUser := models.User{UID: token}
-	if isRegistered, err := isUserRegistered(&theUser); err != nil {
-		log.Println("[Controller][User][Auth] Error with isUserRegistered ", err.Error())
-		return nil, errors.New(http.StatusInternalServerError, "Internal Server Error")
-
-	} else if !isRegistered {
-		return nil, errors.Unauthenticated("invalid credentials")
-	}
-	return theUser, nil
-}
-
 // True, if the user is registered in the database. The users' data will be written
 // to `theUser`
 func isUserRegistered(theUser *models.User) (bool, error) {
@@ -43,6 +31,24 @@ func isUserRegistered(theUser *models.User) (bool, error) {
 	} else {
 		return isRegistered, nil
 	}
+}
+
+func isUserOnFirebase(theUser *models.User) (bool, error) {
+	_, err := wgplaner.FireBaseApp.Auth().GetUser(context.Background(), *theUser.UID)
+
+	if err == firebase.ErrUserNotFound {
+		log.Printf("Can't find firebase user with id \"%s\"!", theUser.UID)
+		return false, nil
+	} else if err != nil {
+		log.Println("Firebase SDK Error!", err)
+		return false, err
+	}
+
+	return true, nil
+}
+
+func isValidUserID(id *string) bool {
+	return len(*id) == 28 // Firebase IDs are 28 characters long
 }
 
 // TODO: Validate user id (length, etc)
@@ -56,11 +62,12 @@ func validateUser(theUser *models.User) (bool, error) {
 	return true, nil
 }
 
-func CreateUser(params user.CreateUserParams) middleware.Responder {
+func CreateUser(params user.CreateUserParams, principal interface{}) middleware.Responder {
 	log.Println("[User][POST] Creating User")
 
-	uid := strings.TrimSpace(params.Body.UID)
-	theUser := models.User{UID: uid}
+	theUser := models.User{
+		UID: params.Body.UID,
+	}
 
 	// Check if the user is already registered
 	if isRegistered, err := wgplaner.OrmEngine.Get(&theUser); err != nil {
@@ -77,7 +84,7 @@ func CreateUser(params user.CreateUserParams) middleware.Responder {
 	creationTime := strfmt.DateTime(time.Now().UTC())
 
 	theUser = models.User{
-		UID:         uid,
+		UID:         theUser.UID,
 		DisplayName: &displayName,
 		Email:       params.Body.Email,
 		GroupUID:    params.Body.GroupUID,
@@ -90,7 +97,7 @@ func CreateUser(params user.CreateUserParams) middleware.Responder {
 	if isValid, err := validateUser(&theUser); !isValid {
 		log.Println("[User][POST] Error validating user!", err)
 		return user.NewCreateUserBadRequest().WithPayload(&models.ErrorResponse{
-			Message: swag.String(fmt.Sprintf("Invalid userId: \"%s\"", err.Error())),
+			Message: swag.String(fmt.Sprintf("invalid user: \"%s\"", err.Error())),
 			Status:  swag.Int64(400),
 		})
 	}
@@ -104,7 +111,7 @@ func CreateUser(params user.CreateUserParams) middleware.Responder {
 	return user.NewCreateUserOK().WithPayload(&theUser)
 }
 
-func UpdateUser(params user.UpdateUserParams) middleware.Responder {
+func UpdateUser(params user.UpdateUserParams, principal interface{}) middleware.Responder {
 	log.Println("[User][PUT] Creating User")
 
 	theUser := models.User{UID: params.Body.UID}
@@ -154,21 +161,19 @@ func UpdateUser(params user.UpdateUserParams) middleware.Responder {
 	return user.NewUpdateUserOK().WithPayload(&theUser)
 }
 
+func GetUser(params user.GetUserParams, principal interface{}) middleware.Responder {
+	theUser := models.User{UID: &params.UserID}
 
-
-func GetUser(params user.GetUserParams) middleware.Responder {
-	theUser := models.User{UID: params.UserID}
-
-	if isValid, err := validateUser(&theUser); !isValid {
+	if isValid := isValidUserID(theUser.UID); !isValid {
 		return user.NewGetUserBadRequest().WithPayload(&models.ErrorResponse{
-			Message: swag.String(fmt.Sprintf("Invalid userId: \"%s\"", err.Error())),
+			Message: swag.String(fmt.Sprintf("Invalid user id format")),
 			Status:  swag.Int64(400),
 		})
 	}
 
 	// Firebase Auth
 	_, err := wgplaner.FireBaseApp.Auth().
-		GetUser(params.HTTPRequest.Context(), theUser.UID)
+		GetUser(params.HTTPRequest.Context(), *theUser.UID)
 
 	if err == firebase.ErrUserNotFound {
 		log.Printf("[User][GET] Can't find firebase user with id \"%s\"!", params.UserID)
@@ -189,7 +194,7 @@ func GetUser(params user.GetUserParams) middleware.Responder {
 		log.Printf("[User][GET] Can't find databse user with id \"%s\"!", params.UserID)
 		return user.NewGetUserNotFound().WithPayload(&models.ErrorResponse{
 			Message: swag.String("User not found on server"),
-			Status:  swag.Int64(404),
+			Status:  swag.Int64(http.StatusNotFound),
 		})
 	}
 
