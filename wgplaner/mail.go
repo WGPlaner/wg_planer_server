@@ -9,6 +9,16 @@ import (
 	"time"
 )
 
+func ValidateMailConfig(config mailConfig) ErrorList {
+	err := ErrorList{}
+
+	if !IntInSlice(config.SmtpPort, []int{25, 465, 587}) {
+		log.Println("[WARNING][Config] SMTP Port is not a default port!")
+	}
+
+	return err
+}
+
 func SendMail(to []string, subject string, body string) error {
 	// Set up authentication information.
 	auth := smtp.PlainAuth(
