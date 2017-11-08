@@ -31,6 +31,11 @@ securityDefinitions:
     type: apiKey
     name: Authorization
     in: header
+  FirebaseIDAuth:
+    description: For accessing user related parts of the API a valid userID must be passed in 'Authorization' header.
+    type: apiKey
+    name: Authorization
+    in: header
 
 paths:
   /groups/{groupId}:
@@ -39,6 +44,8 @@ paths:
       - group
       description: Returns the group object
       operationId: getGroup
+      security:
+        - UserIDAuth: []
       parameters:
         - name: groupId
           in: path
@@ -64,6 +71,8 @@ paths:
       - group
       description: Creates a new group
       operationId: createGroup
+      security:
+        - UserIDAuth: []
       parameters:
         - in: body
           name: body
@@ -71,8 +80,6 @@ paths:
           required: true
           schema:
             $ref: "#/definitions/Group"
-      security:
-        - UserIDAuth: []
       responses:
         200:
           description: Success
@@ -96,6 +103,8 @@ paths:
       - user
       description: Returns the user object
       operationId: getUser
+      security:
+        - FirebaseIDAuth: []
       parameters:
         - name: userId
           in: path
@@ -129,6 +138,8 @@ paths:
       - user
       description: Creates a new user
       operationId: createUser
+      security:
+        - FirebaseIDAuth: []
       parameters:
       - in: body
         name: body
@@ -154,6 +165,8 @@ paths:
       - user
       description: Update an existing user
       operationId: updateUser
+      security:
+        - UserIDAuth: []
       parameters:
       - in: body
         name: body

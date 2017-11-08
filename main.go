@@ -18,6 +18,7 @@ import (
 
 func initializeControllers(api *operations.WgplanerAPI) {
 	api.UserIDAuthAuth = controllers.UserIDAuth
+	api.FirebaseIDAuthAuth = controllers.FirebaseIDAuth
 	// Create API handlers
 	api.GroupCreateGroupHandler = group.CreateGroupHandlerFunc(controllers.CreateGroup)
 	api.UserCreateUserHandler = user.CreateUserHandlerFunc(controllers.CreateUser)
