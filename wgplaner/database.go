@@ -1,6 +1,7 @@
 package wgplaner
 
 import (
+	"errors"
 	"fmt"
 	"log"
 
@@ -11,20 +12,41 @@ import (
 	"github.com/wgplaner/wg_planer_server/gen/models"
 )
 
-var implementedDrivers = []string{
-	DRIVER_MYSQL,
-	DRIVER_SQLITE,
-}
-var ormEngine *xorm.Engine
-
-//func sync(engine *xorm.Engine) error {
-//	return engine.Sync(&SyncLoginInfo2{}, &SyncUser2{}, &models.User{}, &models.Group{})
-//}
+const (
+	DRIVER_SQLITE = "sqlite"
+	DRIVER_MYSQL  = "mysql"
+)
 
 var OrmEngine *xorm.Engine
 
-func isValidDriverName(driverName string) bool {
-	return StringInSlice(driverName, implementedDrivers)
+func ValidateDriverConfig(config databaseConfig) ErrorList {
+	err := ErrorList{}
+
+	switch config.Driver {
+	case DRIVER_MYSQL:
+		if config.MysqlServer == "" {
+			err.Add("[Config][MySQL] Server is empty!")
+		}
+		if config.MysqlPort == 0 {
+			err.Add("[Config][MySQL] Port is empty!")
+		}
+		if config.MysqlUser == "" {
+			err.Add("[Config][MySQL] User is empty!")
+		}
+		if config.MysqlDatabaseName == "" {
+			err.Add("[Config][MySQL] Databasename is empty!")
+		}
+
+	case DRIVER_SQLITE:
+		if config.SqliteFile == "" {
+			err.Add("[Config][SQLite] File is empty! Must specify a filename!")
+		}
+
+	default:
+		err.Add("[Driver] Drivername is not valid!")
+	}
+
+	return err
 }
 
 func CreateOrmEngine(dbConfig *databaseConfig) *xorm.Engine {
@@ -36,6 +58,8 @@ func CreateOrmEngine(dbConfig *databaseConfig) *xorm.Engine {
 		engine, err = getMysqlEngine(dbConfig)
 	case DRIVER_SQLITE:
 		engine, err = xorm.NewEngine("sqlite3", dbConfig.SqliteFile)
+	default:
+		err = errors.New("unknown SQL driver")
 	}
 
 	if err != nil {
@@ -49,7 +73,12 @@ func CreateOrmEngine(dbConfig *databaseConfig) *xorm.Engine {
 	}
 
 	engine.ShowSQL(true)
-	engine.Logger().SetLevel(core.LOG_DEBUG)
+
+	if AppConfig.Database.LogSQL {
+		engine.Logger().SetLevel(core.LOG_DEBUG)
+	} else {
+		engine.Logger().SetLevel(core.LOG_WARNING)
+	}
 
 	return engine
 }

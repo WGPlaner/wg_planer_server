@@ -4,7 +4,8 @@
 port = 3000
 
 [database]
-driver = "sqlite"
+driver  = "sqlite"
+log_sql = true
 
 # Set if driver == "sqlite"
 sqlite_file = "database.sqlite"
@@ -17,6 +18,7 @@ mysql_password = "my_secret"
 mysql_db_name  = "wgplaner_db"
 
 [mail]
+send_testmail = false
 smtp_port     = 25
 smtp_host     = "mail.example.com"
 smtp_user     = "info@example.com"

@@ -39,11 +39,14 @@ func main() {
 	defer server.Shutdown()
 
 	// load configuration and initialize ----------------------------------------
-	wgplaner.AppConfig = wgplaner.LoadAppConfiguration()
+	wgplaner.AppConfig = wgplaner.LoadAppConfigurationOrFail()
 	wgplaner.OrmEngine = wgplaner.CreateOrmEngine(&wgplaner.AppConfig.Database)
 	wgplaner.FireBaseApp = wgplaner.CreateFirebaseConnection()
 	initializeControllers(api)
-	wgplaner.SendTestMail()
+
+	if wgplaner.AppConfig.Mail.SendTestMail {
+		wgplaner.SendTestMail()
+	}
 
 	// set the port this service will be run on ---------------------------------
 	server.Port = wgplaner.AppConfig.Server.Port

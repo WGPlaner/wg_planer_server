@@ -1,15 +1,9 @@
 package wgplaner
 
 import (
-	"errors"
 	"log"
 
 	"github.com/BurntSushi/toml"
-)
-
-const (
-	DRIVER_SQLITE = "sqlite"
-	DRIVER_MYSQL  = "mysql"
 )
 
 type serverConfig struct {
@@ -18,6 +12,7 @@ type serverConfig struct {
 
 type databaseConfig struct {
 	Driver            string
+	LogSQL            bool   `toml:"log_sql"`
 	SqliteFile        string `toml:"sqlite_file"`
 	MysqlServer       string `toml:"mysql_server"`
 	MysqlPort         int    `toml:"mysql_port"`
@@ -27,6 +22,7 @@ type databaseConfig struct {
 }
 
 type mailConfig struct {
+	SendTestMail bool   `toml:"send_testmail"`
 	SmtpPort     int    `toml:"smtp_port"`
 	SmtpHost     string `toml:"smtp_host"`
 	SmtpIdentity string `toml:"smtp_identity"`
@@ -40,20 +36,27 @@ type appConfigType struct {
 	Mail     mailConfig
 }
 
-func validateConfiguration(config *appConfigType) error {
-	if !isValidDriverName(config.Database.Driver) {
-		return errors.New("error in configuration: Invalid driver name")
-	}
+func validateConfiguration(config *appConfigType) ErrorList {
+	err := ErrorList{}
+
 	if config.Server.Port < 80 {
-		return errors.New("error in configuration: Portnumber is not valid (must be > 80)")
+		err.Add("[Config] Portnumber is not valid (must be > 80)")
 	}
-	if !IntInSlice(config.Mail.SmtpPort, []int{25, 465, 587}) {
-		log.Println("[WARNING][Configuration] SMTP Port is not a default port!")
+
+	if configErr := ValidateDriverConfig(config.Database); configErr.HasErrors() {
+		err.Add("[Config] Invalid driver:")
+		err.AddList(&configErr)
 	}
-	return nil
+
+	if configErr := ValidateMailConfig(config.Mail); configErr.HasErrors() {
+		err.Add("[Config] Invalid Mail Config:")
+		err.AddList(&configErr)
+	}
+
+	return err
 }
 
-func LoadAppConfiguration() *appConfigType {
+func LoadAppConfigurationOrFail() *appConfigType {
 	var appConfig = &appConfigType{}
 
 	// Path is relative to executable.
@@ -62,8 +65,8 @@ func LoadAppConfiguration() *appConfigType {
 		return nil
 	}
 
-	if err := validateConfiguration(appConfig); err != nil {
-		log.Fatal("[Configuration] Error validating configuration! ", err.Error())
+	if err := validateConfiguration(appConfig); err.HasErrors() {
+		log.Fatal("[Configuration] Error validating configuration: \n" + err.String())
 		return nil
 	}
 
