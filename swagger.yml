@@ -148,6 +148,38 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResponse"
+  /users/{userId}/image:
+    get:
+      tags:
+      - user
+      description: Get the user's profile image
+      operationId: getUserImage
+      security:
+        - UserIDAuth: []
+      parameters:
+        - name: userId
+          in: path
+          description: The internal ID of the user
+          required: true
+          type: string
+      produces:
+        - application/octet-stream
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            type: string
+            format: binary
+            readOnly: true
+        400:
+          description: Invalid userId
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
   /users:
     post:
       tags:
