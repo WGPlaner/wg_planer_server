@@ -11,6 +11,7 @@ import (
 	"github.com/wgplaner/wg_planer_server/gen/restapi"
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations"
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/group"
+	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/info"
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/user"
 	"github.com/wgplaner/wg_planer_server/wgplaner"
 	"github.com/wgplaner/wg_planer_server/wgplaner/controllers"
@@ -20,6 +21,7 @@ func initializeControllers(api *operations.WgplanerAPI) {
 	api.UserIDAuthAuth = controllers.UserIDAuth
 	api.FirebaseIDAuthAuth = controllers.FirebaseIDAuth
 	// Create API handlers
+	api.InfoGetLatestVersionHandler = info.GetLatestVersionHandlerFunc(controllers.GetVersionInfo)
 	api.GroupCreateGroupHandler = group.CreateGroupHandlerFunc(controllers.CreateGroup)
 	api.GroupGetGroupHandler = group.GetGroupHandlerFunc(controllers.GetGroup)
 	api.UserCreateUserHandler = user.CreateUserHandlerFunc(controllers.CreateUser)

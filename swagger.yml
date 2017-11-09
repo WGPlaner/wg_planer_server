@@ -17,6 +17,8 @@ tags:
   description: Group related endpoints
 - name: user
   description: User related endpoints
+- name: info
+  description: Information related endpoints
 
 schemes:
   - https
@@ -38,6 +40,16 @@ securityDefinitions:
     in: header
 
 paths:
+  /latest-version:
+    get:
+      tags:
+      - info
+      description: Get the latest version code for the API and android client
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "#/definitions/VersionInfo"
   /groups/{groupId}:
     get:
       tags:
@@ -312,6 +324,30 @@ definitions:
         type: string
         format: date-time
         readOnly: true
+  VersionInfo:
+    type: object
+    required:
+      - api_version_string
+      - api_version_code
+      - android_version_string
+      - android_version_code
+    properties:
+      api_version_string:
+        type: string
+        readOnly: true
+        example: "v0.1.0"
+      api_version_code:
+        type: integer
+        readOnly: true
+        example: 1
+      android_version_string:
+        type: string
+        readOnly: true
+        example: "v0.1.0"
+      android_version_code:
+        type: integer
+        readOnly: true
+        example: 1
   ErrorResponse:
     required:
       - status
