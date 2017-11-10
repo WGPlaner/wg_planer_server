@@ -3,10 +3,12 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"net/mail"
 	"os"
+	"path"
 	"strings"
 	"time"
 
@@ -223,6 +225,7 @@ func GetUser(params user.GetUserParams, principal interface{}) middleware.Respon
 func GetUserImage(params user.GetUserImageParams, principal interface{}) middleware.Responder {
 	log.Println("[Controller][User] Get User Image")
 
+	// TODO: Check authorization; Check if user exists
 	theUser := models.User{UID: &params.UserID}
 
 	var imgFile *os.File
@@ -243,4 +246,92 @@ func GetUserImage(params user.GetUserImageParams, principal interface{}) middlew
 	}
 
 	return user.NewGetUserImageOK().WithPayload(imgFile)
+}
+
+func UpdateUserImage(params user.UpdateUserImageParams, principal interface{}) middleware.Responder {
+	log.Println("[Controller][User] Put User Image")
+
+	theUser := models.User{UID: &params.UserID}
+
+	var internalError = user.NewUpdateUserImageDefault(http.StatusInternalServerError).
+		WithPayload(&models.ErrorResponse{
+			Message: swag.String("Internal Server Error"),
+			Status:  swag.Int64(http.StatusInternalServerError),
+		})
+
+	// Database
+	if isRegistered, err := wgplaner.OrmEngine.Get(&theUser); err != nil {
+		log.Println("[User][Put] Image: Database Error!", err)
+		return userInternalServerError
+
+	} else if !isRegistered {
+		log.Printf("[User][Put] Image: Can't find databse user with id \"%s\"!", params.UserID)
+		// TODO: Maybe 404?
+		return user.NewUpdateUserImageBadRequest().WithPayload(&models.ErrorResponse{
+			Message: swag.String("Unknown user"),
+			Status:  swag.Int64(http.StatusBadRequest),
+		})
+	}
+
+	// Check if auth and userId are the same
+	if params.UserID != swag.StringValue(principal.(models.User).UID) {
+		return user.NewUpdateUserImageDefault(http.StatusUnauthorized).
+			WithPayload(&models.ErrorResponse{
+				Message: swag.String("Can't change profile image of other users"),
+				Status:  swag.Int64(http.StatusUnauthorized),
+			})
+	}
+
+	// We need the first 512 Bytes for "IsValidJpeg". Because "params.ProfileImage.Data"
+	// is only a reader, there is no way around extracting them.
+	first512Bytes := make([]byte, 512)
+	if _, err := params.ProfileImage.Data.Read(first512Bytes); err != nil {
+		return internalError
+	}
+
+	if isValid, mime := wgplaner.IsValidJpeg(first512Bytes); !isValid {
+		log.Printf("[Controller][User] Put User Image: Invalid mime type %s", mime)
+		return user.NewUpdateUserImageBadRequest().WithPayload(&models.ErrorResponse{
+			Message: swag.String(fmt.Sprintf(
+				"Invalid file type. Only image/jpeg allowed. Mime was %s",
+				mime,
+			)),
+			Status: swag.Int64(http.StatusBadRequest),
+		})
+	}
+
+	// Write profile image
+
+	filePath := wgplaner.GetUserProfileImageFilePath(&theUser)
+
+	// Create directory
+	if dirErr := os.MkdirAll(path.Dir(filePath), 0700); dirErr != nil {
+		log.Println("[Controller][User] Put User Image: Can't create directory ", dirErr.Error())
+		return internalError
+	}
+
+	// Create or overwrite file
+	imgFile, err := os.Create(filePath)
+	defer imgFile.Close()
+
+	if err != nil {
+		log.Println("[Controller][User] Put User Image: Can't create new file ", err.Error())
+		return internalError
+
+	} else {
+		if _, err := imgFile.Write(first512Bytes); err != nil {
+			log.Println("[Controller][User] Put User Image: Couldn't write first 512B", err.Error())
+			return internalError
+		}
+		if _, writeErr := io.Copy(imgFile, params.ProfileImage.Data); writeErr != nil {
+			log.Println("[Controller][User] Put User Image: Can't copy file content ",
+				writeErr.Error())
+			return internalError
+		}
+	}
+
+	return user.NewUpdateUserImageOK().WithPayload(&models.SuccessResponse{
+		Message: swag.String("Successfully uploaded image file"),
+		Status:  swag.Int64(http.StatusOK),
+	})
 }

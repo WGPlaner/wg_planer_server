@@ -27,14 +27,20 @@ func ValidateDataConfig(config dataConfig) ErrorList {
 	return errList
 }
 
-func GetUserProfileImage(user *models.User) (*os.File, error) {
-	filePath := path.Join(
+const (
+	PROFILE_IMAGE_FILE_NAME = "profile_image.jpg"
+)
+
+func GetUserProfileImageFilePath(user *models.User) string {
+	return path.Join(
 		AppConfig.Data.UserImageDir,
 		swag.StringValue(user.UID),
-		"profile_image",
-	) + ".jpg"
+		PROFILE_IMAGE_FILE_NAME,
+	)
+}
 
-	return os.Open(filePath)
+func GetUserProfileImage(user *models.User) (*os.File, error) {
+	return os.Open(GetUserProfileImageFilePath(user))
 }
 
 func GetUserProfileImageDefault() (*os.File, error) {

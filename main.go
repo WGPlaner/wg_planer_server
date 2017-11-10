@@ -28,6 +28,7 @@ func initializeControllers(api *operations.WgplanerAPI) {
 	api.UserGetUserHandler = user.GetUserHandlerFunc(controllers.GetUser)
 	api.UserGetUserImageHandler = user.GetUserImageHandlerFunc(controllers.GetUserImage)
 	api.UserUpdateUserHandler = user.UpdateUserHandlerFunc(controllers.UpdateUser)
+	api.UserUpdateUserImageHandler = user.UpdateUserImageHandlerFunc(controllers.UpdateUserImage)
 }
 
 func main() {

@@ -2,6 +2,9 @@
 config/serviceAccountKey.json
 config/config.toml
 
+data/users/*
+!data/users/.gitkeep
+
 # Generated stuff
 gen
 build
