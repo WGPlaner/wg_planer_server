@@ -82,13 +82,18 @@ func CreateUser(params user.CreateUserParams, principal interface{}) middleware.
 	// Create new user
 	displayName := strings.TrimSpace(swag.StringValue(params.Body.DisplayName))
 	creationTime := strfmt.DateTime(time.Now().UTC())
+	imageURL := user.GetUserImageURL{UserID: swag.StringValue(theUser.UID)}
+	photoURL, err := imageURL.Build()
+	if err != nil {
+		return userInternalServerError
+	}
 
 	theUser = models.User{
 		UID:         theUser.UID,
 		DisplayName: &displayName,
 		Email:       params.Body.Email,
 		GroupUID:    params.Body.GroupUID,
-		PhotoURL:    "TODO",
+		PhotoURL:    strfmt.URI(photoURL.String()),
 		CreatedAt:   creationTime,
 		UpdatedAt:   creationTime,
 	}
@@ -132,13 +137,18 @@ func UpdateUser(params user.UpdateUserParams, principal interface{}) middleware.
 	// Create new user
 	displayName := strings.TrimSpace(swag.StringValue(params.Body.DisplayName))
 	creationTime := strfmt.DateTime(time.Now().UTC())
+	imageURL := user.GetUserImageURL{UserID: swag.StringValue(theUser.UID)}
+	photoURL, err := imageURL.Build()
+	if err != nil {
+		return userInternalServerError
+	}
 
 	theUser = models.User{
 		UID:         params.Body.UID,
 		DisplayName: &displayName,
 		Email:       params.Body.Email,
 		GroupUID:    params.Body.GroupUID,
-		PhotoURL:    "TODO",
+		PhotoURL:    strfmt.URI(photoURL.String()),
 		CreatedAt:   creationTime,
 		UpdatedAt:   creationTime,
 	}
@@ -197,6 +207,14 @@ func GetUser(params user.GetUserParams, principal interface{}) middleware.Respon
 			Status:  swag.Int64(http.StatusNotFound),
 		})
 	}
+
+	imageURL := user.GetUserImageURL{UserID: swag.StringValue(theUser.UID)}
+	photoURL, err := imageURL.Build()
+	if err != nil {
+		return userInternalServerError
+	}
+
+	theUser.PhotoURL = strfmt.URI(photoURL.String())
 
 	return user.NewGetUserOK().WithPayload(&theUser)
 }
