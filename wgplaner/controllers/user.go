@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"net/mail"
+	"os"
 	"strings"
 	"time"
 
@@ -217,4 +218,29 @@ func GetUser(params user.GetUserParams, principal interface{}) middleware.Respon
 	theUser.PhotoURL = strfmt.URI(photoURL.String())
 
 	return user.NewGetUserOK().WithPayload(&theUser)
+}
+
+func GetUserImage(params user.GetUserImageParams, principal interface{}) middleware.Responder {
+	log.Println("[Controller][User] Get User Image")
+
+	theUser := models.User{UID: &params.UserID}
+
+	var imgFile *os.File
+	var fileErr error
+
+	// Get default image if normal one does no exist
+	if imgFile, fileErr = wgplaner.GetUserProfileImage(&theUser); os.IsNotExist(fileErr) {
+		imgFile, fileErr = wgplaner.GetUserProfileImageDefault()
+	}
+
+	if fileErr != nil {
+		log.Println("[Controller][User] Error getting profile image ", fileErr.Error())
+		return user.NewGetUserImageDefault(http.StatusInternalServerError).
+			WithPayload(&models.ErrorResponse{
+				Message: swag.String("Internal Server Error"),
+				Status:  swag.Int64(http.StatusInternalServerError),
+			})
+	}
+
+	return user.NewGetUserImageOK().WithPayload(imgFile)
 }

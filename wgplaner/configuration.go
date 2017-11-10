@@ -10,6 +10,11 @@ type serverConfig struct {
 	Port int
 }
 
+type dataConfig struct {
+	UserImageDir     string `toml:"user_image_dir"`
+	UserImageDefault string `toml:"user_image_default"`
+}
+
 type databaseConfig struct {
 	Driver            string
 	LogSQL            bool   `toml:"log_sql"`
@@ -32,6 +37,7 @@ type mailConfig struct {
 
 type appConfigType struct {
 	Server   serverConfig
+	Data     dataConfig
 	Database databaseConfig
 	Mail     mailConfig
 }
@@ -41,6 +47,11 @@ func validateConfiguration(config *appConfigType) ErrorList {
 
 	if config.Server.Port < 80 {
 		err.Add("[Config] Portnumber is not valid (must be > 80)")
+	}
+
+	if configErr := ValidateDataConfig(config.Data); configErr.HasErrors() {
+		err.Add("[Config] Invalid data config:")
+		err.AddList(&configErr)
 	}
 
 	if configErr := ValidateDriverConfig(config.Database); configErr.HasErrors() {
