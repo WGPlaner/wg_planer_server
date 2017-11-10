@@ -17,7 +17,7 @@ before_install:
 
 script:
   - go tool vet .
-  - go build -o "build/wg_planer_server" main.go
+  - go build -o "build/wg_planer_server" cmd/wgplaner-api/wgplaner-api.go
   - go test -race -v ./...
 
 before_deploy:
