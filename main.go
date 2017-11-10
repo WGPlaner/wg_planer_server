@@ -32,10 +32,12 @@ func initializeControllers(api *operations.WgplanerAPI) {
 }
 
 func main() {
-	// load embedded swagger file
-	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")
-	if err != nil {
-		log.Fatalln(err)
+	var errSpec error
+	var swaggerSpec *loads.Document
+
+	// load embedded swagger file -----------------------------------------------
+	if swaggerSpec, errSpec = loads.Analyzed(restapi.SwaggerJSON, ""); errSpec != nil {
+		log.Fatalln(errSpec)
 	}
 
 	// create new service API ---------------------------------------------------
