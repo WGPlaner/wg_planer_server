@@ -12,7 +12,7 @@ import (
 func ValidateMailConfig(config mailConfig) ErrorList {
 	err := ErrorList{}
 
-	if !IntInSlice(config.SmtpPort, []int{25, 465, 587}) {
+	if !IntInSlice(config.SMTPPort, []int{25, 465, 587}) {
 		log.Println("[WARNING][Config] SMTP Port is not a default port!")
 	}
 
@@ -23,9 +23,9 @@ func SendMail(to []string, subject string, body string) error {
 	// Set up authentication information.
 	auth := smtp.PlainAuth(
 		"",
-		AppConfig.Mail.SmtpUser,
-		AppConfig.Mail.SmtpPassword,
-		AppConfig.Mail.SmtpHost,
+		AppConfig.Mail.SMTPUser,
+		AppConfig.Mail.SMTPPassword,
+		AppConfig.Mail.SMTPHost,
 	)
 
 	log.Println("[Mail] Sending mail")
@@ -42,9 +42,9 @@ func SendMail(to []string, subject string, body string) error {
 	// Connect to the server, authenticate, set the sender and recipient,
 	// and send the email all in one step.
 	err := smtp.SendMail(
-		AppConfig.Mail.SmtpHost+":"+strconv.Itoa(AppConfig.Mail.SmtpPort),
+		AppConfig.Mail.SMTPHost+":"+strconv.Itoa(AppConfig.Mail.SMTPPort),
 		auth,
-		AppConfig.Mail.SmtpIdentity,
+		AppConfig.Mail.SMTPIdentity,
 		to,
 		message,
 	)
@@ -59,7 +59,7 @@ func SendMail(to []string, subject string, body string) error {
 // Send a test mail to check if the SMTP connection works!
 func SendTestMail() {
 	err := SendMail(
-		[]string{AppConfig.Mail.SmtpIdentity},
+		[]string{AppConfig.Mail.SMTPIdentity},
 		"WGPlaner Server works",
 		"If you get this mail, it means that the server was started successfully!",
 	)

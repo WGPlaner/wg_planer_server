@@ -28,11 +28,11 @@ type databaseConfig struct {
 
 type mailConfig struct {
 	SendTestMail bool   `toml:"send_testmail"`
-	SmtpPort     int    `toml:"smtp_port"`
-	SmtpHost     string `toml:"smtp_host"`
-	SmtpIdentity string `toml:"smtp_identity"`
-	SmtpUser     string `toml:"smtp_user"`
-	SmtpPassword string `toml:"smtp_password"`
+	SMTPPort     int    `toml:"smtp_port"`
+	SMTPHost     string `toml:"smtp_host"`
+	SMTPIdentity string `toml:"smtp_identity"`
+	SMTPUser     string `toml:"smtp_user"`
+	SMTPPassword string `toml:"smtp_password"`
 }
 
 type appConfigType struct {
