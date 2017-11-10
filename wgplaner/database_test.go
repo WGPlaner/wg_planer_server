@@ -10,7 +10,6 @@ func TestValidateDriverConfig(t *testing.T) {
 
 	invalidConfig.Driver = "INVALID"
 	if errs := ValidateDriverConfig(invalidConfig); len(errs.errors) != 1 {
-		t.Error("Validation should exist after invalid driver check!")
+		t.Error("Validation should exit after invalid driver check!")
 	}
-
 }
