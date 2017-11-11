@@ -40,7 +40,7 @@ install:
   - ps: New-Item -ItemType "directory" -Name "gen"
   - C:\swagger.exe version
   - C:\swagger.exe generate server -t gen -f .\swagger.yml --exclude-main -A wgplaner
-  - go get -v
+  - go get -v .\cmd\wgplaner-api
 
 build_script:
   - echo %APPVEYOR_BUILD_FOLDER%

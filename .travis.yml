@@ -13,7 +13,7 @@ before_install:
   - mkdir gen
   - swagger version
   - swagger generate server -t gen -f swagger.yml --exclude-main -A wgplaner
-  - go get -v
+  - go get -v ./cmd/wgplaner-api
 
 script:
   - go tool vet .
