@@ -94,5 +94,6 @@ func syncDatabaseTables(engine *xorm.Engine) error {
 	return engine.Sync(
 		&models.User{},
 		&models.Group{},
+		&models.GroupCode{},
 	)
 }

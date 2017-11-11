@@ -1,6 +1,9 @@
 package wgplaner
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestStringInSlice(t *testing.T) {
 	strings := []string{"Hello", "World", "!", "This", "is", "a", "test"}
@@ -24,5 +27,17 @@ func TestIntInSlice(t *testing.T) {
 	}
 	if IntInSlice(0, ints) != false && IntInSlice(100, ints) != false {
 		t.Error("Expected false")
+	}
+}
+
+func TestRandomAlphaNumCode(t *testing.T) {
+	if str := RandomAlphaNumCode(10, false); len(str) != 10 {
+		t.Error("Length should be as specified")
+	}
+	if str := RandomAlphaNumCode(10, true); len(str) != 10 {
+		t.Error("Length should be as specified")
+	}
+	if str := RandomAlphaNumCode(10, true); str != strings.ToUpper(str) {
+		t.Error("Only uppercase must only contain uppercase letters")
 	}
 }

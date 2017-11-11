@@ -2,6 +2,8 @@ package main
 
 import (
 	"log"
+	"math/rand"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
@@ -24,6 +26,7 @@ func initializeControllers(api *operations.WgplanerAPI) {
 	api.InfoGetLatestVersionHandler = info.GetLatestVersionHandlerFunc(controllers.GetVersionInfo)
 	api.GroupCreateGroupHandler = group.CreateGroupHandlerFunc(controllers.CreateGroup)
 	api.GroupGetGroupHandler = group.GetGroupHandlerFunc(controllers.GetGroup)
+	api.GroupCreateGroupCodeHandler = group.CreateGroupCodeHandlerFunc(controllers.CreateGroupCode)
 	api.UserCreateUserHandler = user.CreateUserHandlerFunc(controllers.CreateUser)
 	api.UserGetUserHandler = user.GetUserHandlerFunc(controllers.GetUser)
 	api.UserGetUserImageHandler = user.GetUserImageHandlerFunc(controllers.GetUserImage)
@@ -55,6 +58,9 @@ func main() {
 	if wgplaner.AppConfig.Mail.SendTestMail {
 		wgplaner.SendTestMail()
 	}
+
+	// Seed the random number generator (needed for group codes)
+	rand.Seed(time.Now().UTC().UnixNano())
 
 	// set the port this service will be run on ---------------------------------
 	server.Port = wgplaner.AppConfig.Server.Port

@@ -1,6 +1,7 @@
 package wgplaner
 
 import (
+	"math/rand"
 	"net/http"
 )
 
@@ -26,4 +27,24 @@ func IsValidJpeg(buf []byte) (bool, string) {
 	mime := http.DetectContentType(buf)
 	isValid := mime == "image/jpeg"
 	return isValid, mime
+}
+
+func RandomAlphaNumCode(length int, onlyUpperCase bool) string {
+	alphaUpper := "ABCDEFGHIJKLMNOPRSTUVWXYZ"
+	alphaLower := "abcdefghiklmnoprstuvwxyz"
+	num := "0123456789"
+	values := alphaUpper + num
+
+	if !onlyUpperCase {
+		values += alphaLower
+	}
+
+	codeStr := ""
+
+	for i := 0; i < length; i++ {
+		j := rand.Intn(len(values))
+		codeStr += string(values[j])
+	}
+
+	return codeStr
 }

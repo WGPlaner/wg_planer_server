@@ -16,6 +16,11 @@ import (
 	"github.com/wgplaner/wg_planer_server/wgplaner"
 )
 
+const (
+	GROUP_CODE_LENGTH     = 9
+	GROUP_CODE_VALID_DAYS = 3
+)
+
 func validateGroup(_ *models.Group) (bool, error) {
 	// TODO
 	return true, nil
@@ -40,6 +45,34 @@ func GetGroup(params group.GetGroupParams, principal interface{}) middleware.Res
 	}
 
 	return group.NewGetGroupOK().WithPayload(&theGroup)
+}
+
+func CreateGroupCode(params group.CreateGroupCodeParams, principal interface{}) middleware.Responder {
+	log.Println("[Group Code][GET] Generate group code!")
+
+	// TODO: Check authorization for user in the group
+
+	groupUid := strfmt.UUID(params.GroupID)
+	code := wgplaner.RandomAlphaNumCode(GROUP_CODE_LENGTH, false)
+	validDateTime := strfmt.DateTime(
+		time.Now().UTC().AddDate(0, 0, GROUP_CODE_VALID_DAYS),
+	)
+
+	groupCode := models.GroupCode{
+		GroupUID:   &groupUid,
+		Code:       &code,
+		ValidUntil: validDateTime,
+	}
+
+	// TODO: Delete old codes
+
+	// Insert new code into database
+	if _, err := wgplaner.OrmEngine.InsertOne(&groupCode); err != nil {
+		log.Println("[Group Code][GET] Database error!", err)
+		return userInternalServerError
+	}
+
+	return group.NewCreateGroupCodeOK().WithPayload(&groupCode)
 }
 
 func CreateGroup(params group.CreateGroupParams, principal interface{}) middleware.Responder {

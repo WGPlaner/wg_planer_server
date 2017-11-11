@@ -50,6 +50,41 @@ paths:
           description: Success
           schema:
             $ref: "#/definitions/VersionInfo"
+  /groups/{groupId}/create-code:
+    get:
+      tags:
+      - group
+      description: Creates and returns a group code. Deletes old codes if they exist.
+      operationId: createGroupCode
+      security:
+        - UserIDAuth: []
+      parameters:
+        - name: groupId
+          in: path
+          description: The internal ID of the group
+          required: true
+          type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "#/definitions/GroupCode"
+        400:
+          description: Invalid groupId
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          description: Unauthroized
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          description: Group not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
   /groups/{groupId}:
     get:
       tags:
@@ -333,6 +368,22 @@ definitions:
         format: date-time
         readOnly: true
       updatedAt:
+        type: string
+        format: date-time
+        readOnly: true
+  GroupCode:
+    required:
+      - groupUid
+      - code
+      - validUntil
+    properties:
+      groupUid:
+        type: string
+        format: uuid
+      code:
+        type: string
+        pattern: '^[A-Z0-9]{9}$'
+      validUntil:
         type: string
         format: date-time
         readOnly: true
