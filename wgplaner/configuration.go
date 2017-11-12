@@ -1,10 +1,11 @@
 package wgplaner
 
 import (
-	"log"
-
 	"github.com/BurntSushi/toml"
+	"github.com/op/go-logging"
 )
+
+var configLog = logging.MustGetLogger("Config")
 
 type serverConfig struct {
 	Port int
@@ -67,21 +68,21 @@ func validateConfiguration(config *appConfigType) ErrorList {
 	return err
 }
 
-func LoadAppConfigurationOrFail() *appConfigType {
+func LoadAppConfigOrFail() *appConfigType {
 	var appConfig = &appConfigType{}
 
 	// Path is relative to executable.
 	if _, err := toml.DecodeFile("config/config.toml", appConfig); err != nil {
-		log.Fatal("[Configuration] Error loading configuration! ", err)
+		configLog.Fatal("Error loading configuration! ", err)
 		return nil
 	}
 
 	if err := validateConfiguration(appConfig); err.HasErrors() {
-		log.Fatal("[Configuration] Error validating configuration: \n" + err.String())
+		configLog.Fatal("Error validating configuration: \n" + err.String())
 		return nil
 	}
 
-	log.Println("[Configuration] Configuration successfully loaded!")
+	configLog.Info("Configuration successfully loaded!")
 
 	return appConfig
 }

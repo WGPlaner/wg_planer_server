@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/mail"
 	"os"
@@ -16,10 +15,13 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/op/go-logging"
 	"github.com/wgplaner/wg_planer_server/gen/models"
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/user"
 	"github.com/wgplaner/wg_planer_server/wgplaner"
 )
+
+var userLog = logging.MustGetLogger("User")
 
 var userInternalServerError = user.NewGetUserDefault(500).WithPayload(&models.ErrorResponse{
 	Message: swag.String("Internal Server error!"),
@@ -40,10 +42,11 @@ func isUserOnFirebase(theUser *models.User) (bool, error) {
 	_, err := wgplaner.FireBaseApp.Auth().GetUser(context.Background(), *theUser.UID)
 
 	if err == firebase.ErrUserNotFound {
-		log.Printf("Can't find firebase user with id \"%s\"!", *theUser.UID)
+		userLog.Debugf(`Can't find firebase user with id "%s"!`, *theUser.UID)
 		return false, nil
+
 	} else if err != nil {
-		log.Println("Firebase SDK Error!", err)
+		userLog.Critical("Firebase SDK Error!", err)
 		return false, err
 	}
 
@@ -66,7 +69,7 @@ func validateUser(theUser *models.User) (bool, error) {
 }
 
 func CreateUser(params user.CreateUserParams, principal interface{}) middleware.Responder {
-	log.Println("[User][POST] Creating User")
+	userLog.Debug("Start creating User")
 
 	theUser := models.User{
 		UID: params.Body.UID,
@@ -74,11 +77,11 @@ func CreateUser(params user.CreateUserParams, principal interface{}) middleware.
 
 	// Check if the user is already registered
 	if isRegistered, err := wgplaner.OrmEngine.Get(&theUser); err != nil {
-		log.Println("[User][POST] Database Error!", err)
+		userLog.Critical("Database Error!", err)
 		return userInternalServerError
 
 	} else if isRegistered {
-		log.Println("[User][POST] User already exists!")
+		userLog.Debug("User already exists!")
 		return user.NewCreateUserOK().WithPayload(&theUser)
 	}
 
@@ -103,16 +106,16 @@ func CreateUser(params user.CreateUserParams, principal interface{}) middleware.
 
 	// Validate user
 	if isValid, err := validateUser(&theUser); !isValid {
-		log.Println("[User][POST] Error validating user!", err)
+		userLog.Debug("Error validating user!", err)
 		return user.NewCreateUserBadRequest().WithPayload(&models.ErrorResponse{
-			Message: swag.String(fmt.Sprintf("invalid user: \"%s\"", err.Error())),
+			Message: swag.String(fmt.Sprintf(`invalid user: "%s"`, err.Error())),
 			Status:  swag.Int64(400),
 		})
 	}
 
 	// Insert new user into database
 	if _, err := wgplaner.OrmEngine.InsertOne(&theUser); err != nil {
-		log.Println("[User][POST] Database error!", err)
+		userLog.Critical("Database error!", err)
 		return userInternalServerError
 	}
 
@@ -120,17 +123,17 @@ func CreateUser(params user.CreateUserParams, principal interface{}) middleware.
 }
 
 func UpdateUser(params user.UpdateUserParams, principal interface{}) middleware.Responder {
-	log.Println("[User][PUT] Creating User")
+	userLog.Debug("Start updating user")
 
 	theUser := models.User{UID: params.Body.UID}
 
 	// Check if the user is already registered
 	if isRegistered, err := wgplaner.OrmEngine.Get(&theUser); err != nil {
-		log.Println("[User][PUT] Database Error!", err)
+		userLog.Critical("Database Error!", err)
 		return userInternalServerError
 
 	} else if !isRegistered {
-		log.Println("[User][PUT] User does not exist!")
+		userLog.Info("User does not exist!")
 		return user.NewUpdateUserDefault(400).WithPayload(&models.ErrorResponse{
 			Message: swag.String("User does not exist!"),
 			Status:  swag.Int64(400),
@@ -158,7 +161,7 @@ func UpdateUser(params user.UpdateUserParams, principal interface{}) middleware.
 
 	// Validate user
 	if isValid, err := validateUser(&theUser); !isValid {
-		log.Println("[User][PUT] Error validating user!", err)
+		userLog.Debug("Error validating user!", err)
 		return user.NewUpdateUserBadRequest().WithPayload(&models.ErrorResponse{
 			Message: swag.String(fmt.Sprintf("Invalid user: \"%s\"", err.Error())),
 			Status:  swag.Int64(400),
@@ -167,7 +170,7 @@ func UpdateUser(params user.UpdateUserParams, principal interface{}) middleware.
 
 	// Insert new user into database
 	if _, err := wgplaner.OrmEngine.Update(&theUser); err != nil {
-		log.Println("[User][PUT] Database error!", err)
+		userLog.Critical("Database error!", err)
 		return userInternalServerError
 	}
 
@@ -189,22 +192,24 @@ func GetUser(params user.GetUserParams, principal interface{}) middleware.Respon
 		GetUser(params.HTTPRequest.Context(), *theUser.UID)
 
 	if err == firebase.ErrUserNotFound {
-		log.Printf("[User][GET] Can't find firebase user with id \"%s\"!", params.UserID)
+		userLog.Debugf(`Can't find firebase user with id "%s"!`, *theUser.UID)
 		return user.NewGetUserUnauthorized().WithPayload(&models.ErrorResponse{
 			Message: swag.String("User not authorized!"),
 			Status:  swag.Int64(401),
 		})
+
 	} else if err != nil {
-		log.Println("[User][GET] Firebase SDK Error!", err)
+		userLog.Critical("Firebase SDK Error!", err)
 		return userInternalServerError
 	}
 
 	// Database
 	if isRegistered, err := wgplaner.OrmEngine.Get(&theUser); err != nil {
-		log.Println("[User][GET] Database Error!", err)
+		userLog.Critical("Database Error!", err)
 		return userInternalServerError
+
 	} else if !isRegistered {
-		log.Printf("[User][GET] Can't find databse user with id \"%s\"!", params.UserID)
+		userLog.Debugf(`Can't find database user with id "%s"!`, params.UserID)
 		return user.NewGetUserNotFound().WithPayload(&models.ErrorResponse{
 			Message: swag.String("User not found on server"),
 			Status:  swag.Int64(http.StatusNotFound),
@@ -223,7 +228,7 @@ func GetUser(params user.GetUserParams, principal interface{}) middleware.Respon
 }
 
 func GetUserImage(params user.GetUserImageParams, principal interface{}) middleware.Responder {
-	log.Println("[Controller][User] Get User Image")
+	userLog.Debug("Get user image")
 
 	// TODO: Check authorization; Check if user exists
 	theUser := models.User{UID: &params.UserID}
@@ -237,7 +242,7 @@ func GetUserImage(params user.GetUserImageParams, principal interface{}) middlew
 	}
 
 	if fileErr != nil {
-		log.Println("[Controller][User] Error getting profile image ", fileErr.Error())
+		userLog.Error("Error getting profile image ", fileErr.Error())
 		return user.NewGetUserImageDefault(http.StatusInternalServerError).
 			WithPayload(&models.ErrorResponse{
 				Message: swag.String("Internal Server Error"),
@@ -249,7 +254,7 @@ func GetUserImage(params user.GetUserImageParams, principal interface{}) middlew
 }
 
 func UpdateUserImage(params user.UpdateUserImageParams, principal interface{}) middleware.Responder {
-	log.Println("[Controller][User] Put User Image")
+	userLog.Debug("Start put user image")
 
 	theUser := models.User{UID: &params.UserID}
 
@@ -261,11 +266,11 @@ func UpdateUserImage(params user.UpdateUserImageParams, principal interface{}) m
 
 	// Database
 	if isRegistered, err := wgplaner.OrmEngine.Get(&theUser); err != nil {
-		log.Println("[User][Put] Image: Database Error!", err)
+		userLog.Critical("Database Error!", err)
 		return userInternalServerError
 
 	} else if !isRegistered {
-		log.Printf("[User][Put] Image: Can't find databse user with id \"%s\"!", params.UserID)
+		userLog.Debugf(`Can't find database user with id "%s"!`, params.UserID)
 		// TODO: Maybe 404?
 		return user.NewUpdateUserImageBadRequest().WithPayload(&models.ErrorResponse{
 			Message: swag.String("Unknown user"),
@@ -290,10 +295,10 @@ func UpdateUserImage(params user.UpdateUserImageParams, principal interface{}) m
 	}
 
 	if isValid, mime := wgplaner.IsValidJpeg(first512Bytes); !isValid {
-		log.Printf("[Controller][User] Put User Image: Invalid mime type %s", mime)
+		userLog.Debugf(`Invalid mime type "%s"`, mime)
 		return user.NewUpdateUserImageBadRequest().WithPayload(&models.ErrorResponse{
 			Message: swag.String(fmt.Sprintf(
-				"Invalid file type. Only image/jpeg allowed. Mime was %s",
+				`Invalid file type. Only "image/jpeg" allowed. Mime was "%s"`,
 				mime,
 			)),
 			Status: swag.Int64(http.StatusBadRequest),
@@ -306,7 +311,7 @@ func UpdateUserImage(params user.UpdateUserImageParams, principal interface{}) m
 
 	// Create directory
 	if dirErr := os.MkdirAll(path.Dir(filePath), 0700); dirErr != nil {
-		log.Println("[Controller][User] Put User Image: Can't create directory ", dirErr.Error())
+		userLog.Error("Can't create directory ", dirErr.Error())
 		return internalError
 	}
 
@@ -315,16 +320,16 @@ func UpdateUserImage(params user.UpdateUserImageParams, principal interface{}) m
 	defer imgFile.Close()
 
 	if err != nil {
-		log.Println("[Controller][User] Put User Image: Can't create new file ", err.Error())
+		userLog.Debug("Can't create new file ", err.Error())
 		return internalError
 
 	} else {
 		if _, err := imgFile.Write(first512Bytes); err != nil {
-			log.Println("[Controller][User] Put User Image: Couldn't write first 512B", err.Error())
+			userLog.Error("Couldn't write first 512Byte", err.Error())
 			return internalError
 		}
 		if _, writeErr := io.Copy(imgFile, params.ProfileImage.Data); writeErr != nil {
-			log.Println("[Controller][User] Put User Image: Can't copy file content ",
+			userLog.Error("Can't copy file content ",
 				writeErr.Error())
 			return internalError
 		}

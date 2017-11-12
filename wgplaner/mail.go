@@ -2,18 +2,21 @@ package wgplaner
 
 import (
 	"fmt"
-	"log"
 	"net/smtp"
 	"strconv"
 	"strings"
 	"time"
+
+	logging "github.com/op/go-logging"
 )
+
+var mailLog = logging.MustGetLogger("Mail")
 
 func ValidateMailConfig(config mailConfig) ErrorList {
 	err := ErrorList{}
 
 	if !IntInSlice(config.SMTPPort, []int{25, 465, 587}) {
-		log.Println("[WARNING][Config] SMTP Port is not a default port!")
+		mailLog.Warning("SMTP Port is not a default port!")
 	}
 
 	return err
@@ -28,7 +31,7 @@ func SendMail(to []string, subject string, body string) error {
 		AppConfig.Mail.SMTPHost,
 	)
 
-	log.Println("[Mail] Sending mail")
+	mailLog.Debug("Start sending mail")
 
 	message := []byte(
 		fmt.Sprintf("Date: %s (UTC)\r\nTo: %s\r\nSubject: %s\r\n\r\n%s",
@@ -50,7 +53,7 @@ func SendMail(to []string, subject string, body string) error {
 	)
 
 	if err == nil {
-		log.Println("[Mail] Successfully sent mail!")
+		mailLog.Info("Successfully sent mail!")
 	}
 
 	return err
@@ -64,6 +67,6 @@ func SendTestMail() {
 		"If you get this mail, it means that the server was started successfully!",
 	)
 	if err != nil {
-		log.Fatalln("[Mail] Sending Test Mail failed! Configure the SMTP server! ", err)
+		mailLog.Fatal("Sending Test Mail failed! Configure the SMTP server! ", err)
 	}
 }

@@ -50,7 +50,7 @@ func main() {
 	defer server.Shutdown()
 
 	// load configuration and initialize ----------------------------------------
-	wgplaner.AppConfig = wgplaner.LoadAppConfigurationOrFail()
+	wgplaner.AppConfig = wgplaner.LoadAppConfigOrFail()
 	wgplaner.OrmEngine = wgplaner.CreateOrmEngine(&wgplaner.AppConfig.Database)
 	wgplaner.FireBaseApp = wgplaner.CreateFirebaseConnection()
 	initializeControllers(api)

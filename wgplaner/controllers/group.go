@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -10,11 +9,14 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/op/go-logging"
 	"github.com/satori/go.uuid"
 	"github.com/wgplaner/wg_planer_server/gen/models"
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/group"
 	"github.com/wgplaner/wg_planer_server/wgplaner"
 )
+
+var groupLog = logging.MustGetLogger("Group")
 
 const (
 	GROUP_CODE_LENGTH     = 9
@@ -28,16 +30,18 @@ func validateGroup(_ *models.Group) (bool, error) {
 
 func GetGroup(params group.GetGroupParams, principal interface{}) middleware.Responder {
 	theGroup := models.Group{UID: strfmt.UUID(params.GroupID)}
+	groupLog.Debugf(`Get group "%s"`, theGroup.UID)
 
 	// TODO: Validate
 	// validateGroup(&theGroup)
 
 	// Database
 	if isRegistered, err := wgplaner.OrmEngine.Get(&theGroup); err != nil {
-		log.Println("[Group][GET] Database Error!", err)
+		groupLog.Critical(`Database Error!`, err)
 		return userInternalServerError
+
 	} else if !isRegistered {
-		log.Printf("[Group][GET] Can't find databse group with id \"%s\"!", theGroup.UID)
+		groupLog.Debugf(`Can't find database group with id "%s"!`, theGroup.UID)
 		return group.NewGetGroupNotFound().WithPayload(&models.ErrorResponse{
 			Message: swag.String("Group not found on server"),
 			Status:  swag.Int64(http.StatusNotFound),
@@ -48,12 +52,12 @@ func GetGroup(params group.GetGroupParams, principal interface{}) middleware.Res
 }
 
 func CreateGroupCode(params group.CreateGroupCodeParams, principal interface{}) middleware.Responder {
-	log.Println("[Group Code][GET] Generate group code!")
+	groupLog.Debug(`Generate group code!`)
 
 	// TODO: Check authorization for user in the group
 
 	groupUid := strfmt.UUID(params.GroupID)
-	code := wgplaner.RandomAlphaNumCode(GROUP_CODE_LENGTH, false)
+	code := wgplaner.RandomAlphaNumCode(GROUP_CODE_LENGTH, true)
 	validDateTime := strfmt.DateTime(
 		time.Now().UTC().AddDate(0, 0, GROUP_CODE_VALID_DAYS),
 	)
@@ -68,7 +72,7 @@ func CreateGroupCode(params group.CreateGroupCodeParams, principal interface{}) 
 
 	// Insert new code into database
 	if _, err := wgplaner.OrmEngine.InsertOne(&groupCode); err != nil {
-		log.Println("[Group Code][GET] Database error!", err)
+		groupLog.Critical("Database error!", err)
 		return userInternalServerError
 	}
 
@@ -76,7 +80,7 @@ func CreateGroupCode(params group.CreateGroupCodeParams, principal interface{}) 
 }
 
 func CreateGroup(params group.CreateGroupParams, principal interface{}) middleware.Responder {
-	log.Println("[Group][POST] Creating group")
+	groupLog.Debug(`Start creating group`)
 
 	theGroup := models.Group{}
 
@@ -101,9 +105,9 @@ func CreateGroup(params group.CreateGroupParams, principal interface{}) middlewa
 
 	// Validate group
 	if isValid, err := validateGroup(&theGroup); !isValid {
-		log.Println("[Group][POST] Error validating user!", err)
+		groupLog.Notice("Error validating user!", err)
 		return group.NewCreateGroupBadRequest().WithPayload(&models.ErrorResponse{
-			Message: swag.String(fmt.Sprintf("Invalid group data: \"%s\"", err.Error())),
+			Message: swag.String(fmt.Sprintf(`Invalid group data: "%s"`, err.Error())),
 			Status:  swag.Int64(400),
 		})
 	}
@@ -112,11 +116,11 @@ func CreateGroup(params group.CreateGroupParams, principal interface{}) middlewa
 
 	// Insert new user into database
 	if _, err := wgplaner.OrmEngine.InsertOne(&theGroup); err != nil {
-		log.Println("[Group][POST] Database error!", err)
+		groupLog.Critical("Database error!", err)
 		return userInternalServerError
 	}
 
-	log.Println("[Group][POST] Created group")
+	groupLog.Infof(`Created group "%s"`, theGroup.UID)
 
 	return group.NewCreateGroupOK().WithPayload(&theGroup)
 }
