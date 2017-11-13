@@ -7,8 +7,8 @@
 To generate the go API, install `go-swagger`.
 
 ```bash
-go get -u github.com/go-swagger/go-swagger
-go install github.com/go-swagger/go-swagger
+go get -u github.com/go-swagger/go-swagger/cmd/swagger
+go install github.com/go-swagger/go-swagger/cmd/swagger
 ```
 
 Then run:
