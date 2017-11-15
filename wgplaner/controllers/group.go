@@ -23,9 +23,47 @@ const (
 	GROUP_CODE_VALID_DAYS = 3
 )
 
+type groupErrorCode int
+
+type groupError struct {
+	code groupErrorCode
+	msg  string
+}
+
+func (err *groupError) Error() string {
+	return err.msg
+}
+
+func (err *groupError) Code() groupErrorCode {
+	return err.code
+}
+
+func (err *groupError) is(code groupErrorCode) bool {
+	return err.code == code
+}
+
+const (
+	ERR_GROUP_NOT_FOUND groupErrorCode = iota
+	ERR_GROUP_USER_NOT_AUTHORIZED
+	ERR_GROUP_CODE_EXPIRED
+	ERR_GROUP_CODE_INVALID
+)
+
+var (
+	errGroupNotFound          = groupError{ERR_GROUP_NOT_FOUND, "Group not found"}
+	errGroupCodeInvalid       = groupError{ERR_GROUP_CODE_INVALID, "Invalid group code"}
+	errGroupCodeExpired       = groupError{ERR_GROUP_CODE_EXPIRED, "Group code expired"}
+	errGroupUserNotAuthorized = groupError{ERR_GROUP_USER_NOT_AUTHORIZED, "User not authorized"}
+)
+
 func validateGroup(_ *models.Group) (bool, error) {
 	// TODO
 	return true, nil
+}
+
+func joinGroupWithCode(theUser *models.User, groupCode string) (*models.Group, *groupError) {
+	// TODO
+	return &models.Group{}, &errGroupCodeInvalid
 }
 
 func GetGroup(params group.GetGroupParams, principal interface{}) middleware.Responder {
@@ -123,4 +161,56 @@ func CreateGroup(params group.CreateGroupParams, principal interface{}) middlewa
 	groupLog.Infof(`Created group "%s"`, theGroup.UID)
 
 	return group.NewCreateGroupOK().WithPayload(&theGroup)
+}
+
+func JoinGroup(params group.JoinGroupParams, principal interface{}) middleware.Responder {
+	// TODO: Acutally Implement This
+
+	theUser := principal.(models.User)
+	theGroup, err := joinGroupWithCode(&theUser, params.GroupCode)
+
+	if err != nil {
+		return group.NewJoinGroupOK().WithPayload(theGroup)
+	}
+
+	switch err.Code() {
+	case ERR_GROUP_CODE_EXPIRED:
+		groupLog.Debugf(`Group code "%s" expired`, params.GroupCode)
+		return group.NewJoinGroupDefault(http.StatusBadRequest).
+			WithPayload(&models.ErrorResponse{
+				Message: swag.String(err.Error()),
+				Status:  swag.Int64(http.StatusBadRequest),
+			})
+
+	case ERR_GROUP_CODE_INVALID:
+		groupLog.Debugf(`Invalid group code "%s"`, params.GroupCode)
+		return group.NewJoinGroupDefault(http.StatusInternalServerError).
+			WithPayload(&models.ErrorResponse{
+				Message: swag.String(err.Error()),
+				Status:  swag.Int64(http.StatusInternalServerError),
+			})
+
+	case ERR_GROUP_NOT_FOUND:
+		groupLog.Debugf(`Group was deleted but the code "%s" is still valid: %s`,
+			params.GroupCode, err.Error())
+		// TODO: This should not happen
+		return group.NewJoinGroupDefault(http.StatusNotFound).
+			WithPayload(&models.ErrorResponse{
+				Message: swag.String(err.Error()),
+				Status:  swag.Int64(http.StatusNotFound),
+			})
+
+	default:
+		groupLog.Error(`Unknown Internal Server Error`, err)
+		return group.NewJoinGroupDefault(http.StatusInternalServerError).
+			WithPayload(&models.ErrorResponse{
+				Message: swag.String("Unknown Server Error"),
+				Status:  swag.Int64(http.StatusInternalServerError),
+			})
+	}
+
+}
+
+func LeaveGroup(params group.LeaveGroupParams, principal interface{}) middleware.Responder {
+	return group.NewLeaveGroupDefault(501)
 }

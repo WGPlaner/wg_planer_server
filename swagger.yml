@@ -85,6 +85,30 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResponse"
+  /groups/join/{groupCode}:
+    get:
+      tags:
+      - group
+      description: The authenticated user joins a group through "groupCode"
+      operationId: joinGroup
+      security:
+        - UserIDAuth: []
+      parameters:
+        - name: groupCode
+          in: path
+          description: The internal ID of the group
+          required: true
+          type: string
+          pattern: '^[A-Z0-9]{9}$'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "#/definitions/Group"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
   /groups/{groupId}:
     get:
       tags:
@@ -112,6 +136,23 @@ paths:
           description: Group not found
           schema:
             $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /groups/leave:
+    post:
+      tags:
+      - group
+      description: The authenticated user leaves his group
+      operationId: leaveGroup
+      security:
+        - UserIDAuth: []
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "#/definitions/Group"
         default:
           description: Error
           schema:
