@@ -20,7 +20,7 @@ func UserIDAuth(token string) (interface{}, error) {
 
 	} else if !isRegistered {
 		authLog.Debugf(`Unauthorized database user "%s"`, *theUser.UID)
-		return nil, errors.Unauthenticated("invalid credentials")
+		return nil, errors.Unauthenticated("invalid credentials (wgplaner account)")
 	}
 
 	return theUser, nil
@@ -36,7 +36,7 @@ func FirebaseIDAuth(token string) (interface{}, error) {
 
 	} else if !isRegistered {
 		authLog.Debugf(`Unauthorized firebase user "%s"`, *theUser.UID)
-		return nil, errors.Unauthenticated("invalid credentials")
+		return nil, errors.Unauthenticated("invalid credentials (firebase account)")
 	}
 
 	return theUser, nil
