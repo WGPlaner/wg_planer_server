@@ -44,12 +44,14 @@ func (err *groupError) is(code groupErrorCode) bool {
 
 const (
 	ERR_GROUP_NOT_FOUND groupErrorCode = iota
+	ERR_GROUP_DATABASE
 	ERR_GROUP_USER_NOT_AUTHORIZED
 	ERR_GROUP_CODE_EXPIRED
 	ERR_GROUP_CODE_INVALID
 )
 
 var (
+	errGroupDatabase          = groupError{ERR_GROUP_DATABASE, "Internal Database Error"}
 	errGroupNotFound          = groupError{ERR_GROUP_NOT_FOUND, "Group not found"}
 	errGroupCodeInvalid       = groupError{ERR_GROUP_CODE_INVALID, "Invalid group code"}
 	errGroupCodeExpired       = groupError{ERR_GROUP_CODE_EXPIRED, "Group code expired"}
@@ -62,8 +64,26 @@ func validateGroup(_ *models.Group) (bool, error) {
 }
 
 func joinGroupWithCode(theUser *models.User, groupCode string) (*models.Group, *groupError) {
-	// TODO
-	return &models.Group{}, &errGroupCodeInvalid
+	theCode := models.GroupCode{Code: swag.String(groupCode)}
+
+	if keyExists, err := wgplaner.OrmEngine.Get(&theCode); err != nil {
+		groupLog.Critical(`Database Error!`, err)
+		return nil, &errGroupDatabase
+
+	} else if !keyExists {
+		groupLog.Debugf(`Can't find database group code with id "%s"!`, groupCode)
+		return nil, &errGroupCodeInvalid
+	}
+
+	if time.Now().After(time.Time(theCode.ValidUntil)) {
+		return nil, &errGroupCodeExpired
+	}
+
+	// TODO: Check group
+
+	return &models.Group{
+		UID: *theCode.GroupUID,
+	}, &errGroupNotFound
 }
 
 func GetGroup(params group.GetGroupParams, principal interface{}) middleware.Responder {
