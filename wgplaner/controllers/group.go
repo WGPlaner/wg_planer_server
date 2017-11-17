@@ -47,6 +47,7 @@ var (
 	errGroupUserNotAuthorized = &groupError{3001, "User not authorized"}
 	errGroupCodeInvalid       = &groupError{4001, "Invalid group code"}
 	errGroupCodeExpired       = &groupError{4002, "Group code expired"}
+	errGroupInternalError     = &groupError{5000, "Internal Server Error"}
 )
 
 func validateGroup(_ *models.Group) (bool, error) {
@@ -54,42 +55,94 @@ func validateGroup(_ *models.Group) (bool, error) {
 	return true, nil
 }
 
+// Validate the given group UUID. This means checking if the UUID is valid and the group exists.
 func validateGroupUuid(groupUid strfmt.UUID) *groupError {
-	groupExists, err := wgplaner.OrmEngine.Get(&models.Group{UID: groupUid})
+	if strfmt.IsUUID(string(groupUid)) {
+		return errGroupInvalidUUID
+	}
+
+	groupExists, err := wgplaner.OrmEngine.Exist(&models.Group{UID: groupUid})
 
 	if err != nil {
-		groupLog.Critical(`Database Error!`, err)
+		groupLog.Critical(`Database Error querying group!`, err)
 		return errGroupDatabase
 
 	} else if !groupExists {
 		return errGroupNotFound
-
-	} else {
-		return nil
 	}
+
+	return nil
 }
 
-func joinGroupWithCode(theUser *models.User, groupCode string) (*models.Group, *groupError) {
-	theCode := models.GroupCode{Code: swag.String(groupCode)}
-
-	if keyExists, err := wgplaner.OrmEngine.Get(&theCode); err != nil {
-		groupLog.Critical(`Database Error!`, err)
-		return nil, errGroupDatabase
+// Validate the given group code model. Checks if the code is valid.
+// Queries the database. "theCode" will be updated.
+func validateGroupCode(theCode *models.GroupCode) *groupError {
+	if keyExists, err := wgplaner.OrmEngine.Get(theCode); err != nil {
+		groupLog.Critical(`Database Error querying group code!`, err)
+		return errGroupDatabase
 
 	} else if !keyExists {
-		groupLog.Debugf(`Can't find database group code with id "%s"!`, groupCode)
-		return nil, errGroupCodeInvalid
+		groupLog.Debugf(`Can't find database group code with id "%s"!`, theCode.Code)
+		return errGroupCodeInvalid
 	}
 
 	if time.Now().After(time.Time(theCode.ValidUntil)) {
-		return nil, errGroupCodeExpired
+		return errGroupCodeExpired
 	}
 
-	// TODO: Check group
+	return nil
+}
 
-	return &models.Group{
-		UID: *theCode.GroupUID,
-	}, errGroupNotFound
+// Add "member" to the member-field of group. Loads the group from the database
+// and updates it.
+func groupAddMember(theGroup *models.Group, member models.User) *groupError {
+	// Get the group
+	if exists, err := wgplaner.OrmEngine.Get(theGroup); err != nil {
+		groupLog.Critical("Database error querying group!", err)
+		return errGroupDatabase
+
+	} else if !exists {
+		groupLog.Critical(`Group to join not found!`)
+		return errGroupNotFound
+	}
+
+	theGroup.Members = wgplaner.AppendUniqueString(theGroup.Members, *member.UID)
+
+	// Update the group
+	if _, err := wgplaner.OrmEngine.Update(theGroup); err != nil {
+		groupLog.Critical("Database error updating the group!", err)
+		return errGroupDatabase
+	}
+
+	return nil
+}
+
+func joinGroupWithCode(theUser *models.User, groupCode string) (*models.Group, *groupError) {
+	groupLog.Debugf(`User "%s" joins a group with code "%s"`, *theUser.UID, groupCode)
+	theCode := models.GroupCode{Code: swag.String(groupCode)}
+
+	// Check the code and get the group uid
+	if err := validateGroupCode(&theCode); err != nil {
+		return nil, err
+	}
+
+	// TODO: Check group (if it exists)
+
+	// user joins the group.
+	theUser.GroupUID = *theCode.GroupUID
+	if _, err := wgplaner.OrmEngine.Update(theUser); err != nil {
+		groupLog.Critical("Database error updating user!", err, theUser)
+		return nil, errGroupDatabase
+	}
+
+	// user is added to group
+	// TODO: This should not be necessary; members should be read dynamically
+	theGroup := models.Group{UID: *theCode.GroupUID}
+	if err := groupAddMember(&theGroup, *theUser); err != nil {
+		return nil, errGroupInternalError
+	}
+
+	return &theGroup, nil
 }
 
 func GetGroup(params group.GetGroupParams, principal interface{}) middleware.Responder {
@@ -223,12 +276,10 @@ func CreateGroup(params group.CreateGroupParams, principal interface{}) middlewa
 }
 
 func JoinGroup(params group.JoinGroupParams, principal interface{}) middleware.Responder {
-	// TODO: Acutally Implement This
-
 	theUser := principal.(models.User)
 	theGroup, err := joinGroupWithCode(&theUser, params.GroupCode)
 
-	if err != nil {
+	if err == nil {
 		return group.NewJoinGroupOK().WithPayload(theGroup)
 	}
 
@@ -260,7 +311,7 @@ func JoinGroup(params group.JoinGroupParams, principal interface{}) middleware.R
 			})
 
 	default:
-		groupLog.Error(`Unknown Internal Server Error`, err)
+		groupLog.Error(`Unknown Internal Server Error: `, err)
 		return group.NewJoinGroupDefault(http.StatusInternalServerError).
 			WithPayload(&models.ErrorResponse{
 				Message: swag.String("Unknown Server Error"),
