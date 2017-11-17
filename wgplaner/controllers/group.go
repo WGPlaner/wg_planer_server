@@ -58,7 +58,8 @@ func validateGroup(_ *models.Group) (bool, error) {
 
 // Validate the given group UUID. This means checking if the UUID is valid and the group exists.
 func validateGroupUuid(groupUid strfmt.UUID) *groupError {
-	if strfmt.IsUUID(string(groupUid)) {
+	if !strfmt.IsUUID(string(groupUid)) {
+		groupLog.Debugf(`Invalid group ID pattern "%s"!`, groupUid)
 		return errGroupInvalidUUID
 	}
 
@@ -188,7 +189,7 @@ func CreateGroupCode(params group.CreateGroupCodeParams, principal interface{}) 
 	groupUid := strfmt.UUID(params.GroupID)
 
 	if err := validateGroupUuid(groupUid); err != nil {
-		groupLog.Debugf(`Error validating group "%s"`, params.GroupID)
+		groupLog.Debugf(`Error validating group "%s": "%s"`, params.GroupID, err.Error())
 		return group.NewCreateGroupBadRequest().WithPayload(&models.ErrorResponse{
 			Message: swag.String(err.Error()),
 			Status:  swag.Int64(http.StatusBadRequest),
