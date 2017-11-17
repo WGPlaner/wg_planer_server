@@ -22,7 +22,7 @@ swagger generate server -t gen -f swagger.yml --exclude-main -A wgplaner
 To build `wg_planer_server` run:
 
 ```bash
-go build -o "build/wg_planer_server" main.go
+go build -v -o "build/wg_planer_server" ./cmd/wgplaner-api/wgplaner-api.go
 ```
 
 ### Client Library
