@@ -40,24 +40,13 @@ func (err *groupError) Code() groupErrorCode {
 	return err.code
 }
 
-func (err *groupError) is(code groupErrorCode) bool {
-	return err.code == code
-}
-
-const (
-	ERR_GROUP_NOT_FOUND groupErrorCode = iota
-	ERR_GROUP_DATABASE
-	ERR_GROUP_USER_NOT_AUTHORIZED
-	ERR_GROUP_CODE_EXPIRED
-	ERR_GROUP_CODE_INVALID
-)
-
 var (
-	errGroupDatabase          = groupError{ERR_GROUP_DATABASE, "Internal Database Error"}
-	errGroupNotFound          = groupError{ERR_GROUP_NOT_FOUND, "Group not found"}
-	errGroupCodeInvalid       = groupError{ERR_GROUP_CODE_INVALID, "Invalid group code"}
-	errGroupCodeExpired       = groupError{ERR_GROUP_CODE_EXPIRED, "Group code expired"}
-	errGroupUserNotAuthorized = groupError{ERR_GROUP_USER_NOT_AUTHORIZED, "User not authorized"}
+	errGroupDatabase          = &groupError{1001, "Internal Database Error"}
+	errGroupInvalidUUID       = &groupError{2001, "Group UUID invalid"}
+	errGroupNotFound          = &groupError{2004, "Group not found"}
+	errGroupUserNotAuthorized = &groupError{3001, "User not authorized"}
+	errGroupCodeInvalid       = &groupError{4001, "Invalid group code"}
+	errGroupCodeExpired       = &groupError{4002, "Group code expired"}
 )
 
 func validateGroup(_ *models.Group) (bool, error) {
@@ -70,22 +59,22 @@ func joinGroupWithCode(theUser *models.User, groupCode string) (*models.Group, *
 
 	if keyExists, err := wgplaner.OrmEngine.Get(&theCode); err != nil {
 		groupLog.Critical(`Database Error!`, err)
-		return nil, &errGroupDatabase
+		return nil, errGroupDatabase
 
 	} else if !keyExists {
 		groupLog.Debugf(`Can't find database group code with id "%s"!`, groupCode)
-		return nil, &errGroupCodeInvalid
+		return nil, errGroupCodeInvalid
 	}
 
 	if time.Now().After(time.Time(theCode.ValidUntil)) {
-		return nil, &errGroupCodeExpired
+		return nil, errGroupCodeExpired
 	}
 
 	// TODO: Check group
 
 	return &models.Group{
 		UID: *theCode.GroupUID,
-	}, &errGroupNotFound
+	}, errGroupNotFound
 }
 
 func GetGroup(params group.GetGroupParams, principal interface{}) middleware.Responder {
@@ -201,8 +190,8 @@ func JoinGroup(params group.JoinGroupParams, principal interface{}) middleware.R
 		return group.NewJoinGroupOK().WithPayload(theGroup)
 	}
 
-	switch err.Code() {
-	case ERR_GROUP_CODE_EXPIRED:
+	switch err {
+	case errGroupCodeExpired:
 		groupLog.Debugf(`Group code "%s" expired`, params.GroupCode)
 		return group.NewJoinGroupDefault(http.StatusBadRequest).
 			WithPayload(&models.ErrorResponse{
@@ -210,7 +199,7 @@ func JoinGroup(params group.JoinGroupParams, principal interface{}) middleware.R
 				Status:  swag.Int64(http.StatusBadRequest),
 			})
 
-	case ERR_GROUP_CODE_INVALID:
+	case errGroupCodeInvalid:
 		groupLog.Debugf(`Invalid group code "%s"`, params.GroupCode)
 		return group.NewJoinGroupDefault(http.StatusInternalServerError).
 			WithPayload(&models.ErrorResponse{
@@ -218,7 +207,7 @@ func JoinGroup(params group.JoinGroupParams, principal interface{}) middleware.R
 				Status:  swag.Int64(http.StatusInternalServerError),
 			})
 
-	case ERR_GROUP_NOT_FOUND:
+	case errGroupNotFound:
 		groupLog.Debugf(`Group was deleted but the code "%s" is still valid: %s`,
 			params.GroupCode, err.Error())
 		// TODO: This should not happen
