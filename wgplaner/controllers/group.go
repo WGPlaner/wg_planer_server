@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"bytes"
 	"fmt"
+	"html/template"
 	"net/http"
 	"strings"
 	"time"
@@ -239,15 +241,19 @@ func JoinGroup(params group.JoinGroupParams, principal interface{}) middleware.R
 
 func JoinGroupHelp(params group.JoinGroupHelpParams) middleware.Responder {
 	groupLog.Debug(`Get help site for joining group`)
-	return group.NewJoinGroupHelpOK().WithPayload(`<!DOCTYPE html>
-<html>
-	<head>
-		<title>Join Group</title>
-	</head>
-	<body>
-		not implemented yet
-	</body>
-</html>`)
+
+	var (
+		templ   = template.Must(template.ParseFiles("./views/group_code.html"))
+		buf     = bytes.NewBuffer([]byte{})
+		content = map[string]string{"GroupCode": params.GroupCode}
+	)
+
+	if err := templ.Execute(buf, content); err != nil {
+		groupLog.Error(`Can't execute template'`, err)
+		return group.NewJoinGroupHelpOK().WithPayload("Error")
+	}
+
+	return group.NewJoinGroupHelpOK().WithPayload(buf.String())
 }
 
 func LeaveGroup(params group.LeaveGroupParams, principal interface{}) middleware.Responder {
