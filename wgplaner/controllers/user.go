@@ -70,7 +70,7 @@ func validateUser(theUser *models.User) (bool, error) {
 }
 
 func CreateUser(params user.CreateUserParams, principal interface{}) middleware.Responder {
-	userLog.Debug("Start creating User")
+	userLog.Debugf(`Start creating User "%s"`, *params.Body.UID)
 
 	theUser := models.User{
 		UID: params.Body.UID,
@@ -190,6 +190,8 @@ func UpdateUser(params user.UpdateUserParams, principal interface{}) middleware.
 }
 
 func GetUser(params user.GetUserParams, principal interface{}) middleware.Responder {
+	userLog.Debugf(`Get user "%s"`, params.UserID)
+
 	theUser := models.User{UID: &params.UserID}
 
 	if isValid := isValidUserID(theUser.UID); !isValid {
