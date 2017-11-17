@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	logging "github.com/op/go-logging"
+	"github.com/op/go-logging"
 )
 
 var mailLog = logging.MustGetLogger("Mail")

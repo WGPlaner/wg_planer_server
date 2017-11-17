@@ -7,12 +7,6 @@ import (
 	"math/rand"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/lib/pq"
-	_ "github.com/mattn/go-sqlite3"
-
-	"github.com/go-openapi/loads"
-	"github.com/go-openapi/runtime"
 	"github.com/wgplaner/wg_planer_server/gen/restapi"
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations"
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/group"
@@ -20,6 +14,12 @@ import (
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/user"
 	"github.com/wgplaner/wg_planer_server/wgplaner"
 	"github.com/wgplaner/wg_planer_server/wgplaner/controllers"
+
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func initializeControllers(api *operations.WgplanerAPI) {

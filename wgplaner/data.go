@@ -4,8 +4,9 @@ import (
 	"os"
 	"path"
 
-	"github.com/go-openapi/swag"
 	"github.com/wgplaner/wg_planer_server/gen/models"
+
+	"github.com/go-openapi/swag"
 )
 
 func ValidateDataConfig(config dataConfig) ErrorList {

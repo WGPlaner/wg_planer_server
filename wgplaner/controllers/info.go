@@ -1,10 +1,11 @@
 package controllers
 
 import (
-	"github.com/go-openapi/runtime/middleware"
-	"github.com/op/go-logging"
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/info"
 	"github.com/wgplaner/wg_planer_server/wgplaner"
+
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/op/go-logging"
 )
 
 var infoLog = logging.MustGetLogger("Info")

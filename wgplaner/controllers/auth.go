@@ -3,9 +3,10 @@ package controllers
 import (
 	"net/http"
 
+	"github.com/wgplaner/wg_planer_server/gen/models"
+
 	"github.com/go-openapi/errors"
 	"github.com/op/go-logging"
-	"github.com/wgplaner/wg_planer_server/gen/models"
 )
 
 var authLog = logging.MustGetLogger("Auth")

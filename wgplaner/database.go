@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/wgplaner/wg_planer_server/gen/models"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/core"
 	"github.com/go-xorm/xorm"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/wgplaner/wg_planer_server/gen/models"
 )
 
 const (
