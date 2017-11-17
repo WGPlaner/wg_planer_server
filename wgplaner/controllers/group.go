@@ -168,21 +168,28 @@ func CreateGroupCode(params group.CreateGroupCodeParams, principal interface{}) 
 func CreateGroup(params group.CreateGroupParams, principal interface{}) middleware.Responder {
 	groupLog.Debug(`Start creating group`)
 
-	theGroup := models.Group{}
-
 	// Create new group
-	displayName := strings.TrimSpace(swag.StringValue(params.Body.DisplayName))
-	creationTime := strfmt.DateTime(time.Now().UTC())
-	currency := strings.TrimSpace(params.Body.Currency)
+	var (
+		displayName  = strings.TrimSpace(swag.StringValue(params.Body.DisplayName))
+		creationTime = strfmt.DateTime(time.Now().UTC())
+		currency     = strings.TrimSpace(params.Body.Currency)
+	)
 
 	if currency == "" {
 		currency = "€"
 	}
 
-	theGroup = models.Group{
-		UID:         strfmt.UUID(uuid.NewV4().String()),
-		Admins:      []string{*principal.(models.User).UID},
-		Members:     []string{*principal.(models.User).UID},
+	newGroupUid := strfmt.UUID(uuid.NewV4().String())
+
+	theUser := models.User{
+		UID:      principal.(models.User).UID,
+		GroupUID: newGroupUid,
+	}
+
+	theGroup := models.Group{
+		UID:         newGroupUid,
+		Admins:      []string{*theUser.UID},
+		Members:     []string{*theUser.UID},
 		DisplayName: &displayName,
 		Currency:    currency,
 		CreatedAt:   creationTime,
@@ -199,6 +206,10 @@ func CreateGroup(params group.CreateGroupParams, principal interface{}) middlewa
 	}
 
 	// TODO: Check if user has already a group
+	if _, err := wgplaner.OrmEngine.Update(&theUser); err != nil {
+		groupLog.Critical("Database error!", err)
+		return userInternalServerError
+	}
 
 	// Insert new user into database
 	if _, err := wgplaner.OrmEngine.InsertOne(&theGroup); err != nil {
