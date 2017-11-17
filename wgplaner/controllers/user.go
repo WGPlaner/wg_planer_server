@@ -129,7 +129,7 @@ func CreateUser(params user.CreateUserParams, principal interface{}) middleware.
 		return userInternalServerError
 	}
 
-	userLog.Infof(`Created user "%s"`, theUser.UID)
+	userLog.Infof(`Created user "%s"`, *theUser.UID)
 
 	return user.NewCreateUserOK().WithPayload(&theUser)
 }
@@ -145,7 +145,7 @@ func UpdateUser(params user.UpdateUserParams, principal interface{}) middleware.
 		return userInternalServerError
 
 	} else if !isRegistered {
-		userLog.Info("User does not exist!")
+		userLog.Infof(`User "%s" does not exist!`, *theUser.UID)
 		return user.NewUpdateUserDefault(400).WithPayload(&models.ErrorResponse{
 			Message: swag.String("User does not exist!"),
 			Status:  swag.Int64(400),
