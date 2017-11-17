@@ -110,23 +110,29 @@ func GetGroup(params group.GetGroupParams, principal interface{}) middleware.Res
 }
 
 func CreateGroupCode(params group.CreateGroupCodeParams, principal interface{}) middleware.Responder {
-	groupLog.Debug(`Generate group code!`)
+	groupLog.Debugf(`Generate group code for group "%s"!`, params.GroupID)
 
 	// TODO: Check authorization for user in the group
 
-	groupUid := strfmt.UUID(params.GroupID)
-	code := wgplaner.RandomAlphaNumCode(GROUP_CODE_LENGTH, true)
-	validDateTime := strfmt.DateTime(
-		time.Now().UTC().AddDate(0, 0, GROUP_CODE_VALID_DAYS),
+	var (
+		groupUid   = strfmt.UUID(params.GroupID)
+		code       = wgplaner.RandomAlphaNumCode(GROUP_CODE_LENGTH, true)
+		validUntil = time.Now().UTC().AddDate(0, 0, GROUP_CODE_VALID_DAYS)
 	)
 
 	groupCode := models.GroupCode{
 		GroupUID:   &groupUid,
 		Code:       &code,
-		ValidUntil: validDateTime,
+		ValidUntil: strfmt.DateTime(validUntil),
 	}
 
-	// TODO: Delete old codes
+	// Set valid-until date of old codes to just now. This makes only the latest code valid.
+	oldCodes := models.GroupCode{ValidUntil: strfmt.DateTime(time.Now().UTC())}
+	_, err := wgplaner.OrmEngine.Where("group_u_i_d = ?", groupUid).Update(&oldCodes)
+	if err != nil {
+		groupLog.Errorf(`Can't update validUntil date of other (old) codes for group "%s"'; Err: "%s"`,
+			params.GroupID, err)
+	}
 
 	// Insert new code into database
 	if _, err := wgplaner.OrmEngine.InsertOne(&groupCode); err != nil {
