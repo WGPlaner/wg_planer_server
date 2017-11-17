@@ -90,16 +90,35 @@ paths:
       tags:
       - group
       description: The authenticated user joins a group through "groupCode"
+      operationId: joinGroupHelp
+      produces:
+        - text/html
+      parameters:
+        - name: groupCode
+          in: path
+          description: Group join code
+          required: true
+          type: string
+          pattern: '^[A-Z0-9]{12}$'
+      responses:
+        200:
+          description: Success
+          schema:
+            type: string
+    post:
+      tags:
+      - group
+      description: The authenticated user joins a group through "groupCode"
       operationId: joinGroup
       security:
         - UserIDAuth: []
       parameters:
         - name: groupCode
           in: path
-          description: The internal ID of the group
+          description: Group join code
           required: true
           type: string
-          pattern: '^[A-Z0-9]{9}$'
+          pattern: '^[A-Z0-9]{12}$'
       responses:
         200:
           description: Success
@@ -423,7 +442,7 @@ definitions:
         format: uuid
       code:
         type: string
-        pattern: '^[A-Z0-9]{9}$'
+        pattern: '^[A-Z0-9]{12}$'
       validUntil:
         type: string
         format: date-time

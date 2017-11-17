@@ -19,7 +19,7 @@ import (
 var groupLog = logging.MustGetLogger("Group")
 
 const (
-	GROUP_CODE_LENGTH     = 9
+	GROUP_CODE_LENGTH     = 12
 	GROUP_CODE_VALID_DAYS = 3
 )
 
@@ -235,6 +235,19 @@ func JoinGroup(params group.JoinGroupParams, principal interface{}) middleware.R
 			})
 	}
 
+}
+
+func JoinGroupHelp(params group.JoinGroupHelpParams) middleware.Responder {
+	groupLog.Debug(`Get help site for joining group`)
+	return group.NewJoinGroupHelpOK().WithPayload(`<!DOCTYPE html>
+<html>
+	<head>
+		<title>Join Group</title>
+	</head>
+	<body>
+		not implemented yet
+	</body>
+</html>`)
 }
 
 func LeaveGroup(params group.LeaveGroupParams, principal interface{}) middleware.Responder {

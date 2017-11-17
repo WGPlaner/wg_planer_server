@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+	"io"
 	"log"
 	"math/rand"
 	"time"
@@ -10,6 +12,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 
 	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
 	"github.com/wgplaner/wg_planer_server/gen/restapi"
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations"
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/group"
@@ -20,14 +23,27 @@ import (
 )
 
 func initializeControllers(api *operations.WgplanerAPI) {
+	// Producers
+	api.HTMLProducer = runtime.ProducerFunc(func(writer io.Writer, data interface{}) error {
+		if html, ok := data.(string); !ok {
+			return errors.New("Error in HTML Producer")
+		} else {
+			_, err := writer.Write([]byte(html))
+			return err
+		}
+	})
+
+	// Authentication
 	api.UserIDAuthAuth = controllers.UserIDAuth
 	api.FirebaseIDAuthAuth = controllers.FirebaseIDAuth
+
 	// Create API handlers
 	api.InfoGetLatestVersionHandler = info.GetLatestVersionHandlerFunc(controllers.GetVersionInfo)
 	api.GroupCreateGroupHandler = group.CreateGroupHandlerFunc(controllers.CreateGroup)
 	api.GroupGetGroupHandler = group.GetGroupHandlerFunc(controllers.GetGroup)
 	api.GroupCreateGroupCodeHandler = group.CreateGroupCodeHandlerFunc(controllers.CreateGroupCode)
 	api.GroupJoinGroupHandler = group.JoinGroupHandlerFunc(controllers.JoinGroup)
+	api.GroupJoinGroupHelpHandler = group.JoinGroupHelpHandlerFunc(controllers.JoinGroupHelp)
 	api.GroupLeaveGroupHandler = group.LeaveGroupHandlerFunc(controllers.LeaveGroup)
 	api.UserCreateUserHandler = user.CreateUserHandlerFunc(controllers.CreateUser)
 	api.UserGetUserHandler = user.GetUserHandlerFunc(controllers.GetUser)
