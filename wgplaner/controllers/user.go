@@ -75,6 +75,15 @@ func CreateUser(params user.CreateUserParams, principal interface{}) middleware.
 		UID: params.Body.UID,
 	}
 
+	if uid, ok := principal.(models.User); !ok || *uid.UID != *theUser.UID {
+		userLog.Infof(`Authorized user "%s" tried to create account for "%s"`,
+			uid, theUser.UID)
+		return user.NewCreateUserBadRequest().WithPayload(&models.ErrorResponse{
+			Message: swag.String(fmt.Sprintf(`Can't create user for others.`)),
+			Status:  swag.Int64(400),
+		})
+	}
+
 	// Check if the user is already registered
 	if isRegistered, err := wgplaner.OrmEngine.Get(&theUser); err != nil {
 		userLog.Critical("Database Error!", err)
@@ -118,6 +127,8 @@ func CreateUser(params user.CreateUserParams, principal interface{}) middleware.
 		userLog.Critical("Database error!", err)
 		return userInternalServerError
 	}
+
+	userLog.Infof(`Created user "%s"`, theUser.UID)
 
 	return user.NewCreateUserOK().WithPayload(&theUser)
 }
