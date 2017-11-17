@@ -41,3 +41,15 @@ func TestRandomAlphaNumCode(t *testing.T) {
 		t.Error("Only uppercase must only contain uppercase letters")
 	}
 }
+
+func TestAppendUniqueString(t *testing.T) {
+	initialList := []string{"One", "Two", "Three"}
+
+	if len(AppendUniqueString(initialList, "Three")) != 3 {
+		t.Error("Should only add unique values")
+	}
+
+	if len(AppendUniqueString(initialList, "Four")) != 4 {
+		t.Error("Should add non-unique values")
+	}
+}

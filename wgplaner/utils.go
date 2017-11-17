@@ -48,3 +48,10 @@ func RandomAlphaNumCode(length int, onlyUpperCase bool) string {
 
 	return codeStr
 }
+
+func AppendUniqueString(list []string, str string) []string {
+	if !StringInSlice(str, list) {
+		return append(list, str)
+	}
+	return list
+}
