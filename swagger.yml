@@ -17,6 +17,8 @@ tags:
   description: Group related endpoints
 - name: user
   description: User related endpoints
+- name: shoppinglist
+  description: Shopping list related endpoints
 - name: info
   description: Information related endpoints
 
@@ -363,8 +365,57 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResponse"
-  /swagger:
-    x-swagger-pipe: swagger_raw
+  /shoppinglist/{groupUid}:
+    get:
+      tags:
+      - shoppinglist
+      description: Get all items of the group
+      operationId: getListItems
+      security:
+        - FirebaseIDAuth: []
+      parameters:
+      - name: groupUid
+        in: path
+        description: The internal ID of the group
+        required: true
+        type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "#/definitions/ShoppingList"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    post:
+      tags:
+      - shoppinglist
+      description: Creates a new shopping list item
+      operationId: createListItem
+      security:
+        - FirebaseIDAuth: []
+      parameters:
+      - name: groupUid
+        in: path
+        description: The internal ID of the group
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: The data of the item to create.
+        required: true
+        schema:
+          $ref: "#/definitions/ListItem"
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "#/definitions/ListItem"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
 
 definitions:
   User:
@@ -447,28 +498,49 @@ definitions:
         type: string
         format: date-time
         readOnly: true
+  ShoppingList:
+    required:
+    - listItems
+    - count
+    properties:
+      count:
+        type: integer
+        readOnly: true
+      listItems:
+        type: array
+        readOnly: true
+        items:
+          $ref: "#/definitions/ListItem"
   ListItem:
     required:
       - title
       - category
+      - count
     properties:
       title:
         type: string
+        maxLength: 150
       requestedFor:
         type: array
         items:
           type: string
+      groupUid:
+        type: string
+        format: uuid
+        readOnly: true
       count:
         type: integer
       requestedBy:
         type: string
+        readOnly: true
       price:
         type: integer
       category:
         type: string
-      boughAt:
+      boughtAt:
         type: string
         format: date-time
+        readOnly: true
       createdAt:
         type: string
         format: date-time

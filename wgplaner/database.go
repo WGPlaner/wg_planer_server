@@ -96,5 +96,6 @@ func syncDatabaseTables(engine *xorm.Engine) error {
 		&models.User{},
 		&models.Group{},
 		&models.GroupCode{},
+		&models.ListItem{},
 	)
 }

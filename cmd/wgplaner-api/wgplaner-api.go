@@ -11,6 +11,7 @@ import (
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations"
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/group"
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/info"
+	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/shoppinglist"
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/user"
 	"github.com/wgplaner/wg_planer_server/wgplaner"
 	"github.com/wgplaner/wg_planer_server/wgplaner/controllers"
@@ -50,7 +51,8 @@ func initializeControllers(api *operations.WgplanerAPI) {
 	api.UserGetUserImageHandler = user.GetUserImageHandlerFunc(controllers.GetUserImage)
 	api.UserUpdateUserHandler = user.UpdateUserHandlerFunc(controllers.UpdateUser)
 	api.UserUpdateUserImageHandler = user.UpdateUserImageHandlerFunc(controllers.UpdateUserImage)
-
+	api.ShoppinglistCreateListItemHandler = shoppinglist.CreateListItemHandlerFunc(controllers.CreateListItem)
+	api.ShoppinglistGetListItemsHandler = shoppinglist.GetListItemsHandlerFunc(controllers.GetListItems)
 }
 
 func main() {
