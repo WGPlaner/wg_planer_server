@@ -76,9 +76,9 @@ func CreateUser(params user.CreateUserParams, principal interface{}) middleware.
 		UID: params.Body.UID,
 	}
 
-	if uid, ok := principal.(models.User); !ok || *uid.UID != *theUser.UID {
+	if authUser, ok := principal.(models.User); !ok || *authUser.UID != *theUser.UID {
 		userLog.Infof(`Authorized user "%s" tried to create account for "%s"`,
-			uid, theUser.UID)
+			*authUser.UID, *theUser.UID)
 		return user.NewCreateUserBadRequest().WithPayload(&models.ErrorResponse{
 			Message: swag.String(fmt.Sprintf(`Can't create user for others.`)),
 			Status:  swag.Int64(400),
