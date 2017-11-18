@@ -1,6 +1,14 @@
 package wgplaner
 
 import (
+	"log"
+	"os"
+	"os/exec"
+	"path"
+	"path/filepath"
+	"runtime"
+	"strings"
+
 	"github.com/BurntSushi/toml"
 	"github.com/op/go-logging"
 )
@@ -8,7 +16,7 @@ import (
 var configLog = logging.MustGetLogger("Config")
 
 type serverConfig struct {
-	Port int
+	Port int `toml:"port"`
 }
 
 type dataConfig struct {
@@ -43,11 +51,85 @@ type appConfigType struct {
 	Mail     mailConfig
 }
 
+var (
+	// Global settings
+	AppConfig   *appConfigType
+	AppPath     string // Path to executable
+	AppVersion  string
+	AppWorkPath string // Working directory
+
+	IsWindows bool
+)
+
+func init() {
+	IsWindows = runtime.GOOS == "windows"
+
+	var err error
+	if AppPath, err = getAppPath(); err != nil {
+		log.Fatal(4, "Failed to get app path: %v", err)
+	}
+	AppWorkPath = getWorkPath(AppPath)
+}
+
+func NewConfigContext() {
+	AppConfig = &appConfigType{}
+
+	configPath := path.Join(AppWorkPath, "config/config.toml")
+
+	// Path is relative to executable.
+	if _, err := toml.DecodeFile(configPath, AppConfig); err != nil {
+		configLog.Fatal("Error loading configuration! ", err)
+		return
+	}
+
+	if err := validateConfiguration(AppConfig); err.HasErrors() {
+		configLog.Fatal("Error validating configuration: \n" + err.String())
+		return
+	}
+
+	configLog.Info("Configuration successfully loaded!")
+}
+
+func getAppPath() (string, error) {
+	var appPath string
+	var err error
+
+	if IsWindows && filepath.IsAbs(os.Args[0]) {
+		appPath = filepath.Clean(os.Args[0])
+
+	} else if appPath, err = exec.LookPath(os.Args[0]); err != nil {
+		return "", err
+	}
+
+	appPath, err = filepath.Abs(appPath)
+	if err != nil {
+		return "", err
+	}
+
+	// Note: we don't use path.Dir here because it does not handle case
+	// which path starts with two "/" in Windows: "//psf/Home/..."
+	return strings.Replace(appPath, "\\", "/", -1), err
+}
+
+// Get the working directory path
+func getWorkPath(appPath string) string {
+	var workPath string
+
+	if i := strings.LastIndex(appPath, "/"); i == -1 {
+		workPath = appPath
+	} else {
+		workPath = appPath[:i]
+	}
+
+	return strings.Replace(workPath, "\\", "/", -1)
+}
+
 func validateConfiguration(config *appConfigType) ErrorList {
 	err := ErrorList{}
 
-	if config.Server.Port < 80 {
-		err.Add("[Config] Portnumber is not valid (must be > 80)")
+	if configErr := validateServerConfig(config.Server); configErr.HasErrors() {
+		err.Add("[Config] Invalid server config:")
+		err.AddList(&configErr)
 	}
 
 	if configErr := ValidateDataConfig(config.Data); configErr.HasErrors() {
@@ -68,23 +150,12 @@ func validateConfiguration(config *appConfigType) ErrorList {
 	return err
 }
 
-func LoadAppConfigOrFail() *appConfigType {
-	var appConfig = &appConfigType{}
+func validateServerConfig(config serverConfig) ErrorList {
+	errList := ErrorList{}
 
-	// Path is relative to executable.
-	if _, err := toml.DecodeFile("config/config.toml", appConfig); err != nil {
-		configLog.Fatal("Error loading configuration! ", err)
-		return nil
+	if config.Port < 80 {
+		errList.Add("[Config] Port number is not valid (must be > 80)")
 	}
 
-	if err := validateConfiguration(appConfig); err.HasErrors() {
-		configLog.Fatal("Error validating configuration: \n" + err.String())
-		return nil
-	}
-
-	configLog.Info("Configuration successfully loaded!")
-
-	return appConfig
+	return errList
 }
-
-var AppConfig *appConfigType

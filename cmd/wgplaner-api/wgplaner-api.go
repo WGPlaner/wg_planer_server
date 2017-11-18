@@ -16,6 +16,13 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+// Version holds the current WGPlaner version
+var Version = "0.0.1"
+
+func init() {
+	wgplaner.AppVersion = Version
+}
+
 func main() {
 	var errSpec error
 	var swaggerSpec *loads.Document
@@ -31,7 +38,7 @@ func main() {
 	defer server.Shutdown()
 
 	// load configuration and initialize ----------------------------------------
-	wgplaner.AppConfig = wgplaner.LoadAppConfigOrFail()
+	wgplaner.NewConfigContext()
 	wgplaner.OrmEngine = wgplaner.CreateOrmEngine(&wgplaner.AppConfig.Database)
 	wgplaner.FireBaseApp = wgplaner.CreateFirebaseConnection()
 	controllers.InitializeControllers(api)
