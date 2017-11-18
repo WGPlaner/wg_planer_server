@@ -52,6 +52,7 @@ func initializeControllers(api *operations.WgplanerAPI) {
 	api.UserUpdateUserHandler = user.UpdateUserHandlerFunc(controllers.UpdateUser)
 	api.UserUpdateUserImageHandler = user.UpdateUserImageHandlerFunc(controllers.UpdateUserImage)
 	api.ShoppinglistCreateListItemHandler = shoppinglist.CreateListItemHandlerFunc(controllers.CreateListItem)
+	api.ShoppinglistUpdateListItemHandler = shoppinglist.UpdateListItemHandlerFunc(controllers.UpdateListItem)
 	api.ShoppinglistGetListItemsHandler = shoppinglist.GetListItemsHandlerFunc(controllers.GetListItems)
 }
 

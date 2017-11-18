@@ -416,6 +416,34 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResponse"
+    put:
+      tags:
+      - shoppinglist
+      description: Updates a shopping list item
+      operationId: updateListItem
+      security:
+        - FirebaseIDAuth: []
+      parameters:
+      - name: groupUid
+        in: path
+        description: The internal ID of the group
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: The data of the item to create.
+        required: true
+        schema:
+          $ref: "#/definitions/ListItem"
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "#/definitions/ListItem"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
 
 definitions:
   User:
@@ -519,6 +547,10 @@ definitions:
       - category
       - count
     properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
       title:
         type: string
         maxLength: 150
