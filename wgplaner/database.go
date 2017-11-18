@@ -18,7 +18,19 @@ const (
 	DRIVER_MYSQL  = "mysql"
 )
 
-var OrmEngine *xorm.Engine
+var (
+	OrmEngine *xorm.Engine
+	Tables    []interface{}
+)
+
+func init() {
+	Tables = []interface{}{
+		new(models.User),
+		new(models.Group),
+		new(models.GroupCode),
+		new(models.ListItem),
+	}
+}
 
 func ValidateDriverConfig(config databaseConfig) ErrorList {
 	err := ErrorList{}
@@ -68,7 +80,7 @@ func CreateOrmEngine(dbConfig *databaseConfig) *xorm.Engine {
 		return nil
 	}
 
-	if err = syncDatabaseTables(engine); err != nil {
+	if err = engine.Sync(Tables...); err != nil {
 		log.Fatal("[SQL] Synchronization failed! ", err)
 		return nil
 	}
@@ -89,13 +101,4 @@ func getMysqlEngine(config *databaseConfig) (*xorm.Engine, error) {
 		config.MysqlPassword, config.MysqlDatabaseName)
 
 	return xorm.NewEngine("mysql", dataSource)
-}
-
-func syncDatabaseTables(engine *xorm.Engine) error {
-	return engine.Sync(
-		&models.User{},
-		&models.Group{},
-		&models.GroupCode{},
-		&models.ListItem{},
-	)
 }
