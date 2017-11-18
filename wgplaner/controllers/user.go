@@ -79,10 +79,7 @@ func CreateUser(params user.CreateUserParams, principal interface{}) middleware.
 	if authUser, ok := principal.(models.User); !ok || *authUser.UID != *theUser.UID {
 		userLog.Infof(`Authorized user "%s" tried to create account for "%s"`,
 			*authUser.UID, *theUser.UID)
-		return user.NewCreateUserBadRequest().WithPayload(&models.ErrorResponse{
-			Message: swag.String(fmt.Sprintf(`Can't create user for others.`)),
-			Status:  swag.Int64(400),
-		})
+		return NewBadRequest(fmt.Sprintf(`Can't create user for others.`))
 	}
 
 	// Check if the user is already registered
@@ -117,10 +114,7 @@ func CreateUser(params user.CreateUserParams, principal interface{}) middleware.
 	// Validate user
 	if isValid, err := validateUser(&theUser); !isValid {
 		userLog.Debug("Error validating user!", err)
-		return user.NewCreateUserBadRequest().WithPayload(&models.ErrorResponse{
-			Message: swag.String(fmt.Sprintf(`invalid user: "%s"`, err.Error())),
-			Status:  swag.Int64(400),
-		})
+		return NewBadRequest(fmt.Sprintf(`invalid user: "%s"`, err.Error()))
 	}
 
 	// Insert new user into database
@@ -146,17 +140,17 @@ func UpdateUser(params user.UpdateUserParams, principal interface{}) middleware.
 
 	} else if !isRegistered {
 		userLog.Infof(`User "%s" does not exist!`, *theUser.UID)
-		return user.NewUpdateUserDefault(400).WithPayload(&models.ErrorResponse{
-			Message: swag.String("User does not exist!"),
-			Status:  swag.Int64(400),
-		})
+		return NewBadRequest("User does not exist!")
 	}
 
 	// Create new user
-	displayName := strings.TrimSpace(swag.StringValue(params.Body.DisplayName))
-	creationTime := strfmt.DateTime(time.Now().UTC())
-	imageURL := user.GetUserImageURL{UserID: swag.StringValue(theUser.UID)}
-	photoURL, err := imageURL.Build()
+	var (
+		displayName   = strings.TrimSpace(swag.StringValue(params.Body.DisplayName))
+		creationTime  = strfmt.DateTime(time.Now().UTC())
+		imageURL      = user.GetUserImageURL{UserID: swag.StringValue(theUser.UID)}
+		photoURL, err = imageURL.Build()
+	)
+
 	if err != nil {
 		return userInternalServerError
 	}
@@ -174,10 +168,7 @@ func UpdateUser(params user.UpdateUserParams, principal interface{}) middleware.
 	// Validate user
 	if isValid, err := validateUser(&theUser); !isValid {
 		userLog.Debug("Error validating user!", err)
-		return user.NewUpdateUserBadRequest().WithPayload(&models.ErrorResponse{
-			Message: swag.String(fmt.Sprintf("Invalid user: \"%s\"", err.Error())),
-			Status:  swag.Int64(400),
-		})
+		return NewBadRequest(fmt.Sprintf(`Invalid user: "%s"`, err.Error()))
 	}
 
 	// Insert new user into database
@@ -195,10 +186,7 @@ func GetUser(params user.GetUserParams, principal interface{}) middleware.Respon
 	theUser := models.User{UID: &params.UserID}
 
 	if isValid := isValidUserID(theUser.UID); !isValid {
-		return user.NewGetUserBadRequest().WithPayload(&models.ErrorResponse{
-			Message: swag.String(fmt.Sprintf("Invalid user id format")),
-			Status:  swag.Int64(400),
-		})
+		return NewBadRequest(fmt.Sprintf("Invalid user id format"))
 	}
 
 	// Firebase Auth
@@ -207,10 +195,7 @@ func GetUser(params user.GetUserParams, principal interface{}) middleware.Respon
 
 	if err == firebase.ErrUserNotFound {
 		userLog.Debugf(`Can't find firebase user with id "%s"!`, *theUser.UID)
-		return user.NewGetUserUnauthorized().WithPayload(&models.ErrorResponse{
-			Message: swag.String("User not authorized!"),
-			Status:  swag.Int64(401),
-		})
+		return NewUnauthorizedResponse("User not authorized!")
 
 	} else if err != nil {
 		userLog.Critical("Firebase SDK Error!", err)
@@ -224,10 +209,7 @@ func GetUser(params user.GetUserParams, principal interface{}) middleware.Respon
 
 	} else if !isRegistered {
 		userLog.Debugf(`Can't find database user with id "%s"!`, params.UserID)
-		return user.NewGetUserNotFound().WithPayload(&models.ErrorResponse{
-			Message: swag.String("User not found on server"),
-			Status:  swag.Int64(http.StatusNotFound),
-		})
+		return NewNotFoundResponse("User not found on server")
 	}
 
 	imageURL := user.GetUserImageURL{UserID: swag.StringValue(theUser.UID)}
@@ -257,11 +239,7 @@ func GetUserImage(params user.GetUserImageParams, principal interface{}) middlew
 
 	if fileErr != nil {
 		userLog.Error("Error getting profile image ", fileErr.Error())
-		return user.NewGetUserImageDefault(http.StatusInternalServerError).
-			WithPayload(&models.ErrorResponse{
-				Message: swag.String("Internal Server Error"),
-				Status:  swag.Int64(http.StatusInternalServerError),
-			})
+		return NewInternalServerError("Internal Server Error with profile image")
 	}
 
 	return user.NewGetUserImageOK().WithPayload(imgFile)
@@ -270,13 +248,10 @@ func GetUserImage(params user.GetUserImageParams, principal interface{}) middlew
 func UpdateUserImage(params user.UpdateUserImageParams, principal interface{}) middleware.Responder {
 	userLog.Debug("Start put user image")
 
-	theUser := models.User{UID: &params.UserID}
-
-	var internalError = user.NewUpdateUserImageDefault(http.StatusInternalServerError).
-		WithPayload(&models.ErrorResponse{
-			Message: swag.String("Internal Server Error"),
-			Status:  swag.Int64(http.StatusInternalServerError),
-		})
+	var (
+		theUser       = models.User{UID: &params.UserID}
+		internalError = NewInternalServerError("Internal Server Error")
+	)
 
 	// Database
 	if isRegistered, err := wgplaner.OrmEngine.Get(&theUser); err != nil {

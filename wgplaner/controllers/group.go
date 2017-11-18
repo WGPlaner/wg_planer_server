@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
-	"net/http"
 	"strings"
 	"time"
 
@@ -161,10 +160,7 @@ func GetGroup(params group.GetGroupParams, principal interface{}) middleware.Res
 
 	} else if !isRegistered {
 		groupLog.Debugf(`Can't find database group with id "%s"!`, theGroup.UID)
-		return group.NewGetGroupNotFound().WithPayload(&models.ErrorResponse{
-			Message: swag.String("Group not found on server"),
-			Status:  swag.Int64(http.StatusNotFound),
-		})
+		return NewNotFoundResponse("Group not found on server")
 	}
 
 	return group.NewGetGroupOK().WithPayload(&theGroup)
@@ -190,10 +186,7 @@ func CreateGroupCode(params group.CreateGroupCodeParams, principal interface{}) 
 
 	if err := validateGroupUuid(groupUid); err != nil {
 		groupLog.Debugf(`Error validating group "%s": "%s"`, params.GroupID, err.Error())
-		return group.NewCreateGroupBadRequest().WithPayload(&models.ErrorResponse{
-			Message: swag.String(err.Error()),
-			Status:  swag.Int64(http.StatusBadRequest),
-		})
+		return NewBadRequest(err.Error())
 	}
 
 	// TODO: Check authorization for user in the group
@@ -254,10 +247,7 @@ func CreateGroup(params group.CreateGroupParams, principal interface{}) middlewa
 	// Validate group
 	if isValid, err := validateGroup(&theGroup); !isValid {
 		groupLog.Notice("Error validating user!", err)
-		return group.NewCreateGroupBadRequest().WithPayload(&models.ErrorResponse{
-			Message: swag.String(fmt.Sprintf(`Invalid group data: "%s"`, err.Error())),
-			Status:  swag.Int64(400),
-		})
+		return NewBadRequest(fmt.Sprintf(`Invalid group data: "%s"`, err.Error()))
 	}
 
 	// TODO: Check if user has already a group
@@ -288,37 +278,21 @@ func JoinGroup(params group.JoinGroupParams, principal interface{}) middleware.R
 	switch err {
 	case errGroupCodeExpired:
 		groupLog.Debugf(`Group code "%s" expired`, params.GroupCode)
-		return group.NewJoinGroupDefault(http.StatusBadRequest).
-			WithPayload(&models.ErrorResponse{
-				Message: swag.String(err.Error()),
-				Status:  swag.Int64(http.StatusBadRequest),
-			})
+		return NewBadRequest(err.Error())
 
 	case errGroupCodeInvalid:
 		groupLog.Debugf(`Invalid group code "%s"`, params.GroupCode)
-		return group.NewJoinGroupDefault(http.StatusInternalServerError).
-			WithPayload(&models.ErrorResponse{
-				Message: swag.String(err.Error()),
-				Status:  swag.Int64(http.StatusInternalServerError),
-			})
+		return NewBadRequest(err.Error())
 
 	case errGroupNotFound:
 		groupLog.Debugf(`Group was deleted but the code "%s" is still valid: %s`,
 			params.GroupCode, err.Error())
 		// TODO: This should not happen
-		return group.NewJoinGroupDefault(http.StatusNotFound).
-			WithPayload(&models.ErrorResponse{
-				Message: swag.String(err.Error()),
-				Status:  swag.Int64(http.StatusNotFound),
-			})
+		return NewNotFoundResponse(err.Error())
 
 	default:
 		groupLog.Error(`Unknown Internal Server Error: `, err)
-		return group.NewJoinGroupDefault(http.StatusInternalServerError).
-			WithPayload(&models.ErrorResponse{
-				Message: swag.String("Unknown Server Error"),
-				Status:  swag.Int64(http.StatusInternalServerError),
-			})
+		return NewBadRequest("Unknown Server Error")
 	}
 
 }

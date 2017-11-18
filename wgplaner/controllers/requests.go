@@ -9,6 +9,16 @@ import (
 	"github.com/go-openapi/swag"
 )
 
+// Error HTTP Responder
+
+//  _  _      ___     ___
+// | || |    / _ \   / _ \
+// | || |_  | | | | | | | |
+// |__   _| | | | | | | | |
+//    | |   | |_| | | |_| |
+//    |_|    \___/   \___/
+//
+
 type BadRequest struct {
 	Payload *models.ErrorResponse `json:"body,omitempty"`
 }
@@ -37,6 +47,89 @@ func (o *BadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Prod
 		panic(err) // let the recovery middleware deal with this
 	}
 }
+
+//  _  _      ___    __
+// | || |    / _ \  /_ |
+// | || |_  | | | |  | |
+// |__   _| | | | |  | |
+//    | |   | |_| |  | |
+//    |_|    \___/   |_|
+//
+
+type UnauthorizedReponse struct {
+	Payload *models.ErrorResponse `json:"body,omitempty"`
+}
+
+func NewUnauthorizedResponse(msg string) *UnauthorizedReponse {
+	return &UnauthorizedReponse{
+		Payload: &models.ErrorResponse{
+			Message: swag.String(msg),
+			Status:  swag.Int64(http.StatusNotFound),
+		},
+	}
+}
+
+func (o *UnauthorizedReponse) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+	rw.WriteHeader(http.StatusUnauthorized)
+	payload := o.Payload
+
+	if payload == nil {
+		payload = &models.ErrorResponse{
+			Message: swag.String("Unauthorized"),
+			Status:  swag.Int64(http.StatusUnauthorized),
+		}
+	}
+
+	if err := producer.Produce(rw, payload); err != nil {
+		panic(err) // let the recovery middleware deal with this
+	}
+}
+
+//  _  _      ___    _  _
+// | || |    / _ \  | || |
+// | || |_  | | | | | || |_
+// |__   _| | | | | |__   _|
+//    | |   | |_| |    | |
+//    |_|    \___/     |_|
+//
+
+type NotFoundResponse struct {
+	Payload *models.ErrorResponse `json:"body,omitempty"`
+}
+
+func NewNotFoundResponse(msg string) *NotFoundResponse {
+	return &NotFoundResponse{
+		Payload: &models.ErrorResponse{
+			Message: swag.String(msg),
+			Status:  swag.Int64(http.StatusNotFound),
+		},
+	}
+}
+
+func (o *NotFoundResponse) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+	rw.WriteHeader(http.StatusNotFound)
+	payload := o.Payload
+
+	if payload == nil {
+		payload = &models.ErrorResponse{
+			Message: swag.String("Not Found"),
+			Status:  swag.Int64(http.StatusNotFound),
+		}
+	}
+
+	if err := producer.Produce(rw, payload); err != nil {
+		panic(err) // let the recovery middleware deal with this
+	}
+}
+
+//
+//  _____    ___     ___
+// | ____|  / _ \   / _ \
+// | |__   | | | | | | | |
+// |___ \  | | | | | | | |
+//  ___) | | |_| | | |_| |
+// |____/   \___/   \___/
+//
 
 type InternalServerError struct {
 	Payload *models.ErrorResponse `json:"body,omitempty"`
