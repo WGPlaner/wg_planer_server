@@ -432,6 +432,8 @@ definitions:
       groupUid:
         type: string
         format: uuid
+      firebaseInstanceId:
+        type: string
       locale:
         type: string
       photoUrl:
