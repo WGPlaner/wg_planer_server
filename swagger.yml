@@ -10,7 +10,7 @@ info:
     name: "MIT"
     url: "https://github.com/WGPlaner/wg_planer_server/blob/master/LICENSE"
 host: "api.wgplaner.ameyering.de"
-basePath: "/v0.1"
+basePath: "/"
 
 tags:
 - name: group
