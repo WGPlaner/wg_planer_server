@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"path"
 
 	"github.com/wgplaner/wg_planer_server/gen/models"
 
@@ -70,7 +71,8 @@ func CreateOrmEngine(dbConfig *databaseConfig) *xorm.Engine {
 	case DRIVER_MYSQL:
 		engine, err = getMysqlEngine(dbConfig)
 	case DRIVER_SQLITE:
-		engine, err = xorm.NewEngine("sqlite3", dbConfig.SqliteFile)
+		filePath := path.Join(AppWorkPath, dbConfig.SqliteFile)
+		engine, err = xorm.NewEngine("sqlite3", filePath)
 	default:
 		err = errors.New("unknown SQL driver")
 	}
