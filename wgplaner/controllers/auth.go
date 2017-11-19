@@ -31,12 +31,16 @@ func UserIDAuth(token string) (interface{}, error) {
 func FirebaseIDAuth(token string) (interface{}, error) {
 	theUser := models.User{UID: &token}
 
-	if wgplaner.AppConfig.Auth.IgnoreFirebase {
-		authLog.Debugf(`Ignore firebase auth for user id "%s"`, *theUser.UID)
-		return theUser, nil
+	authLog.Debugf(`Check firebaseId authorization for user id "%s"`, *theUser.UID)
+
+	if !isValidUserID(theUser.UID) {
+		return nil, errors.Unauthenticated("invalid credentials (format)")
 	}
 
-	authLog.Debugf(`Check firebaseId authorization for user id "%s"`, *theUser.UID)
+	if wgplaner.AppConfig.Auth.IgnoreFirebase {
+		authLog.Debugf(`Ignore firebase auth`)
+		return theUser, nil
+	}
 
 	if isRegistered, err := isUserOnFirebase(&theUser); err != nil {
 		authLog.Error(`DB error with isUserOnFirebase`, err.Error())
