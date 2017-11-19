@@ -4,12 +4,13 @@ import (
 	"errors"
 	"io"
 
-	"github.com/go-openapi/runtime"
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations"
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/group"
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/info"
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/shoppinglist"
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/user"
+
+	"github.com/go-openapi/runtime"
 )
 
 func InitializeControllers(api *operations.WgplanerAPI) {
