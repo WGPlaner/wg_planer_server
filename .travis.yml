@@ -8,7 +8,7 @@ addons:
   artifacts: true
 
 env:
-  - WGPLANER_ROOT=$GOPATH/github.com/wgplaner/wg_planer_server/
+  - WGPLANER_ROOT=$HOME/gopath/github.com/wgplaner/wg_planer_server/
 
 before_install:
   - cp -v config/config.example.toml config/config.toml
