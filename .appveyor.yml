@@ -17,6 +17,7 @@ environment:
   GOPATH: C:\gopath
   GOCOVMODE: "mode: atomic"
   PATH: C:\gopath\bin;%PATH%
+  WGPLANER_ROOT: C:\gopath\src\github.com\wgplaner\wg_planer_server
 
 platform:
   - x64
@@ -41,6 +42,8 @@ install:
   - C:\swagger.exe version
   - C:\swagger.exe generate server -t gen -f .\swagger.yml --exclude-main -A wgplaner
   - go get -v .\cmd\wgplaner-api
+  - copy .\config\config.example.toml .\config\config.toml
+  - copy .\config\serviceAccountKey.example.json .\config\serviceAccountKey.json
 
 build_script:
   - echo %APPVEYOR_BUILD_FOLDER%

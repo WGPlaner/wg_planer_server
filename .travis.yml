@@ -7,7 +7,12 @@ go_import_path: github.com/wgplaner/wg_planer_server/
 addons:
   artifacts: true
 
+env:
+  - WGPLANER_ROOT=$GOPATH/github.com/wgplaner/wg_planer_server/
+
 before_install:
+  - cp config/config.example.toml config/config.toml
+  - cp config/serviceAccountKey.example.json config/serviceAccountKey.json
   - go get -u github.com/go-swagger/go-swagger/cmd/swagger
   - go install github.com/go-swagger/go-swagger/cmd/swagger
   - mkdir gen
