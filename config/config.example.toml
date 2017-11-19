@@ -3,6 +3,9 @@
 [server]
 port = 3000
 
+[auth]
+ignore_firebase = false # Whether not to use firebase
+
 [data]
 user_image_dir     = "data/users"               # Directory has to exist!
 user_image_default = "data/default_profile.jpg" # File has to exist!

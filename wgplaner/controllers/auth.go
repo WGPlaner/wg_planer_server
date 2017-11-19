@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/wgplaner/wg_planer_server/gen/models"
+	"github.com/wgplaner/wg_planer_server/wgplaner"
 
 	"github.com/go-openapi/errors"
 	"github.com/op/go-logging"
@@ -29,6 +30,12 @@ func UserIDAuth(token string) (interface{}, error) {
 
 func FirebaseIDAuth(token string) (interface{}, error) {
 	theUser := models.User{UID: &token}
+
+	if wgplaner.AppConfig.Auth.IgnoreFirebase {
+		authLog.Debugf(`Ignore firebase auth for user id "%s"`, *theUser.UID)
+		return theUser, nil
+	}
+
 	authLog.Debugf(`Check firebaseId authorization for user id "%s"`, *theUser.UID)
 
 	if isRegistered, err := isUserOnFirebase(&theUser); err != nil {

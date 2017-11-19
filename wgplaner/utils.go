@@ -1,8 +1,10 @@
 package wgplaner
 
 import (
+	"log"
 	"math/rand"
 	"net/http"
+	"os"
 )
 
 func StringInSlice(a string, list []string) bool {
@@ -54,4 +56,16 @@ func AppendUniqueString(list []string, str string) []string {
 		return append(list, str)
 	}
 	return list
+}
+
+func FileMustExist(filePath string) {
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		log.Fatalf(`File is missing: "%s"`, filePath)
+
+	} else if os.IsPermission(err) {
+		log.Fatalf(`Permissions error for "%s"`, filePath)
+
+	} else if err != nil {
+		log.Fatalf(`Unknown error reading "%s"`, filePath)
+	}
 }

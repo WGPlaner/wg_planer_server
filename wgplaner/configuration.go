@@ -2,14 +2,19 @@ package wgplaner
 
 import (
 	"log"
+	"math/rand"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
+
+	"github.com/wgplaner/wg_planer_server/gen/restapi"
 
 	"github.com/BurntSushi/toml"
+	"github.com/go-openapi/loads"
 	"github.com/op/go-logging"
 )
 
@@ -17,6 +22,10 @@ var configLog = logging.MustGetLogger("Config")
 
 type serverConfig struct {
 	Port int `toml:"port"`
+}
+
+type authConfig struct {
+	IgnoreFirebase bool `toml:"ignore_firebase"`
 }
 
 type dataConfig struct {
@@ -46,6 +55,7 @@ type mailConfig struct {
 
 type appConfigType struct {
 	Server   serverConfig
+	Auth     authConfig
 	Data     dataConfig
 	Database databaseConfig
 	Mail     mailConfig
@@ -88,6 +98,26 @@ func NewConfigContext() {
 	}
 
 	configLog.Info("Configuration successfully loaded!")
+
+	OrmEngine = CreateOrmEngine(&AppConfig.Database)
+	FireBaseApp = CreateFirebaseConnection()
+
+	if AppConfig.Mail.SendTestMail {
+		SendTestMail()
+	}
+
+	// Seed the random number generator (needed for group codes)
+	rand.Seed(time.Now().UTC().UnixNano())
+}
+
+func LoadSwaggerSpec() *loads.Document {
+	if swaggerSpec, errSpec := loads.Analyzed(restapi.SwaggerJSON, ""); errSpec != nil {
+		configLog.Fatal(errSpec)
+		return nil
+
+	} else {
+		return swaggerSpec
+	}
 }
 
 func getAppPath() (string, error) {
@@ -132,6 +162,11 @@ func validateConfiguration(config *appConfigType) ErrorList {
 		err.AddList(&configErr)
 	}
 
+	if configErr := validateAuthConfig(config.Auth); configErr.HasErrors() {
+		err.Add("[Config] Invalid auth config:")
+		err.AddList(&configErr)
+	}
+
 	if configErr := ValidateDataConfig(config.Data); configErr.HasErrors() {
 		err.Add("[Config] Invalid data config:")
 		err.AddList(&configErr)
@@ -156,6 +191,14 @@ func validateServerConfig(config serverConfig) ErrorList {
 	if config.Port < 80 {
 		errList.Add("[Config] Port number is not valid (must be > 80)")
 	}
+
+	return errList
+}
+
+func validateAuthConfig(config authConfig) ErrorList {
+	errList := ErrorList{}
+
+	// Nothing to do at the moment
 
 	return errList
 }

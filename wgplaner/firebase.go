@@ -3,7 +3,7 @@ package wgplaner
 import (
 	"context"
 	"log"
-	"os"
+	"path"
 
 	"github.com/acoshift/go-firebase-admin"
 	"google.golang.org/api/option"
@@ -12,17 +12,17 @@ import (
 var FireBaseApp *firebase.App
 
 func CreateFirebaseConnection() *firebase.App {
+	var (
+		fireBaseApp *firebase.App
+		err         error
+	)
 
-	var fireBaseApp *firebase.App
-	var err error
-
-	if _, err := os.Stat("./config/serviceAccountKey.json"); os.IsNotExist(err) {
-		log.Fatal("File is missing: config/serviceAccountKey.json") // exit program
-	}
+	keyfilePath := path.Join(AppWorkPath, "config/serviceAccountKey.json")
+	FileMustExist(keyfilePath)
 
 	fireBaseApp, err = firebase.InitializeApp(context.Background(), firebase.AppOptions{
 		ProjectID: "wgplaner-se",
-	}, option.WithCredentialsFile("./config/serviceAccountKey.json"))
+	}, option.WithCredentialsFile(keyfilePath))
 
 	if err != nil {
 		log.Fatalln("[Firebase] Creation using key failed")
@@ -30,5 +30,4 @@ func CreateFirebaseConnection() *firebase.App {
 	}
 
 	return fireBaseApp
-
 }
