@@ -12,7 +12,10 @@ import (
 func ValidateDataConfig(config dataConfig) ErrorList {
 	errList := ErrorList{}
 
-	if stat, err := os.Stat(path.Join(AppWorkPath, config.UserImageDir)); err != nil {
+	if config.UserImageDir == "" {
+		errList.Add("[Config][Data] 'user_image_dir' must not be empty!")
+
+	} else if stat, err := os.Stat(path.Join(AppWorkPath, config.UserImageDir)); err != nil {
 		if os.IsNotExist(err) {
 			errList.Add("[Config][Data] 'user_image_dir' does not exist!")
 		} else if os.IsPermission(err) {
