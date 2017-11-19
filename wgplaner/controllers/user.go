@@ -190,16 +190,18 @@ func GetUser(params user.GetUserParams, principal interface{}) middleware.Respon
 	}
 
 	// Firebase Auth
-	_, err := wgplaner.FireBaseApp.Auth().
-		GetUser(params.HTTPRequest.Context(), *theUser.UID)
+	if !wgplaner.AppConfig.Auth.IgnoreFirebase {
+		_, err := wgplaner.FireBaseApp.Auth().
+			GetUser(params.HTTPRequest.Context(), *theUser.UID)
 
-	if err == firebase.ErrUserNotFound {
-		userLog.Debugf(`Can't find firebase user with id "%s"!`, *theUser.UID)
-		return NewUnauthorizedResponse("User not authorized!")
+		if err == firebase.ErrUserNotFound {
+			userLog.Debugf(`Can't find firebase user with id "%s"!`, *theUser.UID)
+			return NewUnauthorizedResponse("User not authorized!")
 
-	} else if err != nil {
-		userLog.Critical("Firebase SDK Error!", err)
-		return userInternalServerError
+		} else if err != nil {
+			userLog.Critical("Firebase SDK Error!", err)
+			return userInternalServerError
+		}
 	}
 
 	// Database
