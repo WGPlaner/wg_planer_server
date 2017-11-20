@@ -79,7 +79,7 @@ func CreateUser(params user.CreateUserParams, principal interface{}) middleware.
 	if authUser, ok := principal.(models.User); !ok || *authUser.UID != *theUser.UID {
 		userLog.Infof(`Authorized user "%s" tried to create account for "%s"`,
 			*authUser.UID, *theUser.UID)
-		return NewBadRequest(fmt.Sprintf(`Can't create user for others.`))
+		return NewUnauthorizedResponse(`Can't create user for others.`)
 	}
 
 	// Check if the user is already registered

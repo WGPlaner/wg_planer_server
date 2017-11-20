@@ -37,6 +37,7 @@ const (
 
 func GetUserProfileImageFilePath(user *models.User) string {
 	return path.Join(
+		AppWorkPath,
 		AppConfig.Data.UserImageDir,
 		swag.StringValue(user.UID),
 		PROFILE_IMAGE_FILE_NAME,
@@ -48,5 +49,8 @@ func GetUserProfileImage(user *models.User) (*os.File, error) {
 }
 
 func GetUserProfileImageDefault() (*os.File, error) {
-	return os.Open(AppConfig.Data.UserImageDefault)
+	return os.Open(path.Join(
+		AppWorkPath,
+		AppConfig.Data.UserImageDefault,
+	))
 }
