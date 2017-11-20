@@ -111,7 +111,7 @@ func NewRequest(t testing.TB, method, auth string, urlStr string) *http.Request 
 func NewRequestWithJSON(t testing.TB, method, auth string, urlStr string, v interface{}) *http.Request {
 	jsonBytes, err := json.Marshal(v)
 	assert.NoError(t, err)
-	req := NewRequestWithBody(t, method, urlStr, auth, bytes.NewBuffer(jsonBytes))
+	req := NewRequestWithBody(t, method, auth, urlStr, bytes.NewBuffer(jsonBytes))
 	req.Header.Add("Content-Type", "application/json")
 	return req
 }
