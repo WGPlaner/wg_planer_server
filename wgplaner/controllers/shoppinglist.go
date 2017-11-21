@@ -29,7 +29,7 @@ func GetListItems(params shoppinglist.GetListItemsParams, principal interface{})
 
 	shoppingList := models.ShoppingList{
 		Count:     int64(len(items)),
-		ListItems: models.ShoppingListListItems(items),
+		ListItems: items,
 	}
 
 	return shoppinglist.NewGetListItemsOK().WithPayload(&shoppingList)
