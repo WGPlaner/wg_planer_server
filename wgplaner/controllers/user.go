@@ -83,13 +83,13 @@ func CreateUser(params user.CreateUserParams, principal interface{}) middleware.
 	}
 
 	// Check if the user is already registered
-	if isRegistered, err := wgplaner.OrmEngine.Get(&theUser); err != nil {
+	if isRegistered, err := wgplaner.OrmEngine.Exist(&theUser); err != nil {
 		userLog.Critical("Database Error!", err)
 		return userInternalServerError
 
 	} else if isRegistered {
-		userLog.Debug("User already exists!")
-		return user.NewCreateUserOK().WithPayload(&theUser)
+		userLog.Debugf(`User "%s" already exists!`, *theUser.UID)
+		return NewBadRequest("User already exists.")
 	}
 
 	// Create new user
