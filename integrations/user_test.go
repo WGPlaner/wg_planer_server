@@ -4,10 +4,12 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/go-openapi/swag"
-	"github.com/stretchr/testify/assert"
 	"github.com/wgplaner/wg_planer_server/gen/models"
 	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/user"
+
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetUserUnauthorized(t *testing.T) {
@@ -98,6 +100,21 @@ func TestCreateUserMissingRequired(t *testing.T) {
 	}
 }
 
+func TestCreateExistingUser(t *testing.T) {
+	prepareTestEnv(t)
+	var (
+		uid     = "1234567890fakefirebaseid0001"
+		newUser = models.User{
+			UID:         &uid,
+			DisplayName: swag.String("Andre"),
+		}
+		req  = NewRequestWithJSON(t, "POST", uid, "/users", newUser)
+		resp = MakeRequest(t, req, http.StatusBadRequest)
+	)
+
+	DecodeJSON(t, resp, &models.ErrorResponse{})
+}
+
 func TestCreateUser(t *testing.T) {
 	prepareTestEnv(t)
 	var (
@@ -105,6 +122,7 @@ func TestCreateUser(t *testing.T) {
 		newUser = models.User{
 			UID:         &uid,
 			DisplayName: swag.String("Andre"),
+			GroupUID:    strfmt.UUID("0ec972c9-6c7a-40c8-82c3-7b9e4cac00c8"),
 		}
 		createdUser = models.User{}
 		req         = NewRequestWithJSON(t, "POST", uid, "/users", newUser)
@@ -114,6 +132,8 @@ func TestCreateUser(t *testing.T) {
 	if DecodeJSON(t, resp, &createdUser) {
 		assert.Equal(t, *createdUser.UID, *newUser.UID)
 		assert.Equal(t, *createdUser.DisplayName, *newUser.DisplayName)
+		// Group should not be saved. Only through Group Code
+		assert.Equal(t, createdUser.GroupUID, strfmt.UUID(""))
 	}
 
 	// TODO: Load Beans
