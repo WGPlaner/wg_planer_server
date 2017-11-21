@@ -93,10 +93,12 @@ func CreateUser(params user.CreateUserParams, principal interface{}) middleware.
 	}
 
 	// Create new user
-	displayName := strings.TrimSpace(swag.StringValue(params.Body.DisplayName))
-	creationTime := strfmt.DateTime(time.Now().UTC())
-	imageURL := user.GetUserImageURL{UserID: swag.StringValue(theUser.UID)}
-	photoURL, err := imageURL.Build()
+	var (
+		displayName   = strings.TrimSpace(swag.StringValue(params.Body.DisplayName))
+		creationTime  = strfmt.DateTime(time.Now().UTC())
+		imageURL      = user.GetUserImageURL{UserID: swag.StringValue(theUser.UID)}
+		photoURL, err = imageURL.Build()
+	)
 	if err != nil {
 		return userInternalServerError
 	}
@@ -264,19 +266,12 @@ func UpdateUserImage(params user.UpdateUserImageParams, principal interface{}) m
 	} else if !isRegistered {
 		userLog.Debugf(`Can't find database user with id "%s"!`, params.UserID)
 		// TODO: Maybe 404?
-		return user.NewUpdateUserImageBadRequest().WithPayload(&models.ErrorResponse{
-			Message: swag.String("Unknown user"),
-			Status:  swag.Int64(http.StatusBadRequest),
-		})
+		return NewBadRequest("Unknown user")
 	}
 
 	// Check if auth and userId are the same
 	if params.UserID != swag.StringValue(principal.(models.User).UID) {
-		return user.NewUpdateUserImageDefault(http.StatusUnauthorized).
-			WithPayload(&models.ErrorResponse{
-				Message: swag.String("Can't change profile image of other users"),
-				Status:  swag.Int64(http.StatusUnauthorized),
-			})
+		return NewUnauthorizedResponse("Can't change profile image of other users")
 	}
 
 	// We need the first 512 Bytes for "IsValidJpeg". Because "params.ProfileImage.Data"
@@ -288,13 +283,10 @@ func UpdateUserImage(params user.UpdateUserImageParams, principal interface{}) m
 
 	if isValid, mime := wgplaner.IsValidJpeg(first512Bytes); !isValid {
 		userLog.Debugf(`Invalid mime type "%s"`, mime)
-		return user.NewUpdateUserImageBadRequest().WithPayload(&models.ErrorResponse{
-			Message: swag.String(fmt.Sprintf(
-				`Invalid file type. Only "image/jpeg" allowed. Mime was "%s"`,
-				mime,
-			)),
-			Status: swag.Int64(http.StatusBadRequest),
-		})
+		return NewBadRequest(fmt.Sprintf(
+			`Invalid file type. Only "image/jpeg" allowed. Mime was "%s"`,
+			mime,
+		))
 	}
 
 	// Write profile image
