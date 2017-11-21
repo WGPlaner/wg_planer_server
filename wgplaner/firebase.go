@@ -21,7 +21,8 @@ func CreateFirebaseConnection() *firebase.App {
 	FileMustExist(keyfilePath)
 
 	fireBaseApp, err = firebase.InitializeApp(context.Background(), firebase.AppOptions{
-		ProjectID: "wgplaner-se",
+		ProjectID: AppConfig.Auth.FirebaseProjectId,
+		APIKey:    AppConfig.Auth.FirebaseServerKey,
 	}, option.WithCredentialsFile(keyfilePath))
 
 	if err != nil {

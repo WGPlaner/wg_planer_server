@@ -25,7 +25,9 @@ type serverConfig struct {
 }
 
 type authConfig struct {
-	IgnoreFirebase bool `toml:"ignore_firebase"`
+	IgnoreFirebase    bool   `toml:"ignore_firebase"`
+	FirebaseProjectId string `toml:"firebase_project_id"`
+	FirebaseServerKey string `toml:"firebase_server_key"`
 }
 
 type dataConfig struct {

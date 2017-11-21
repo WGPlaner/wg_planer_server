@@ -5,6 +5,8 @@ port = 3000
 
 [auth]
 ignore_firebase = false # Whether not to use firebase
+firebase_project_id = "<Your Project Name>"
+firebase_server_key = "<Your Key Here>"
 
 [data]
 user_image_dir     = "data/users"               # Directory has to exist!
