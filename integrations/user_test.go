@@ -138,3 +138,45 @@ func TestCreateUser(t *testing.T) {
 
 	// TODO: Load Beans
 }
+
+func TestUpdateUserUnauthorized(t *testing.T) {
+	prepareTestEnv(t)
+	var (
+		errResp = models.ErrorResponse{}
+		newUser = models.User{
+			UID:         swag.String("1234567890fakefirebaseid0002"),
+			DisplayName: swag.String("Maxi Meier"),
+		}
+		req  = NewRequestWithJSON(t, "PUT", "1234567890fakefirebaseid0001", "/users", newUser)
+		resp = MakeRequest(t, req, http.StatusUnauthorized)
+	)
+
+	DecodeJSON(t, resp, &errResp)
+	assert.NotEmpty(t, *errResp.Message)
+}
+
+func TestUpdateUser(t *testing.T) {
+	prepareTestEnv(t)
+	var (
+		uid         = "1234567890fakefirebaseid0002"
+		oldGroupUID = strfmt.UUID("0ec972c9-6c7a-40c8-82c3-7b9e4cac00c8")
+		uUser       = models.User{
+			UID:         &uid,
+			DisplayName: swag.String("Maxi Meier"),
+			GroupUID:    strfmt.UUID("0ec972c9-6c7a-40c8-82c3-000000000000"), // New uid
+		}
+		updatedUser = models.User{}
+		req         = NewRequestWithJSON(t, "PUT", uid, "/users", uUser)
+		resp        = MakeRequest(t, req, http.StatusOK)
+	)
+
+	if DecodeJSON(t, resp, &updatedUser) {
+		assert.Equal(t, *updatedUser.UID, *uUser.UID)
+		assert.Equal(t, *updatedUser.DisplayName, *uUser.DisplayName)
+		// Group should not be updated. Only through Group Code
+		assert.Equal(t,
+			updatedUser.GroupUID,
+			oldGroupUID,
+		)
+	}
+}

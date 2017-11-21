@@ -136,6 +136,12 @@ func UpdateUser(params user.UpdateUserParams, principal interface{}) middleware.
 
 	theUser := models.User{UID: params.Body.UID}
 
+	if authUser, ok := principal.(models.User); !ok || *authUser.UID != *theUser.UID {
+		userLog.Infof(`Authorized user "%s" tried to update account for "%s"`,
+			*authUser.UID, *theUser.UID)
+		return NewUnauthorizedResponse(`Can't update user for others.`)
+	}
+
 	// Check if the user is already registered
 	if isRegistered, err := wgplaner.OrmEngine.Get(&theUser); err != nil {
 		userLog.Critical("Database Error!", err)
@@ -162,8 +168,7 @@ func UpdateUser(params user.UpdateUserParams, principal interface{}) middleware.
 		UID:         params.Body.UID,
 		DisplayName: &displayName,
 		Email:       params.Body.Email,
-		GroupUID:    params.Body.GroupUID,
-		PhotoURL:    strfmt.URI(photoURL.String()),
+		GroupUID:    theUser.GroupUID, // Don't override groupUID
 		CreatedAt:   creationTime,
 		UpdatedAt:   creationTime,
 	}
@@ -179,6 +184,8 @@ func UpdateUser(params user.UpdateUserParams, principal interface{}) middleware.
 		userLog.Critical("Database error!", err)
 		return userInternalServerError
 	}
+
+	theUser.PhotoURL = strfmt.URI(photoURL.String())
 
 	return user.NewUpdateUserOK().WithPayload(&theUser)
 }
