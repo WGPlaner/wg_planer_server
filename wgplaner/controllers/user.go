@@ -106,7 +106,6 @@ func CreateUser(params user.CreateUserParams, principal interface{}) middleware.
 		DisplayName: &displayName,
 		Email:       params.Body.Email,
 		GroupUID:    params.Body.GroupUID,
-		PhotoURL:    strfmt.URI(photoURL.String()),
 		CreatedAt:   creationTime,
 		UpdatedAt:   creationTime,
 	}
@@ -122,6 +121,8 @@ func CreateUser(params user.CreateUserParams, principal interface{}) middleware.
 		userLog.Critical("Database error!", err)
 		return userInternalServerError
 	}
+
+	theUser.PhotoURL = strfmt.URI(photoURL.String())
 
 	userLog.Infof(`Created user "%s"`, *theUser.UID)
 
