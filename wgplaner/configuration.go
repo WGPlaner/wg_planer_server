@@ -200,7 +200,14 @@ func validateServerConfig(config serverConfig) ErrorList {
 func validateAuthConfig(config authConfig) ErrorList {
 	errList := ErrorList{}
 
-	// Nothing to do at the moment
+	if !config.IgnoreFirebase {
+		if config.FirebaseProjectId == "" {
+			errList.Add("[Config] Firebase Project ID is required if firebase is not deactivated")
+		}
+		if config.FirebaseServerKey == "" {
+			errList.Add("[Config] Firebase Server Key is required if firebase is not deactivated")
+		}
+	}
 
 	return errList
 }
