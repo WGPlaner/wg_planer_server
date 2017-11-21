@@ -105,7 +105,7 @@ func CreateUser(params user.CreateUserParams, principal interface{}) middleware.
 		UID:         theUser.UID,
 		DisplayName: &displayName,
 		Email:       params.Body.Email,
-		GroupUID:    params.Body.GroupUID,
+		GroupUID:    "",
 		CreatedAt:   creationTime,
 		UpdatedAt:   creationTime,
 	}
