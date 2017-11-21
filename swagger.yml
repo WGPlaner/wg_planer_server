@@ -173,7 +173,7 @@ paths:
         200:
           description: Success
           schema:
-            $ref: "#/definitions/Group"
+            $ref: "#/definitions/SuccessResponse"
         default:
           description: Error
           schema:

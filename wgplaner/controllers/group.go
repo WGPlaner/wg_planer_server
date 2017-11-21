@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
+	"net/http"
 	"strings"
 	"time"
 
@@ -315,5 +316,17 @@ func JoinGroupHelp(params group.JoinGroupHelpParams) middleware.Responder {
 }
 
 func LeaveGroup(params group.LeaveGroupParams, principal interface{}) middleware.Responder {
-	return group.NewLeaveGroupDefault(501)
+	theUser := principal.(models.User)
+	theUser.GroupUID = ""
+
+	// Insert new user into database
+	if _, err := wgplaner.OrmEngine.Cols("group_u_i_d").Update(&theUser); err != nil {
+		userLog.Critical("Database error updating group!", err)
+		return userInternalServerError
+	}
+
+	return group.NewLeaveGroupOK().WithPayload(&models.SuccessResponse{
+		Message: swag.String("Successfully left group"),
+		Status:  swag.Int64(http.StatusOK),
+	})
 }
