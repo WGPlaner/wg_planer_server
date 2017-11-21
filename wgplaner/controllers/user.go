@@ -104,12 +104,13 @@ func CreateUser(params user.CreateUserParams, principal interface{}) middleware.
 	}
 
 	theUser = models.User{
-		UID:         theUser.UID,
-		DisplayName: &displayName,
-		Email:       params.Body.Email,
-		GroupUID:    "",
-		CreatedAt:   creationTime,
-		UpdatedAt:   creationTime,
+		UID:                theUser.UID,
+		DisplayName:        &displayName,
+		Email:              params.Body.Email,
+		FirebaseInstanceID: params.Body.FirebaseInstanceID,
+		GroupUID:           "",
+		CreatedAt:          creationTime,
+		UpdatedAt:          creationTime,
 	}
 
 	// Validate user
@@ -165,12 +166,13 @@ func UpdateUser(params user.UpdateUserParams, principal interface{}) middleware.
 	}
 
 	theUser = models.User{
-		UID:         params.Body.UID,
-		DisplayName: &displayName,
-		Email:       params.Body.Email,
-		GroupUID:    theUser.GroupUID, // Don't override groupUID
-		CreatedAt:   creationTime,
-		UpdatedAt:   creationTime,
+		UID:                params.Body.UID,
+		DisplayName:        &displayName,
+		Email:              params.Body.Email,
+		GroupUID:           theUser.GroupUID, // Don't override groupUID
+		FirebaseInstanceID: params.Body.FirebaseInstanceID,
+		CreatedAt:          creationTime,
+		UpdatedAt:          creationTime,
 	}
 
 	// Validate user

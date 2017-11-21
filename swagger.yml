@@ -462,6 +462,7 @@ definitions:
         format: uuid
       firebaseInstanceId:
         type: string
+        pattern: "^[-_:a-zA-Z0-9]{152}$"
       locale:
         type: string
       photoUrl:
