@@ -190,11 +190,16 @@ func invalidateCodesOfGroup(groupUuid strfmt.UUID) {
 func CreateGroupCode(params group.CreateGroupCodeParams, principal interface{}) middleware.Responder {
 	groupLog.Debugf(`Generate group code for group "%s"!`, params.GroupID)
 
+	theUser := principal.(models.User)
 	groupUid := strfmt.UUID(params.GroupID)
 
 	if err := validateGroupUuid(groupUid); err != nil {
 		groupLog.Debugf(`Error validating group "%s": "%s"`, params.GroupID, err.Error())
 		return NewBadRequest(err.Error())
+	}
+
+	if theUser.GroupUID != groupUid {
+		return NewUnauthorizedResponse("Can't create group code for other groups")
 	}
 
 	// TODO: Check authorization for user in the group

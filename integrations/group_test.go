@@ -1,11 +1,13 @@
 package integrations
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 
 	"github.com/wgplaner/wg_planer_server/gen/models"
 
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
 )
@@ -47,6 +49,33 @@ func TestCreateGroupInvalid(t *testing.T) {
 	prepareTestEnv(t)
 	req := NewRequestWithJSON(t, "POST", "1234567890fakefirebaseid0003", "/groups", models.Group{})
 	MakeRequest(t, req, http.StatusUnprocessableEntity)
+}
+
+func TestCreateGroupCode(t *testing.T) {
+	prepareTestEnv(t)
+	var (
+		code = models.GroupCode{}
+		uid  = strfmt.UUID("00112233-4455-6677-8899-aabbccddeeff")
+		url  = fmt.Sprintf("/groups/%s/create-code", uid)
+		req  = NewRequest(t, "GET", "1234567890fakefirebaseid0001", url)
+		resp = MakeRequest(t, req, http.StatusOK)
+	)
+	DecodeJSON(t, resp, &code)
+	assert.Equal(t, *code.GroupUID, uid)
+	assert.Len(t, *code.Code, 12)
+}
+
+func TestCreateGroupCodeUnauthorized(t *testing.T) {
+	prepareTestEnv(t)
+	var (
+		err  = models.ErrorResponse{}
+		uid  = strfmt.UUID("00112233-4455-6677-8899-aabbccddeeff")
+		url  = fmt.Sprintf("/groups/%s/create-code", uid)
+		req  = NewRequest(t, "GET", "1234567890fakefirebaseid0003", url)
+		resp = MakeRequest(t, req, http.StatusUnauthorized)
+	)
+	DecodeJSON(t, resp, &err)
+	assert.NotEmpty(t, *err.Message)
 }
 
 func TestGetJoinGroupHelp(t *testing.T) {
