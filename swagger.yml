@@ -53,6 +53,12 @@ paths:
           schema:
             $ref: "#/definitions/VersionInfo"
   /groups/{groupId}/create-code:
+    parameters:
+      - name: groupId
+        in: path
+        description: The internal ID of the group
+        required: true
+        type: string
     get:
       tags:
       - group
@@ -60,12 +66,6 @@ paths:
       operationId: createGroupCode
       security:
         - UserIDAuth: []
-      parameters:
-        - name: groupId
-          in: path
-          description: The internal ID of the group
-          required: true
-          type: string
       responses:
         200:
           description: Success
@@ -134,6 +134,13 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
   /groups/{groupId}:
+    parameters:
+    - name: groupId
+      in: path
+      description: The internal ID of the group
+      required: true
+      type: string
+      format: uuid
     get:
       tags:
       - group
@@ -141,12 +148,6 @@ paths:
       operationId: getGroup
       security:
         - UserIDAuth: []
-      parameters:
-        - name: groupId
-          in: path
-          description: The internal ID of the group
-          required: true
-          type: string
       responses:
         200:
           description: Success
@@ -214,6 +215,13 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
   /groups/{groupId}/image:
+    parameters:
+      - name: groupId
+        in: path
+        description: The internal ID of the group
+        required: true
+        type: string
+        format: uuid
     get:
       tags:
       - group
@@ -221,13 +229,6 @@ paths:
       operationId: getGroupImage
       security:
         - UserIDAuth: []
-      parameters:
-        - name: groupId
-          in: path
-          description: The internal ID of the group
-          required: true
-          type: string
-          format: uuid
       produces:
         - application/octet-stream
         - application/json
@@ -281,6 +282,12 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
   /users/{userId}:
+    parameters:
+      - name: userId
+        in: path
+        description: The internal ID of the user
+        required: true
+        type: string
     get:
       tags:
       - user
@@ -288,12 +295,6 @@ paths:
       operationId: getUser
       security:
         - FirebaseIDAuth: []
-      parameters:
-        - name: userId
-          in: path
-          description: The internal ID of the user
-          required: true
-          type: string
       responses:
         200:
           description: Success
@@ -316,6 +317,12 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
   /users/{userId}/image:
+    parameters:
+      - name: userId
+        in: path
+        description: The internal ID of the user
+        required: true
+        type: string
     get:
       tags:
       - user
@@ -323,12 +330,6 @@ paths:
       operationId: getUserImage
       security:
         - UserIDAuth: []
-      parameters:
-        - name: userId
-          in: path
-          description: The internal ID of the user
-          required: true
-          type: string
       produces:
         - application/octet-stream
         - application/json
