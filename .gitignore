@@ -3,7 +3,9 @@ config/serviceAccountKey.json
 config/config.toml
 
 data/users/*
+data/groups/*
 !data/users/.gitkeep
+!data/groups/.gitkeep
 
 # Generated stuff
 gen

@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
+	"io"
 	"net/http"
+	"os"
 	"path"
 	"regexp"
 	"strings"
@@ -160,7 +162,7 @@ func GetGroup(params group.GetGroupParams, principal interface{}) middleware.Res
 	// Database
 	if exists, err := wgplaner.OrmEngine.Get(&theGroup); err != nil {
 		groupLog.Critical(`Database Error!`, err)
-		return userInternalServerError
+		return NewInternalServerError("Internal Database Error")
 
 	} else if !exists {
 		groupLog.Debugf(`Can't find database group with id "%s"!`, theGroup.UID)
@@ -172,6 +174,40 @@ func GetGroup(params group.GetGroupParams, principal interface{}) middleware.Res
 	}
 
 	return group.NewGetGroupOK().WithPayload(&theGroup)
+}
+
+func GetGroupImage(params group.GetGroupImageParams, principal interface{}) middleware.Responder {
+	theUser := principal.(models.User)
+	theGroup := models.Group{UID: params.GroupID}
+
+	if exists, err := wgplaner.OrmEngine.Get(&theGroup); err != nil {
+		groupLog.Critical(`Database Error getting group!`, err)
+		return NewInternalServerError("Internal Database Error")
+
+	} else if !exists {
+		groupLog.Debugf(`Can't find database group with id "%s"!`, theGroup.UID)
+		return NewNotFoundResponse("Group not found on server")
+	}
+
+	if !wgplaner.StringInSlice(*theUser.UID, theGroup.Members) {
+		return NewUnauthorizedResponse("User not a member of the group.")
+	}
+
+	var imgFile *os.File
+	var fileErr error
+
+	// Get default image if normal one does no exist
+	if imgFile, fileErr = wgplaner.GetGroupProfileImage(&theGroup); os.IsNotExist(fileErr) {
+		imgFile, fileErr = wgplaner.GetGroupProfileImageDefault()
+	}
+
+	if fileErr != nil {
+		groupLog.Error("Error getting group's profile image ", fileErr.Error())
+		return NewInternalServerError("Internal Server Error with profile image")
+	}
+
+	return group.NewGetGroupImageOK().WithPayload(imgFile)
+
 }
 
 // Set valid-until date of old codes to just now to invalidate them.
@@ -220,7 +256,7 @@ func CreateGroupCode(params group.CreateGroupCodeParams, principal interface{}) 
 	// Insert new code into database
 	if _, err := wgplaner.OrmEngine.InsertOne(&groupCode); err != nil {
 		groupLog.Critical("Database error!", err)
-		return userInternalServerError
+		return NewInternalServerError("Internal Database Error")
 	}
 
 	return group.NewCreateGroupCodeOK().WithPayload(&groupCode)
@@ -266,13 +302,13 @@ func CreateGroup(params group.CreateGroupParams, principal interface{}) middlewa
 	// TODO: Check if user has already a group
 	if _, err := wgplaner.OrmEngine.Update(&theUser); err != nil {
 		groupLog.Critical("Database error!", err)
-		return userInternalServerError
+		return NewInternalServerError("Internal Database Error")
 	}
 
 	// Insert new user into database
 	if _, err := wgplaner.OrmEngine.InsertOne(&theGroup); err != nil {
 		groupLog.Critical("Database error!", err)
-		return userInternalServerError
+		return NewInternalServerError("Internal Database Error")
 	}
 
 	groupLog.Infof(`Created group "%s"`, theGroup.UID)
@@ -339,12 +375,85 @@ func LeaveGroup(params group.LeaveGroupParams, principal interface{}) middleware
 
 	// Insert new user into database
 	if _, err := wgplaner.OrmEngine.Cols("group_u_i_d").Update(&theUser); err != nil {
-		userLog.Critical("Database error updating group!", err)
-		return userInternalServerError
+		groupLog.Critical("Database error updating group!", err)
+		return NewInternalServerError("Internal Database Error")
 	}
 
 	return group.NewLeaveGroupOK().WithPayload(&models.SuccessResponse{
 		Message: swag.String("Successfully left group"),
+		Status:  swag.Int64(http.StatusOK),
+	})
+}
+
+func UpdateGroupImage(params group.UpdateGroupImageParams, principal interface{}) middleware.Responder {
+	groupLog.Debug("Start put group image")
+
+	var (
+		theUser       = principal.(models.User)
+		theGroup      = models.Group{UID: params.GroupID}
+		internalError = NewInternalServerError("Internal Server Error")
+	)
+
+	// Database
+	if isRegistered, err := wgplaner.OrmEngine.Get(&theGroup); err != nil {
+		groupLog.Critical("Database Error getting group!", err)
+		return internalError
+
+	} else if !isRegistered {
+		groupLog.Debugf(`Can't find database group with id "%s"!`, theGroup.UID)
+		return NewNotFoundResponse("Unknown group")
+	}
+
+	if !wgplaner.StringInSlice(*theUser.UID, theGroup.Members) {
+		return NewUnauthorizedResponse("User not a member of the group.")
+	}
+
+	// We need the first 512 Bytes for "IsValidJpeg". Because "params.ProfileImage.Data"
+	// is only a reader, there is no way around extracting them.
+	first512Bytes := make([]byte, 512)
+	if _, err := params.ProfileImage.Data.Read(first512Bytes); err != nil {
+		return internalError
+	}
+
+	if isValid, mime := wgplaner.IsValidJpeg(first512Bytes); !isValid {
+		groupLog.Debugf(`Invalid mime type "%s"`, mime)
+		return NewBadRequest(fmt.Sprintf(
+			`Invalid file type. Only "image/jpeg" allowed. Mime was "%s"`,
+			mime,
+		))
+	}
+
+	// Write profile image
+
+	filePath := wgplaner.GetGroupProfileImageFilePath(&theGroup)
+
+	// Create directory
+	if dirErr := os.MkdirAll(path.Dir(filePath), 0700); dirErr != nil {
+		groupLog.Error("Can't create directory ", dirErr.Error())
+		return internalError
+	}
+
+	// Create or overwrite file
+	imgFile, err := os.Create(filePath)
+	defer imgFile.Close()
+
+	if err != nil {
+		groupLog.Debug("Can't create new file ", err.Error())
+		return internalError
+
+	} else {
+		if _, err := imgFile.Write(first512Bytes); err != nil {
+			groupLog.Error("Couldn't write first 512Byte", err.Error())
+			return internalError
+		}
+		if _, writeErr := io.Copy(imgFile, params.ProfileImage.Data); writeErr != nil {
+			groupLog.Error("Can't copy file content ", writeErr.Error())
+			return internalError
+		}
+	}
+
+	return group.NewUpdateGroupImageOK().WithPayload(&models.SuccessResponse{
+		Message: swag.String("Successfully uploaded image file"),
 		Status:  swag.Int64(http.StatusOK),
 	})
 }

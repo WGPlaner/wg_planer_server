@@ -86,7 +86,7 @@ func UpdateListItem(params shoppinglist.UpdateListItemParams, principal interfac
 	// Insert new code into database
 	if _, err := wgplaner.OrmEngine.Update(&listItem); err != nil {
 		shoppingLog.Critical("Database error updating list item!", err)
-		return userInternalServerError
+		return NewInternalServerError("Internal Database Error")
 	}
 
 	return shoppinglist.NewUpdateListItemOK().WithPayload(&listItem)
@@ -142,7 +142,7 @@ func CreateListItem(params shoppinglist.CreateListItemParams, principal interfac
 	// Insert new code into database
 	if _, err := wgplaner.OrmEngine.InsertOne(&listItem); err != nil {
 		shoppingLog.Critical("Database error inserting list item!", err)
-		return userInternalServerError
+		return NewInternalServerError("Internal Database Error")
 	}
 
 	return shoppinglist.NewCreateListItemOK().WithPayload(&listItem)

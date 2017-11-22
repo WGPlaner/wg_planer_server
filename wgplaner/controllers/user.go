@@ -24,11 +24,6 @@ import (
 
 var userLog = logging.MustGetLogger("User")
 
-var userInternalServerError = user.NewGetUserDefault(500).WithPayload(&models.ErrorResponse{
-	Message: swag.String("Internal Server error!"),
-	Status:  swag.Int64(500),
-})
-
 // True, if the user is registered in the database. The users' data will be written
 // to `theUser`
 func isUserRegistered(theUser *models.User) (bool, error) {
@@ -85,7 +80,7 @@ func CreateUser(params user.CreateUserParams, principal interface{}) middleware.
 	// Check if the user is already registered
 	if isRegistered, err := wgplaner.OrmEngine.Exist(&theUser); err != nil {
 		userLog.Critical("Database Error!", err)
-		return userInternalServerError
+		return NewInternalServerError("Internal Database Error")
 
 	} else if isRegistered {
 		userLog.Debugf(`User "%s" already exists!`, *theUser.UID)
@@ -100,7 +95,8 @@ func CreateUser(params user.CreateUserParams, principal interface{}) middleware.
 		photoURL, err = imageURL.Build()
 	)
 	if err != nil {
-		return userInternalServerError
+		userLog.Debug(`Error building image URL for user.`)
+		return NewInternalServerError("Internal Error")
 	}
 
 	theUser = models.User{
@@ -122,7 +118,7 @@ func CreateUser(params user.CreateUserParams, principal interface{}) middleware.
 	// Insert new user into database
 	if _, err := wgplaner.OrmEngine.InsertOne(&theUser); err != nil {
 		userLog.Critical("Database error!", err)
-		return userInternalServerError
+		return NewInternalServerError("Internal Database Error")
 	}
 
 	theUser.PhotoURL = strfmt.URI(photoURL.String())
@@ -146,7 +142,7 @@ func UpdateUser(params user.UpdateUserParams, principal interface{}) middleware.
 	// Check if the user is already registered
 	if isRegistered, err := wgplaner.OrmEngine.Get(&theUser); err != nil {
 		userLog.Critical("Database Error!", err)
-		return userInternalServerError
+		return NewInternalServerError("Internal Database Error")
 
 	} else if !isRegistered {
 		userLog.Infof(`User "%s" does not exist!`, *theUser.UID)
@@ -162,7 +158,7 @@ func UpdateUser(params user.UpdateUserParams, principal interface{}) middleware.
 	)
 
 	if err != nil {
-		return userInternalServerError
+		return NewInternalServerError("Error building image URL")
 	}
 
 	theUser = models.User{
@@ -184,7 +180,7 @@ func UpdateUser(params user.UpdateUserParams, principal interface{}) middleware.
 	// Insert new user into database
 	if _, err := wgplaner.OrmEngine.Update(&theUser); err != nil {
 		userLog.Critical("Database error!", err)
-		return userInternalServerError
+		return NewInternalServerError("Internal Database Error")
 	}
 
 	theUser.PhotoURL = strfmt.URI(photoURL.String())
@@ -212,14 +208,14 @@ func GetUser(params user.GetUserParams, principal interface{}) middleware.Respon
 
 		} else if err != nil {
 			userLog.Critical("Firebase SDK Error!", err)
-			return userInternalServerError
+			return NewInternalServerError("Internal Firebase Error")
 		}
 	}
 
 	// Database
 	if isRegistered, err := wgplaner.OrmEngine.Get(&theUser); err != nil {
 		userLog.Critical("Database Error!", err)
-		return userInternalServerError
+		return NewInternalServerError("Internal Database Error")
 
 	} else if !isRegistered {
 		userLog.Debugf(`Can't find database user with id "%s"!`, params.UserID)
@@ -229,7 +225,8 @@ func GetUser(params user.GetUserParams, principal interface{}) middleware.Respon
 	imageURL := user.GetUserImageURL{UserID: swag.StringValue(theUser.UID)}
 	photoURL, err := imageURL.Build()
 	if err != nil {
-		return userInternalServerError
+		groupLog.Debug(`Error building user image URL`)
+		return NewInternalServerError("Internal Server Error")
 	}
 
 	theUser.PhotoURL = strfmt.URI(photoURL.String())
@@ -270,7 +267,7 @@ func UpdateUserImage(params user.UpdateUserImageParams, principal interface{}) m
 	// Database
 	if isRegistered, err := wgplaner.OrmEngine.Get(&theUser); err != nil {
 		userLog.Critical("Database Error!", err)
-		return userInternalServerError
+		return NewInternalServerError("Internal Database Error")
 
 	} else if !isRegistered {
 		userLog.Debugf(`Can't find database user with id "%s"!`, params.UserID)

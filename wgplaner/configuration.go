@@ -31,8 +31,10 @@ type authConfig struct {
 }
 
 type dataConfig struct {
-	UserImageDir     string `toml:"user_image_dir"`
-	UserImageDefault string `toml:"user_image_default"`
+	UserImageDir      string `toml:"user_image_dir"`
+	UserImageDefault  string `toml:"user_image_default"`
+	GroupImageDir     string `toml:"group_image_dir"`
+	GroupImageDefault string `toml:"group_image_default"`
 }
 
 type databaseConfig struct {

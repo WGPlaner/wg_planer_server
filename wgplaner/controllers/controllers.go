@@ -30,12 +30,16 @@ func InitializeControllers(api *operations.WgplanerAPI) {
 
 	// Create API handlers
 	api.InfoGetLatestVersionHandler = info.GetLatestVersionHandlerFunc(GetVersionInfo)
+
 	api.GroupCreateGroupHandler = group.CreateGroupHandlerFunc(CreateGroup)
 	api.GroupGetGroupHandler = group.GetGroupHandlerFunc(GetGroup)
 	api.GroupCreateGroupCodeHandler = group.CreateGroupCodeHandlerFunc(CreateGroupCode)
 	api.GroupJoinGroupHandler = group.JoinGroupHandlerFunc(JoinGroup)
 	api.GroupJoinGroupHelpHandler = group.JoinGroupHelpHandlerFunc(JoinGroupHelp)
 	api.GroupLeaveGroupHandler = group.LeaveGroupHandlerFunc(LeaveGroup)
+	api.GroupGetGroupImageHandler = group.GetGroupImageHandlerFunc(GetGroupImage)
+	api.GroupUpdateGroupImageHandler = group.UpdateGroupImageHandlerFunc(UpdateGroupImage)
+
 	api.UserCreateUserHandler = user.CreateUserHandlerFunc(CreateUser)
 	api.UserGetUserHandler = user.GetUserHandlerFunc(GetUser)
 	api.UserGetUserImageHandler = user.GetUserImageHandlerFunc(GetUserImage)
