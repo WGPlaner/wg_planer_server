@@ -101,10 +101,13 @@ paths:
           description: Group join code
           required: true
           type: string
-          pattern: '^[A-Z0-9]{12}$'
       responses:
         200:
           description: Success
+          schema:
+            type: string
+        default:
+          description: Error
           schema:
             type: string
     post:

@@ -48,3 +48,16 @@ func TestCreateGroupInvalid(t *testing.T) {
 	req := NewRequestWithJSON(t, "POST", "1234567890fakefirebaseid0003", "/groups", models.Group{})
 	MakeRequest(t, req, http.StatusUnprocessableEntity)
 }
+
+func TestGetJoinGroupHelp(t *testing.T) {
+	prepareTestEnv(t)
+	req := NewRequest(t, "GET", "1234567890fakefirebaseid0003", "/groups/join/123456789ABC")
+	MakeRequest(t, req, http.StatusOK)
+}
+
+func TestGetJoinGroupHelpInvalid(t *testing.T) {
+	prepareTestEnv(t)
+	// Invalid code => invalid format
+	req := NewRequest(t, "GET", "1234567890fakefirebaseid0003", "/groups/join/1234")
+	MakeRequest(t, req, http.StatusBadRequest)
+}

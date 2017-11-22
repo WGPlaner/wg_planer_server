@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"path"
+	"regexp"
 	"strings"
 	"time"
 
@@ -307,14 +309,20 @@ func JoinGroupHelp(params group.JoinGroupHelpParams) middleware.Responder {
 	groupLog.Debug(`Get help site for joining group`)
 
 	var (
-		templ   = template.Must(template.ParseFiles("./views/group_code.html"))
-		buf     = bytes.NewBuffer([]byte{})
-		content = map[string]string{"GroupCode": params.GroupCode}
+		filepath = path.Join(wgplaner.AppWorkPath, "views/group_code.html")
+		templ    = template.Must(template.ParseFiles(filepath))
+		buf      = bytes.NewBuffer([]byte{})
+		content  = map[string]string{"GroupCode": params.GroupCode}
 	)
+
+	r := regexp.MustCompile(`^[A-Z0-9]{12}$`)
+	if !r.MatchString(params.GroupCode) {
+		return group.NewJoinGroupHelpDefault(http.StatusBadRequest).WithPayload("Error. Your Code is invalid!")
+	}
 
 	if err := templ.Execute(buf, content); err != nil {
 		groupLog.Error(`Can't execute template'`, err)
-		return group.NewJoinGroupHelpOK().WithPayload("Error")
+		return group.NewJoinGroupHelpOK().WithPayload("Internal Server Error")
 	}
 
 	return group.NewJoinGroupHelpOK().WithPayload(buf.String())
