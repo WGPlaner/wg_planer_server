@@ -316,6 +316,56 @@ func CreateGroup(params group.CreateGroupParams, principal interface{}) middlewa
 	return group.NewCreateGroupOK().WithPayload(&theGroup)
 }
 
+func UpdateGroup(params group.UpdateGroupParams, principal interface{}) middleware.Responder {
+	groupLog.Debug(`Start updating group`)
+
+	theUser := principal.(models.User)
+	theGroup := models.Group{
+		UID: params.Body.UID,
+	}
+
+	if exists, err := wgplaner.OrmEngine.Get(&theGroup); err != nil {
+		groupLog.Critical("Database error!", err)
+		return NewInternalServerError("Internal Database Error")
+
+	} else if !exists {
+		groupLog.Debugf(`Update group: "%s" does not exist: %s"`, theGroup.UID, err)
+		return NewNotFoundResponse(`Group does not exist.`)
+	}
+
+	updateTime := strfmt.DateTime(time.Now().UTC())
+	currency := strings.TrimSpace(params.Body.Currency)
+
+	if currency == "" {
+		currency = "€"
+	}
+
+	theGroup.DisplayName = params.Body.DisplayName
+	theGroup.Currency = currency
+	theGroup.UpdatedAt = updateTime
+
+	// Validate group
+	if isValid, err := validateGroup(&theGroup); !isValid {
+		groupLog.Notice("Error validating group!", err)
+		return NewBadRequest(fmt.Sprintf(`Invalid group data: "%s"`, err.Error()))
+	}
+
+	if wgplaner.StringInSlice(*theUser.UID, theGroup.Admins) {
+		groupLog.Debug(`User tried updating group but is not an admin`)
+		return NewUnauthorizedResponse(`Not an admin of the group.`)
+	}
+
+	// Update user into database
+	if _, err := wgplaner.OrmEngine.Update(&theGroup); err != nil {
+		groupLog.Critical("Database error!", err)
+		return NewInternalServerError("Internal Database Error")
+	}
+
+	groupLog.Infof(`Updated group "%s"`, theGroup.UID)
+
+	return group.NewCreateGroupOK().WithPayload(&theGroup)
+}
+
 func JoinGroup(params group.JoinGroupParams, principal interface{}) middleware.Responder {
 	theUser := principal.(models.User)
 	theGroup, err := joinGroupWithCode(&theUser, params.GroupCode)
