@@ -1,7 +1,7 @@
 -
   u_i_d: 1234567890fakefirebaseid0001
   display_name: John Doe
-  group_u_i_d: 0ec972c9-6c7a-40c8-82c3-7b9e4cac00c8
+  group_u_i_d: 00112233-4455-6677-8899-aabbccddeeff
   firebase_instance_i_d:
   locale: DE
   email: john@example.com
@@ -11,9 +11,19 @@
 -
   u_i_d: 1234567890fakefirebaseid0002
   display_name: Max Meier
-  group_u_i_d: 0ec972c9-6c7a-40c8-82c3-7b9e4cac00c8
+  group_u_i_d: 00112233-4455-6677-8899-aabbccddeeff
   firebase_instance_i_d:
   locale: DE
   email: max@example.com
   created_at: 2017-11-08T14:23:46.000+01:00
   updated_at: 2017-11-08T14:23:46.000+01:00
+
+-
+  u_i_d: 1234567890fakefirebaseid0003
+  display_name: Justus
+  group_u_i_d:
+  firebase_instance_i_d:
+  locale: DE
+  email: arne@example.com
+  created_at: 2017-11-08T14:23:56.000+01:00
+  updated_at: 2017-11-08T14:23:56.000+01:00

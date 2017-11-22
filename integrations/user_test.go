@@ -75,7 +75,7 @@ func TestCreateUserUnauthorized(t *testing.T) {
 	var (
 		errResp = models.ErrorResponse{}
 		newUser = models.User{
-			UID:         swag.String("1234567890fakefirebaseid0003"),
+			UID:         swag.String("1234567890fakefirebaseid0010"),
 			DisplayName: swag.String("Andre"),
 		}
 		req  = NewRequestWithJSON(t, "POST", "1234567890fakefirebaseid0001", "/users", newUser)
@@ -118,11 +118,11 @@ func TestCreateExistingUser(t *testing.T) {
 func TestCreateUser(t *testing.T) {
 	prepareTestEnv(t)
 	var (
-		uid     = "1234567890fakefirebaseid0003"
+		uid     = "1234567890fakefirebaseid0010"
 		newUser = models.User{
 			UID:         &uid,
 			DisplayName: swag.String("Andre"),
-			GroupUID:    strfmt.UUID("0ec972c9-6c7a-40c8-82c3-7b9e4cac00c8"),
+			GroupUID:    strfmt.UUID("0ec972c9-6c7a-40c8-82c3-000000000000"), // Random UID
 		}
 		createdUser = models.User{}
 		req         = NewRequestWithJSON(t, "POST", uid, "/users", newUser)
@@ -159,7 +159,7 @@ func TestUpdateUser(t *testing.T) {
 	prepareTestEnv(t)
 	var (
 		uid         = "1234567890fakefirebaseid0002"
-		oldGroupUID = strfmt.UUID("0ec972c9-6c7a-40c8-82c3-7b9e4cac00c8")
+		oldGroupUID = strfmt.UUID("00112233-4455-6677-8899-aabbccddeeff")
 		uUser       = models.User{
 			UID:         &uid,
 			DisplayName: swag.String("Maxi Meier"),

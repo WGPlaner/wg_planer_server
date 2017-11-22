@@ -148,6 +148,7 @@ func joinGroupWithCode(theUser *models.User, groupCode string) (*models.Group, *
 }
 
 func GetGroup(params group.GetGroupParams, principal interface{}) middleware.Responder {
+	theUser := principal.(models.User)
 	theGroup := models.Group{UID: strfmt.UUID(params.GroupID)}
 	groupLog.Debugf(`Get group "%s"`, theGroup.UID)
 
@@ -155,13 +156,17 @@ func GetGroup(params group.GetGroupParams, principal interface{}) middleware.Res
 	// validateGroup(&theGroup)
 
 	// Database
-	if isRegistered, err := wgplaner.OrmEngine.Get(&theGroup); err != nil {
+	if exists, err := wgplaner.OrmEngine.Get(&theGroup); err != nil {
 		groupLog.Critical(`Database Error!`, err)
 		return userInternalServerError
 
-	} else if !isRegistered {
+	} else if !exists {
 		groupLog.Debugf(`Can't find database group with id "%s"!`, theGroup.UID)
 		return NewNotFoundResponse("Group not found on server")
+	}
+
+	if !wgplaner.StringInSlice(*theUser.UID, theGroup.Members) {
+		return NewUnauthorizedResponse("User is a member of the specified group")
 	}
 
 	return group.NewGetGroupOK().WithPayload(&theGroup)
