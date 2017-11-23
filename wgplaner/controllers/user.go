@@ -11,9 +11,8 @@ import (
 	"strings"
 	"time"
 
-	genModels "github.com/wgplaner/wg_planer_server/gen/models"
-	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/user"
-	models "github.com/wgplaner/wg_planer_server/models"
+	"github.com/wgplaner/wg_planer_server/models"
+	"github.com/wgplaner/wg_planer_server/restapi/operations/user"
 	"github.com/wgplaner/wg_planer_server/wgplaner"
 
 	"github.com/acoshift/go-firebase-admin"
@@ -27,7 +26,7 @@ var userLog = logging.MustGetLogger("User")
 
 // True, if the user is registered in the database. The users' data will be written
 // to `theUser`
-func isUserRegistered(theUser *genModels.User) (bool, error) {
+func isUserRegistered(theUser *models.User) (bool, error) {
 	if isRegistered, err := wgplaner.OrmEngine.Get(theUser); err != nil {
 		return false, err
 	} else {
@@ -35,7 +34,7 @@ func isUserRegistered(theUser *genModels.User) (bool, error) {
 	}
 }
 
-func isUserOnFirebase(theUser *genModels.User) (bool, error) {
+func isUserOnFirebase(theUser *models.User) (bool, error) {
 	_, err := wgplaner.FireBaseApp.Auth().GetUser(context.Background(), *theUser.UID)
 
 	if err == firebase.ErrUserNotFound {
@@ -55,7 +54,7 @@ func isValidUserID(id *string) bool {
 }
 
 // TODO: Validate user id (length, etc)
-func validateUser(theUser *genModels.User) (bool, error) {
+func validateUser(theUser *models.User) (bool, error) {
 	//return theUser.Validate()
 	if theUser.Email != "" {
 		if _, err := mail.ParseAddress(string(theUser.Email)); err != nil {
@@ -65,7 +64,7 @@ func validateUser(theUser *genModels.User) (bool, error) {
 	return true, nil
 }
 
-func SendUpdateToUsers(users []*genModels.User, t string, s []string) {
+func SendUpdateToUsers(users []*models.User, t string, s []string) {
 	userLog.Debug(`Send a firebase update data message to users`)
 	if wgplaner.AppConfig.Auth.IgnoreFirebase {
 		return
@@ -86,11 +85,11 @@ func SendUpdateToUsers(users []*genModels.User, t string, s []string) {
 func CreateUser(params user.CreateUserParams, principal interface{}) middleware.Responder {
 	userLog.Debugf(`Start creating User "%s"`, *params.Body.UID)
 
-	theUser := genModels.User{
+	theUser := models.User{
 		UID: params.Body.UID,
 	}
 
-	if authUser, ok := principal.(genModels.User); !ok || *authUser.UID != *theUser.UID {
+	if authUser, ok := principal.(models.User); !ok || *authUser.UID != *theUser.UID {
 		userLog.Infof(`Authorized user "%s" tried to create account for "%s"`,
 			*authUser.UID, *theUser.UID)
 		return NewUnauthorizedResponse(`Can't create user for others.`)
@@ -118,7 +117,7 @@ func CreateUser(params user.CreateUserParams, principal interface{}) middleware.
 		return NewInternalServerError("Internal Error")
 	}
 
-	theUser = genModels.User{
+	theUser = models.User{
 		UID:                theUser.UID,
 		DisplayName:        &displayName,
 		Email:              params.Body.Email,
@@ -150,9 +149,9 @@ func CreateUser(params user.CreateUserParams, principal interface{}) middleware.
 func UpdateUser(params user.UpdateUserParams, principal interface{}) middleware.Responder {
 	userLog.Debug("Start updating user")
 
-	theUser := genModels.User{UID: params.Body.UID}
+	theUser := models.User{UID: params.Body.UID}
 
-	if authUser, ok := principal.(genModels.User); !ok || *authUser.UID != *theUser.UID {
+	if authUser, ok := principal.(models.User); !ok || *authUser.UID != *theUser.UID {
 		userLog.Infof(`Authorized user "%s" tried to update account for "%s"`,
 			*authUser.UID, *theUser.UID)
 		return NewUnauthorizedResponse(`Can't update user for others.`)
@@ -180,7 +179,7 @@ func UpdateUser(params user.UpdateUserParams, principal interface{}) middleware.
 		return NewInternalServerError("Error building image URL")
 	}
 
-	theUser = genModels.User{
+	theUser = models.User{
 		UID:                params.Body.UID,
 		DisplayName:        &displayName,
 		Email:              params.Body.Email,
@@ -210,7 +209,7 @@ func UpdateUser(params user.UpdateUserParams, principal interface{}) middleware.
 func GetUser(params user.GetUserParams, principal interface{}) middleware.Responder {
 	userLog.Debugf(`Get user "%s"`, params.UserID)
 
-	theUser := genModels.User{UID: &params.UserID}
+	theUser := models.User{UID: &params.UserID}
 
 	if isValid := isValidUserID(theUser.UID); !isValid {
 		return NewBadRequest(fmt.Sprintf("Invalid user id format"))
@@ -257,7 +256,7 @@ func GetUserImage(params user.GetUserImageParams, principal interface{}) middlew
 	userLog.Debug("Get user image")
 
 	// TODO: Check authorization; Check if user exists
-	theUser := genModels.User{UID: &params.UserID}
+	theUser := models.User{UID: &params.UserID}
 
 	var imgFile *os.File
 	var fileErr error
@@ -279,7 +278,7 @@ func UpdateUserImage(params user.UpdateUserImageParams, principal interface{}) m
 	userLog.Debug("Start put user image")
 
 	var (
-		theUser       = genModels.User{UID: &params.UserID}
+		theUser       = models.User{UID: &params.UserID}
 		internalError = NewInternalServerError("Internal Server Error")
 	)
 
@@ -295,7 +294,7 @@ func UpdateUserImage(params user.UpdateUserImageParams, principal interface{}) m
 	}
 
 	// Check if auth and userId are the same
-	if params.UserID != swag.StringValue(principal.(genModels.User).UID) {
+	if params.UserID != swag.StringValue(principal.(models.User).UID) {
 		return NewUnauthorizedResponse("Can't change profile image of other users")
 	}
 
@@ -344,7 +343,7 @@ func UpdateUserImage(params user.UpdateUserImageParams, principal interface{}) m
 		}
 	}
 
-	return user.NewUpdateUserImageOK().WithPayload(&genModels.SuccessResponse{
+	return user.NewUpdateUserImageOK().WithPayload(&models.SuccessResponse{
 		Message: swag.String("Successfully uploaded image file"),
 		Status:  swag.Int64(http.StatusOK),
 	})

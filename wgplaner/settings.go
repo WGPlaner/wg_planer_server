@@ -1,7 +1,7 @@
 package wgplaner
 
 import (
-	"github.com/wgplaner/wg_planer_server/gen/models"
+	"github.com/wgplaner/wg_planer_server/models"
 )
 
 var VersionInfo = models.VersionInfo{

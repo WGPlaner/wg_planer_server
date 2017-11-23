@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wgplaner/wg_planer_server/gen/models"
-	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/group"
+	"github.com/wgplaner/wg_planer_server/models"
+	"github.com/wgplaner/wg_planer_server/restapi/operations/group"
 	"github.com/wgplaner/wg_planer_server/wgplaner"
 
 	"github.com/go-openapi/runtime/middleware"

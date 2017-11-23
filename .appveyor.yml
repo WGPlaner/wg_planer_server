@@ -38,9 +38,8 @@ install:
   - appveyor DownloadFile https://github.com/go-swagger/go-swagger/releases/download/0.12.0/swagger_windows_amd64.exe -FileName swagger.exe
   - ps: Move-Item .\swagger.exe C:\swagger.exe
   - cd %APPVEYOR_BUILD_FOLDER%
-  - ps: New-Item -ItemType "directory" -Name "gen"
   - C:\swagger.exe version
-  - C:\swagger.exe generate server -t gen -f .\swagger.yml --exclude-main -A wgplaner
+  - C:\swagger.exe generate server -t . -f .\swagger.yml --exclude-main --skip-models -A wgplaner
   - go get -v github.com/stretchr/testify/assert
   - go get -v .\cmd\wgplaner-api
   - copy .\config\config.example.toml .\config\config.toml

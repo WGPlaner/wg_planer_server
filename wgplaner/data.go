@@ -4,7 +4,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/wgplaner/wg_planer_server/gen/models"
+	"github.com/wgplaner/wg_planer_server/models"
 
 	"github.com/go-openapi/swag"
 )

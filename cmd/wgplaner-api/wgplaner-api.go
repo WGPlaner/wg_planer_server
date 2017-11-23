@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/wgplaner/wg_planer_server/gen/restapi"
-	"github.com/wgplaner/wg_planer_server/gen/restapi/operations"
+	"github.com/wgplaner/wg_planer_server/restapi"
+	"github.com/wgplaner/wg_planer_server/restapi/operations"
 	"github.com/wgplaner/wg_planer_server/wgplaner"
 	"github.com/wgplaner/wg_planer_server/wgplaner/controllers"
 

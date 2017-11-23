@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wgplaner/wg_planer_server/gen/restapi"
+	"github.com/wgplaner/wg_planer_server/restapi"
 
 	"github.com/BurntSushi/toml"
 	"github.com/go-openapi/loads"

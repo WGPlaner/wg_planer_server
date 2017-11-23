@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/wgplaner/wg_planer_server/gen/models"
-	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/user"
+	"github.com/wgplaner/wg_planer_server/models"
+	"github.com/wgplaner/wg_planer_server/restapi/operations/user"
 
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"

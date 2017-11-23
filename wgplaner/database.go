@@ -6,7 +6,7 @@ import (
 	"log"
 	"path"
 
-	"github.com/wgplaner/wg_planer_server/gen/models"
+	"github.com/wgplaner/wg_planer_server/models"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/core"
