@@ -3,7 +3,7 @@ package controllers
 import (
 	"net/http"
 
-	"github.com/wgplaner/wg_planer_server/gen/models"
+	"github.com/wgplaner/wg_planer_server/models"
 
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/swag"

@@ -455,6 +455,13 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
   /shoppinglist/{groupUid}:
+    parameters:
+    - name: groupUid
+      in: path
+      description: The internal ID of the group
+      required: true
+      type: string
+      format: uuid
     get:
       tags:
       - shoppinglist
@@ -462,12 +469,6 @@ paths:
       operationId: getListItems
       security:
         - FirebaseIDAuth: []
-      parameters:
-      - name: groupUid
-        in: path
-        description: The internal ID of the group
-        required: true
-        type: string
       responses:
         200:
           description: Success
@@ -485,11 +486,6 @@ paths:
       security:
         - FirebaseIDAuth: []
       parameters:
-      - name: groupUid
-        in: path
-        description: The internal ID of the group
-        required: true
-        type: string
       - in: body
         name: body
         description: The data of the item to create.
@@ -513,11 +509,6 @@ paths:
       security:
         - FirebaseIDAuth: []
       parameters:
-      - name: groupUid
-        in: path
-        description: The internal ID of the group
-        required: true
-        type: string
       - in: body
         name: body
         description: The data of the item to create.

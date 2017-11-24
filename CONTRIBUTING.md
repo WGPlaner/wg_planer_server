@@ -19,7 +19,7 @@ import (
   "fmt"
 
   // local packages
-  "github.com/wgplaner/wg_planer_server/gen/models"
+  "github.com/wgplaner/wg_planer_server/models"
   "github.com/wgplaner/wg_planer_server/wgplaner"
 
   // external packages

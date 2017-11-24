@@ -14,9 +14,8 @@ go install github.com/go-swagger/go-swagger/cmd/swagger
 Then run:
 
 ```bash
-rm -rf gen # Delete old generated files
-mkdir gen  # Create gen directory
-swagger generate server -t gen -f swagger.yml --exclude-main -A wgplaner
+rm -rf restapi
+swagger generate server -t . -f swagger.yml --exclude-main --skip-models -P models.User -A wgplaner
 ```
 
 To build `wg_planer_server` run:

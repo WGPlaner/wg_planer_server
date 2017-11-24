@@ -1,4 +1,4 @@
-package wgplaner
+package models
 
 import (
 	"errors"

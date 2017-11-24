@@ -3,35 +3,32 @@ package main
 import (
 	"log"
 
-	"github.com/wgplaner/wg_planer_server/gen/restapi"
-	"github.com/wgplaner/wg_planer_server/gen/restapi/operations"
-	"github.com/wgplaner/wg_planer_server/wgplaner"
-	"github.com/wgplaner/wg_planer_server/wgplaner/controllers"
-
-	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/lib/pq"
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/wgplaner/wg_planer_server/controllers"
+	"github.com/wgplaner/wg_planer_server/modules/setting"
+	"github.com/wgplaner/wg_planer_server/restapi"
+	"github.com/wgplaner/wg_planer_server/restapi/operations"
 )
 
 // Version holds the current WGPlaner version
 var Version = "0.0.1"
 
 func init() {
-	wgplaner.AppVersion = Version
+	setting.AppVersion = Version
 }
 
 func main() {
 	var (
-		api    = operations.NewWgplanerAPI(wgplaner.LoadSwaggerSpec())
+		api    = operations.NewWgplanerAPI(setting.LoadSwaggerSpec(restapi.SwaggerJSON))
 		server = restapi.NewServer(api)
 	)
 
 	defer server.Shutdown()
 
-	wgplaner.NewConfigContext()
+	setting.NewConfigContext()
+	controllers.GlobalInit()
 	controllers.InitializeControllers(api)
 
-	server.Port = wgplaner.AppConfig.Server.Port
+	server.Port = setting.AppConfig.Server.Port
 
 	// serve API
 	if err := server.Serve(); err != nil {
