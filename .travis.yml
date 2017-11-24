@@ -15,9 +15,8 @@ before_install:
   - cp -v config/serviceAccountKey.example.json config/serviceAccountKey.json
   - go get -u github.com/go-swagger/go-swagger/cmd/swagger
   - go install github.com/go-swagger/go-swagger/cmd/swagger
-  - mkdir gen
   - swagger version
-  - swagger generate server -t gen -f swagger.yml --exclude-main -A wgplaner
+  - swagger generate server -t . -f swagger.yml --exclude-main --skip-models -P models.User -A wgplaner
   - go get -v ./cmd/wgplaner-api
 
 script:

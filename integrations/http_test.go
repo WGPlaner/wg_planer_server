@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/go-openapi/swag"
-	"github.com/wgplaner/wg_planer_server/gen/models"
+	"github.com/wgplaner/wg_planer_server/models"
 )
 
 func TestNotFoundResponse(t *testing.T) {

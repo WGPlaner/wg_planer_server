@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/wgplaner/wg_planer_server/gen/models"
-	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/user"
+	"github.com/wgplaner/wg_planer_server/models"
+	"github.com/wgplaner/wg_planer_server/restapi/operations/user"
 
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -171,12 +171,12 @@ func TestUpdateUser(t *testing.T) {
 	)
 
 	if DecodeJSON(t, resp, &updatedUser) {
-		assert.Equal(t, *updatedUser.UID, *uUser.UID)
-		assert.Equal(t, *updatedUser.DisplayName, *uUser.DisplayName)
+		assert.Equal(t, *uUser.UID, *updatedUser.UID)
+		assert.Equal(t, *uUser.DisplayName, *updatedUser.DisplayName)
 		// Group should not be updated. Only through Group Code
 		assert.Equal(t,
-			updatedUser.GroupUID,
 			oldGroupUID,
+			updatedUser.GroupUID,
 		)
 	}
 }

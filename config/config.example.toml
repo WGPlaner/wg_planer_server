@@ -11,8 +11,8 @@ firebase_server_key = "<Your Key Here>"
 [data]
 user_image_dir      = "data/users"               # Directory has to exist!
 user_image_default  = "data/default_profile.jpg" # File has to exist!
-group_image_dir     = "data/groups"               # Directory has to exist!
-group_image_default = "data/group_profile.jpg" # File has to exist!
+group_image_dir     = "data/groups"              # Directory has to exist!
+group_image_default = "data/group_profile.jpg"   # File has to exist!
 
 [database]
 driver  = "sqlite"

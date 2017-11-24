@@ -1,4 +1,4 @@
-package wgplaner
+package base
 
 import (
 	"strings"
@@ -6,15 +6,15 @@ import (
 )
 
 func TestStringInSlice(t *testing.T) {
-	strings := []string{"Hello", "World", "!", "This", "is", "a", "test"}
+	s := []string{"Hello", "World", "!", "This", "is", "a", "test"}
 
-	if StringInSlice("hello", strings) != false {
+	if StringInSlice("hello", s) != false {
 		t.Error("Matching should be case-sensitive")
 	}
-	if StringInSlice("!", strings) != true {
+	if StringInSlice("!", s) != true {
 		t.Error("Single character string should match")
 	}
-	if StringInSlice("what", strings) != false {
+	if StringInSlice("what", s) != false {
 		t.Error("Expected false")
 	}
 }
@@ -31,13 +31,13 @@ func TestIntInSlice(t *testing.T) {
 }
 
 func TestRandomAlphaNumCode(t *testing.T) {
-	if str := RandomAlphaNumCode(10, false); len(str) != 10 {
+	if str := GetRandomAlphaNumCode(10, false); len(str) != 10 {
 		t.Error("Length should be as specified")
 	}
-	if str := RandomAlphaNumCode(10, true); len(str) != 10 {
+	if str := GetRandomAlphaNumCode(10, true); len(str) != 10 {
 		t.Error("Length should be as specified")
 	}
-	if str := RandomAlphaNumCode(10, true); str != strings.ToUpper(str) {
+	if str := GetRandomAlphaNumCode(10, true); str != strings.ToUpper(str) {
 		t.Error("Only uppercase must only contain uppercase letters")
 	}
 }

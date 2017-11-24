@@ -11,10 +11,11 @@ import (
 	"path"
 	"testing"
 
-	"github.com/wgplaner/wg_planer_server/gen/restapi"
-	"github.com/wgplaner/wg_planer_server/gen/restapi/operations"
-	"github.com/wgplaner/wg_planer_server/wgplaner"
-	"github.com/wgplaner/wg_planer_server/wgplaner/controllers"
+	"github.com/wgplaner/wg_planer_server/controllers"
+	"github.com/wgplaner/wg_planer_server/models"
+	"github.com/wgplaner/wg_planer_server/modules/setting"
+	"github.com/wgplaner/wg_planer_server/restapi"
+	"github.com/wgplaner/wg_planer_server/restapi/operations"
 
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/testfixtures.v2"
@@ -36,9 +37,9 @@ func TestMain(m *testing.M) {
 
 	var sqlHelper = &testfixtures.SQLite{}
 
-	err := wgplaner.InitFixtures(
+	err := models.InitFixtures(
 		sqlHelper,
-		path.Join(wgplaner.AppWorkPath, "wgplaner/fixtures/"),
+		path.Join(setting.AppWorkPath, "models/fixtures/"),
 	)
 
 	if err != nil {
@@ -59,17 +60,18 @@ func initIntegrationTest() {
 
 	} else {
 		// Set path so that config and data directory are found
-		wgplaner.AppWorkPath = wgPlanerRoot
-		wgplaner.AppPath = path.Join(wgPlanerRoot, "wgplaner")
+		setting.AppWorkPath = wgPlanerRoot
+		setting.AppPath = path.Join(wgPlanerRoot, "wgplaner")
 	}
 
-	wgplaner.NewConfigContext()
-	wgplaner.AppConfig.Auth.IgnoreFirebase = true
+	setting.NewConfigContext()
+	setting.AppConfig.Auth.IgnoreFirebase = true
 
-	api = operations.NewWgplanerAPI(wgplaner.LoadSwaggerSpec())
+	api = operations.NewWgplanerAPI(setting.LoadSwaggerSpec(restapi.SwaggerJSON))
 	server = restapi.NewServer(api)
-	server.Port = wgplaner.AppConfig.Server.Port
+	server.Port = setting.AppConfig.Server.Port
 
+	controllers.GlobalInit()
 	controllers.InitializeControllers(api)
 
 	// Set handler
@@ -77,7 +79,7 @@ func initIntegrationTest() {
 }
 
 func prepareTestEnv(t testing.TB) {
-	assert.NoError(t, wgplaner.LoadFixtures())
+	assert.NoError(t, models.LoadFixtures())
 }
 
 type TestResponseWriter struct {

@@ -4,14 +4,30 @@ import (
 	"errors"
 	"io"
 
-	"github.com/wgplaner/wg_planer_server/gen/restapi/operations"
-	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/group"
-	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/info"
-	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/shoppinglist"
-	"github.com/wgplaner/wg_planer_server/gen/restapi/operations/user"
+	"github.com/wgplaner/wg_planer_server/models"
+	"github.com/wgplaner/wg_planer_server/modules/setting"
+	"github.com/wgplaner/wg_planer_server/restapi/operations"
+	"github.com/wgplaner/wg_planer_server/restapi/operations/group"
+	"github.com/wgplaner/wg_planer_server/restapi/operations/info"
+	"github.com/wgplaner/wg_planer_server/restapi/operations/shoppinglist"
+	"github.com/wgplaner/wg_planer_server/restapi/operations/user"
 
 	"github.com/go-openapi/runtime"
+	"github.com/op/go-logging"
 )
+
+var initLog = logging.MustGetLogger("Auth")
+
+// GlobalInit is for global configuration reload-able.
+func GlobalInit() {
+	setting.NewConfigContext()
+	initLog.Infof("AppPath: %s", setting.AppPath)
+	initLog.Infof("AppWorkPath: %s", setting.AppWorkPath)
+
+	if err := models.NewEngine(); err != nil {
+		initLog.Fatalf("Failed to initialize ORM engine: %v", err)
+	}
+}
 
 func InitializeControllers(api *operations.WgplanerAPI) {
 	// Producers
@@ -32,21 +48,22 @@ func InitializeControllers(api *operations.WgplanerAPI) {
 	api.InfoGetLatestVersionHandler = info.GetLatestVersionHandlerFunc(GetVersionInfo)
 
 	api.GroupCreateGroupHandler = group.CreateGroupHandlerFunc(CreateGroup)
-	api.GroupUpdateGroupHandler = group.UpdateGroupHandlerFunc(UpdateGroup)
-	api.GroupGetGroupHandler = group.GetGroupHandlerFunc(GetGroup)
 	api.GroupCreateGroupCodeHandler = group.CreateGroupCodeHandlerFunc(CreateGroupCode)
+	api.GroupGetGroupHandler = group.GetGroupHandlerFunc(GetGroup)
+	api.GroupGetGroupImageHandler = group.GetGroupImageHandlerFunc(GetGroupImage)
+	api.GroupUpdateGroupHandler = group.UpdateGroupHandlerFunc(UpdateGroup)
+	api.GroupUpdateGroupImageHandler = group.UpdateGroupImageHandlerFunc(UpdateGroupImage)
 	api.GroupJoinGroupHandler = group.JoinGroupHandlerFunc(JoinGroup)
 	api.GroupJoinGroupHelpHandler = group.JoinGroupHelpHandlerFunc(JoinGroupHelp)
 	api.GroupLeaveGroupHandler = group.LeaveGroupHandlerFunc(LeaveGroup)
-	api.GroupGetGroupImageHandler = group.GetGroupImageHandlerFunc(GetGroupImage)
-	api.GroupUpdateGroupImageHandler = group.UpdateGroupImageHandlerFunc(UpdateGroupImage)
 
 	api.UserCreateUserHandler = user.CreateUserHandlerFunc(CreateUser)
 	api.UserGetUserHandler = user.GetUserHandlerFunc(GetUser)
 	api.UserGetUserImageHandler = user.GetUserImageHandlerFunc(GetUserImage)
 	api.UserUpdateUserHandler = user.UpdateUserHandlerFunc(UpdateUser)
 	api.UserUpdateUserImageHandler = user.UpdateUserImageHandlerFunc(UpdateUserImage)
+
 	api.ShoppinglistCreateListItemHandler = shoppinglist.CreateListItemHandlerFunc(CreateListItem)
-	api.ShoppinglistUpdateListItemHandler = shoppinglist.UpdateListItemHandlerFunc(UpdateListItem)
 	api.ShoppinglistGetListItemsHandler = shoppinglist.GetListItemsHandlerFunc(GetListItems)
+	api.ShoppinglistUpdateListItemHandler = shoppinglist.UpdateListItemHandlerFunc(UpdateListItem)
 }

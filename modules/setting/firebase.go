@@ -1,4 +1,4 @@
-package wgplaner
+package setting
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"path"
 
 	"github.com/acoshift/go-firebase-admin"
+	"github.com/wgplaner/wg_planer_server/modules/base"
 	"google.golang.org/api/option"
 )
 
@@ -18,7 +19,7 @@ func CreateFirebaseConnection() *firebase.App {
 	)
 
 	keyfilePath := path.Join(AppWorkPath, "config/serviceAccountKey.json")
-	FileMustExist(keyfilePath)
+	base.FileMustExist(keyfilePath)
 
 	fireBaseApp, err = firebase.InitializeApp(context.Background(), firebase.AppOptions{
 		ProjectID: AppConfig.Auth.FirebaseProjectId,
