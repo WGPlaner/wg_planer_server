@@ -171,12 +171,12 @@ func TestUpdateUser(t *testing.T) {
 	)
 
 	if DecodeJSON(t, resp, &updatedUser) {
-		assert.Equal(t, *updatedUser.UID, *uUser.UID)
-		assert.Equal(t, *updatedUser.DisplayName, *uUser.DisplayName)
+		assert.Equal(t, *uUser.UID, *updatedUser.UID)
+		assert.Equal(t, *uUser.DisplayName, *updatedUser.DisplayName)
 		// Group should not be updated. Only through Group Code
 		assert.Equal(t,
-			updatedUser.GroupUID,
 			oldGroupUID,
+			updatedUser.GroupUID,
 		)
 	}
 }

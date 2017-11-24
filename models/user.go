@@ -1,21 +1,36 @@
 package models
 
 import (
-	"github.com/go-openapi/strfmt"
+	"bytes"
+	"context"
+	"fmt"
+	"image"
+	"image/jpeg"
+	"os"
+	"path"
+	"strings"
 
+	"github.com/wgplaner/wg_planer_server/modules/avatar"
+	"github.com/wgplaner/wg_planer_server/modules/setting"
+
+	"github.com/acoshift/go-firebase-admin"
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
+	"github.com/nfnt/resize"
+	"github.com/op/go-logging"
+)
+
+var userLog = logging.MustGetLogger("Group")
+
+const (
+	PROFILE_IMAGE_FILE_NAME = "profile_image.jpg"
 )
 
 // User user
 // swagger:model User
 type User struct {
-
-	// created at
-	// Read Only: true
-	CreatedAt strfmt.DateTime `json:"createdAt,omitempty"`
-
 	// display name
 	// Required: true
 	// Max Length: 20
@@ -27,36 +42,40 @@ type User struct {
 
 	// firebase instance Id
 	// Pattern: ^[-_:a-zA-Z0-9]{152}$
-	FirebaseInstanceID string `json:"firebaseInstanceId,omitempty"`
+	FirebaseInstanceID string `xorm:"VARCHAR(152)" json:"firebaseInstanceId,omitempty"`
 
 	// group Uid
-	GroupUID strfmt.UUID `json:"groupUid,omitempty"`
+	GroupUID strfmt.UUID `xorm:"VARCHAR(36) INDEX" json:"groupUid,omitempty"`
 
 	// locale
-	Locale string `json:"locale,omitempty"`
+	Locale string `xorm:"VARCHAR(5)" json:"locale,omitempty"`
 
 	// photo Url
-	PhotoURL strfmt.URI `json:"photoUrl,omitempty"`
+	PhotoURL strfmt.URI `xorm:"-" json:"photoUrl,omitempty"`
 
 	// uid
 	// Required: true
-	UID *string `json:"uid"`
+	UID *string `xorm:"varchar(28) pk" json:"uid"`
+
+	// created at
+	// Read Only: true
+	CreatedAt strfmt.DateTime `xorm:"created" json:"createdAt,omitempty"`
 
 	// updated at
 	// Read Only: true
-	UpdatedAt strfmt.DateTime `json:"updatedAt,omitempty"`
+	UpdatedAt strfmt.DateTime `xorm:"updated" json:"updatedAt,omitempty"`
 }
 
 // Validate validates this user
-func (m *User) Validate(formats strfmt.Registry) error {
+func (u *User) Validate(formats strfmt.Registry) error {
 	var res []error
-	if err := m.validateDisplayName(formats); err != nil {
+	if err := u.validateDisplayName(formats); err != nil {
 		res = append(res, err)
 	}
-	if err := m.validateFirebaseInstanceID(formats); err != nil {
+	if err := u.validateFirebaseInstanceID(formats); err != nil {
 		res = append(res, err)
 	}
-	if err := m.validateUID(formats); err != nil {
+	if err := u.validateUID(formats); err != nil {
 		res = append(res, err)
 	}
 	if len(res) > 0 {
@@ -65,50 +84,240 @@ func (m *User) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *User) validateDisplayName(formats strfmt.Registry) error {
-	if err := validate.Required("displayName", "body", m.DisplayName); err != nil {
+func (u *User) validateDisplayName(formats strfmt.Registry) error {
+	if err := validate.Required("displayName", "body", u.DisplayName); err != nil {
 		return err
 	}
-	if err := validate.MinLength("displayName", "body", string(*m.DisplayName), 3); err != nil {
+	if err := validate.MinLength("displayName", "body", string(*u.DisplayName), 3); err != nil {
 		return err
 	}
-	if err := validate.MaxLength("displayName", "body", string(*m.DisplayName), 20); err != nil {
+	if err := validate.MaxLength("displayName", "body", string(*u.DisplayName), 20); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *User) validateFirebaseInstanceID(formats strfmt.Registry) error {
-	if swag.IsZero(m.FirebaseInstanceID) { // not required
+func (u *User) validateFirebaseInstanceID(formats strfmt.Registry) error {
+	if swag.IsZero(u.FirebaseInstanceID) { // not required
 		return nil
 	}
-	if err := validate.Pattern("firebaseInstanceId", "body", string(m.FirebaseInstanceID), `^[-_:a-zA-Z0-9]{152}$`); err != nil {
+	if err := validate.Pattern("firebaseInstanceId", "body", string(u.FirebaseInstanceID), `^[-_:a-zA-Z0-9]{152}$`); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *User) validateUID(formats strfmt.Registry) error {
-	if err := validate.Required("uid", "body", m.UID); err != nil {
+func (u *User) validateUID(formats strfmt.Registry) error {
+	if err := validate.Required("uid", "body", u.UID); err != nil {
 		return err
 	}
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *User) MarshalBinary() ([]byte, error) {
-	if m == nil {
+func (u *User) MarshalBinary() ([]byte, error) {
+	if u == nil {
 		return nil, nil
 	}
-	return swag.WriteJSON(m)
+	return swag.WriteJSON(u)
 }
 
 // UnmarshalBinary interface implementation
-func (m *User) UnmarshalBinary(b []byte) error {
+func (u *User) UnmarshalBinary(b []byte) error {
 	var res User
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
-	*m = res
+	*u = res
 	return nil
+}
+
+func (u *User) Load() (bool, error) {
+	if isRegistered, err := x.Get(u); err != nil {
+		return false, err
+	} else {
+		return isRegistered, nil
+	}
+}
+
+func (u *User) LeaveGroup() error {
+	u.GroupUID = ""
+	return UpdateUserCols(u, "group_uid")
+}
+
+func (u *User) JoinGroupWithCode(groupCode string) (*Group, error) {
+	groupLog.Debugf(`User "%s" joins a group with code "%s"`, *u.UID, groupCode)
+
+	var (
+		exists  bool
+		err     error
+		g       *Group
+		theCode *GroupCode
+	)
+
+	// Check the code and get the group uid
+	if exists, theCode = IsGroupCodeValid(groupCode); !exists {
+		return nil, ErrGroupCodeNotExist
+	}
+
+	// Check group
+	if g, err = GetGroupByUID(*theCode.GroupUID); err != nil {
+		return nil, err
+	} else if g == nil {
+		return nil, ErrGroupNotExist{UID: *theCode.GroupUID}
+	}
+
+	// user joins the group.
+	u.GroupUID = *theCode.GroupUID
+	if _, err := x.ID(*u.UID).Update(u); err != nil {
+		return nil, err
+	}
+
+	return g, nil
+}
+
+func IsValidUserIDFormat(uid string) bool {
+	return len(uid) == 28 // Firebase IDs are 28 characters long
+}
+
+func IsUserExist(uid string) (bool, error) {
+	if len(uid) == 0 {
+		return false, nil
+	}
+	return x.Exist(&User{UID: &uid})
+}
+
+func IsUserOnFirebase(uid string) (bool, error) {
+	_, err := setting.FireBaseApp.Auth().GetUser(context.Background(), uid)
+
+	if err == firebase.ErrUserNotFound {
+		userLog.Debugf(`Can't find firebase user with id "%s"!`, uid)
+		return false, nil
+
+	} else if err != nil {
+		userLog.Critical("Firebase SDK Error!", err)
+		return false, err
+	}
+
+	return true, nil
+}
+
+func AreUsersExist(uids []string) (bool, error) {
+	for _, uid := range uids {
+		if exists, err := IsUserExist(uid); err != nil {
+			return false, err
+		} else if !exists {
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
+func CreateUser(u *User) error {
+	u.DisplayName = swag.String(strings.TrimSpace(*u.DisplayName))
+	_, err := x.InsertOne(u)
+	u.PhotoURL = strfmt.URI(GetUserImageURL(*u.UID))
+	return err
+}
+
+func GetUserByUID(uid string) (*User, error) {
+	u := new(User)
+
+	if has, err := x.ID(uid).Get(u); err != nil {
+		return nil, err
+
+	} else if !has {
+		return nil, ErrUserNotExist{UID: uid}
+	}
+
+	u.PhotoURL = strfmt.URI(GetUserImageURL(*u.UID))
+
+	return u, nil
+}
+
+func UpdateUser(u *User) error {
+	u.DisplayName = swag.String(strings.TrimSpace(*u.DisplayName))
+	_, err := x.ID(u.UID).AllCols().Update(u)
+	u.PhotoURL = strfmt.URI(GetUserImageURL(*u.UID))
+	return err
+}
+
+func UpdateUserCols(u *User, cols ...string) error {
+	u.DisplayName = swag.String(strings.TrimSpace(swag.StringValue(u.DisplayName)))
+	_, err := x.ID(u.UID).Cols(cols...).Update(u)
+	u.PhotoURL = strfmt.URI(GetUserImageURL(*u.UID))
+	return err
+}
+
+func GetUserImagePath(uid string) string {
+	return path.Join(
+		setting.AppWorkPath,
+		setting.AppConfig.Data.UserImageDir,
+		uid,
+		PROFILE_IMAGE_FILE_NAME,
+	)
+}
+
+func GetUserImage(uid string) (*os.File, error) {
+	return os.Open(GetUserImagePath(uid))
+}
+
+func GetUserImageDefault() (*os.File, error) {
+	return os.Open(path.Join(
+		setting.AppWorkPath,
+		setting.AppConfig.Data.UserImageDefault,
+	))
+}
+
+func GetUserImageURL(uid string) string {
+	return strings.Replace(`/users/{userId}/image`, `{userId}`, uid, -1)
+}
+
+func (u *User) UploadUserImage(data []byte) error {
+	filePath := GetUserImagePath(*u.UID)
+	img, _, err := image.Decode(bytes.NewReader(data))
+
+	if err != nil {
+		return fmt.Errorf("decode: %v", err)
+	}
+
+	m := resize.Resize(avatar.AvatarSize, avatar.AvatarSize, img, resize.NearestNeighbor)
+
+	// Create directory
+	if err = os.MkdirAll(path.Dir(filePath), 0700); err != nil {
+		return fmt.Errorf("failed to create dir %s: %v", setting.AppConfig.Data.UserImageDir, err)
+	}
+
+	// Create or overwrite file
+	fw, err := os.Create(filePath)
+
+	if err != nil {
+		return fmt.Errorf("create: %v", err)
+
+	}
+	defer fw.Close()
+
+	if err = jpeg.Encode(fw, m, &jpeg.Options{Quality: 95}); err != nil {
+		return fmt.Errorf("encode: %v", err)
+	}
+
+	return nil
+}
+
+func SendUpdateToUsers(users []*User, t string, s []string) {
+	userLog.Debug(`Send a firebase update data message to users`)
+	if setting.AppConfig.Auth.IgnoreFirebase {
+		return
+	}
+
+	var ids []string
+	for _, u := range users {
+		ids = append(ids, u.FirebaseInstanceID)
+	}
+	setting.FireBaseApp.FCM().SendToDevices(context.Background(), ids, firebase.Message{
+		Data: PushUpdateData{
+			Type:    t,
+			Updated: s,
+		},
+	})
 }

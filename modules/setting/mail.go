@@ -1,4 +1,4 @@
-package wgplaner
+package setting
 
 import (
 	"fmt"
@@ -11,16 +11,6 @@ import (
 )
 
 var mailLog = logging.MustGetLogger("Mail")
-
-func ValidateMailConfig(config mailConfig) ErrorList {
-	err := ErrorList{}
-
-	if !IntInSlice(config.SMTPPort, []int{25, 465, 587}) {
-		mailLog.Warning("SMTP Port is not a default port!")
-	}
-
-	return err
-}
 
 func SendMail(to []string, subject string, body string) error {
 	// Set up authentication information.

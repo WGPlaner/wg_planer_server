@@ -39,7 +39,7 @@ install:
   - ps: Move-Item .\swagger.exe C:\swagger.exe
   - cd %APPVEYOR_BUILD_FOLDER%
   - C:\swagger.exe version
-  - C:\swagger.exe generate server -t . -f .\swagger.yml --exclude-main --skip-models -A wgplaner
+  - C:\swagger.exe generate server -t . -f .\swagger.yml --exclude-main --skip-models -P models.User -A wgplaner
   - go get -v github.com/stretchr/testify/assert
   - go get -v .\cmd\wgplaner-api
   - copy .\config\config.example.toml .\config\config.toml
