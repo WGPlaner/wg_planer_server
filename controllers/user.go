@@ -59,7 +59,7 @@ func CreateUser(params user.CreateUserParams, principal *models.User) middleware
 }
 
 func UpdateUser(params user.UpdateUserParams, principal *models.User) middleware.Responder {
-	userLog.Debugf(`Start updating user "%s"`, params.Body.UID)
+	userLog.Debugf(`Start updating user "%s"`, *params.Body.UID)
 
 	var theUser *models.User
 
