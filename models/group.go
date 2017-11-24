@@ -33,7 +33,6 @@ var (
 
 // Group group
 // swagger:model Group
-
 type Group struct {
 	// admins
 	// Read Only: true
@@ -270,6 +269,5 @@ func (g *Group) UploadGroupImage(data []byte) error {
 	if err = jpeg.Encode(fw, m, &jpeg.Options{Quality: 95}); err != nil {
 		return fmt.Errorf("encode: %v", err)
 	}
-
 	return nil
 }
