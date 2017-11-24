@@ -14,6 +14,7 @@ import (
 	"github.com/nfnt/resize"
 	"github.com/op/go-logging"
 	"github.com/wgplaner/wg_planer_server/modules/avatar"
+	"github.com/wgplaner/wg_planer_server/modules/base"
 	"github.com/wgplaner/wg_planer_server/modules/setting"
 
 	apiErrors "github.com/go-openapi/errors"
@@ -36,7 +37,7 @@ var (
 type Group struct {
 	// admins
 	// Read Only: true
-	Admins []string `xorm:"-" json:"admins"`
+	Admins []string `json:"admins"`
 
 	// currency
 	// Max Length: 4
@@ -156,6 +157,10 @@ func (g *Group) HasMember(uid string) bool {
 		And("uid=?", uid).
 		Exist(new(User))
 	return has
+}
+
+func (g *Group) HasAdmin(uid string) bool {
+	return base.StringInSlice(uid, g.Admins)
 }
 
 func (g *Group) GetActiveShoppingListItems() ([]*ListItem, error) {

@@ -124,6 +124,7 @@ func CreateGroup(params group.CreateGroupParams, principal *models.User) middlew
 
 	theGroup := models.Group{
 		UID:         newGroupUid,
+		Admins:      []string{*principal.UID},
 		DisplayName: params.Body.DisplayName,
 		Currency:    params.Body.Currency,
 	}
@@ -161,10 +162,12 @@ func UpdateGroup(params group.UpdateGroupParams, principal *models.User) middlew
 		return NewInternalServerError("Internal Database Error")
 	}
 
+	if !g.HasAdmin(*principal.UID) {
+		return NewUnauthorizedResponse("Not an admin")
+	}
+
 	g.DisplayName = params.Body.DisplayName
 	g.Currency = params.Body.Currency
-
-	// TODO: Check Auth (is admin)
 
 	// Update user into database
 	if err := models.UpdateGroupCols(g, `display_name`, `currency`); err != nil {
