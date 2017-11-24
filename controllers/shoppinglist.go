@@ -114,6 +114,10 @@ func CreateListItem(params shoppinglist.CreateListItemParams, principal *models.
 		g   *models.Group
 	)
 
+	if len(params.Body.RequestedFor) == 0 {
+		return NewBadRequest("RequestedFor must contain at least one user")
+	}
+
 	if g, err = models.GetGroupByUID(params.GroupUID); models.IsErrGroupNotExist(err) {
 		return NewNotFoundResponse("Group not found")
 
@@ -122,8 +126,8 @@ func CreateListItem(params shoppinglist.CreateListItemParams, principal *models.
 		return NewBadRequest(err.Error())
 	}
 
-	if len(params.Body.RequestedFor) == 0 {
-		return NewBadRequest("RequestedFor must contain at least one user")
+	if !g.HasMember(*principal.UID) {
+		return NewUnauthorizedResponse("Unauthorized: Not member of group")
 	}
 
 	// TODO: Check if user is unique
