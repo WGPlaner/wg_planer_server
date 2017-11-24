@@ -55,6 +55,7 @@ func TestCreateGroup(t *testing.T) {
 	assert.Equal(t, *newGroup.DisplayName, *createdGroup.DisplayName)
 	assert.NotEmpty(t, createdGroup.UID)
 	assert.Equal(t, createdGroup.CreatedAt, createdGroup.UpdatedAt)
+	assert.Contains(t, createdGroup.Members, authInGroup)
 
 	// TODO check database beans
 }

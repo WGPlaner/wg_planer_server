@@ -114,6 +114,8 @@ func CreateGroupCode(params group.CreateGroupCodeParams, principal *models.User)
 func CreateGroup(params group.CreateGroupParams, principal *models.User) middleware.Responder {
 	groupLog.Debug(`Start creating group`)
 
+	var err error
+
 	// Create new group
 	newGroupUid := strfmt.UUID(uuid.NewV4().String())
 
@@ -122,7 +124,7 @@ func CreateGroup(params group.CreateGroupParams, principal *models.User) middlew
 		GroupUID: newGroupUid,
 	}
 
-	theGroup := models.Group{
+	theGroup := &models.Group{
 		UID:         newGroupUid,
 		Admins:      []string{*principal.UID},
 		DisplayName: params.Body.DisplayName,
@@ -131,20 +133,25 @@ func CreateGroup(params group.CreateGroupParams, principal *models.User) middlew
 
 	// TODO: Check if user has already a group
 
-	if err := models.UpdateUserCols(theUser, "group_uid"); err != nil {
+	if err = models.UpdateUserCols(theUser, "group_uid"); err != nil {
 		groupLog.Critical("Database error!", err)
 		return NewInternalServerError("Internal Database Error")
 	}
 
 	// Insert new user into database
-	if err := models.CreateGroup(&theGroup); err != nil {
+	if err = models.CreateGroup(theGroup); err != nil {
+		groupLog.Critical("Database error!", err)
+		return NewInternalServerError("Internal Database Error")
+	}
+
+	if theGroup, err = models.GetGroupByUID(theGroup.UID); err != nil {
 		groupLog.Critical("Database error!", err)
 		return NewInternalServerError("Internal Database Error")
 	}
 
 	groupLog.Infof(`Created group "%s"`, theGroup.UID)
 
-	return group.NewCreateGroupOK().WithPayload(&theGroup)
+	return group.NewCreateGroupOK().WithPayload(theGroup)
 }
 
 func UpdateGroup(params group.UpdateGroupParams, principal *models.User) middleware.Responder {
