@@ -53,6 +53,14 @@ func UpdateListItem(params shoppinglist.UpdateListItemParams, principal *models.
 		g   *models.Group
 	)
 
+	if !strfmt.IsUUID(string(params.Body.ID)) {
+		return NewBadRequest("Invalid item ID")
+	}
+
+	if len(params.Body.RequestedFor) == 0 {
+		return NewBadRequest("RequestedFor must contain at least one user")
+	}
+
 	if g, err = models.GetGroupByUID(params.GroupUID); models.IsErrGroupNotExist(err) {
 		return NewNotFoundResponse("Group not found")
 
@@ -61,12 +69,8 @@ func UpdateListItem(params shoppinglist.UpdateListItemParams, principal *models.
 		return NewBadRequest(err.Error())
 	}
 
-	if !strfmt.IsUUID(string(params.Body.ID)) {
-		return NewBadRequest("Invalid item ID")
-	}
-
-	if len(params.Body.RequestedFor) == 0 {
-		return NewBadRequest("RequestedFor must contain at least one user")
+	if !g.HasMember(*principal.UID) {
+		return NewUnauthorizedResponse("Unauthorized: Not member of group")
 	}
 
 	// TODO: Check if user is unique

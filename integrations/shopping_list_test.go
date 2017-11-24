@@ -109,3 +109,23 @@ func TestUpdateListItem(t *testing.T) {
 	assert.Equal(t, int64(2), *uItem.Count)
 	assert.NotEqual(t, uItem.CreatedAt, uItem.UpdatedAt)
 }
+
+func TestUpdateListItemUnauthorized(t *testing.T) {
+	prepareTestEnv(t)
+	var (
+		authInGroup = "1234567890fakefirebaseid0003"
+		groupUid    = "00112233-4455-6677-8899-aabbccddeeff"
+		item        = models.ListItem{
+			ID:           "00112233-4455-6677-8899-000000000001",
+			GroupUID:     strfmt.UUID(groupUid),
+			Title:        swag.String("New Milk"),
+			Category:     swag.String("New Groceries"),
+			Count:        swag.Int64(2),
+			Price:        0,
+			RequestedFor: []string{authInGroup},
+		}
+		req = NewRequestWithJSON(t, "PUT", authInGroup,
+			"/shoppinglist/"+groupUid, item)
+	)
+	MakeRequest(t, req, http.StatusUnauthorized)
+}
