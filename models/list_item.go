@@ -8,6 +8,10 @@ import (
 )
 
 type ListItem struct {
+	// bill Uid
+	// Read Only: true
+	BillUID strfmt.UUID `json:"billUid,omitempty"`
+
 	// bought at
 	// Read Only: true
 	BoughtAt strfmt.DateTime `json:"boughtAt,omitempty"`

@@ -22,6 +22,7 @@ var (
 
 func init() {
 	tables = []interface{}{
+		new(Bill),
 		new(User),
 		new(Group),
 		new(GroupCode),

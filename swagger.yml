@@ -13,6 +13,8 @@ host: "api.wgplaner.ameyering.de"
 basePath: "/"
 
 tags:
+- name: bill
+  description: Bill related endpoints
 - name: group
   description: Group related endpoints
 - name: user
@@ -295,6 +297,54 @@ paths:
           description: Invalid groupId
           schema:
             $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /group/{groupId}/bills:
+    parameters:
+    - name: groupId
+      in: path
+      description: The internal ID of the group
+      required: true
+      type: string
+      format: uuid
+    get:
+      tags:
+      - bill
+      description: Returns the group's bill
+      operationId: getBillList
+      security:
+        - UserIDAuth: []
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "#/definitions/BillList"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /group/{groupId}/bills/create:
+    parameters:
+    - name: groupId
+      in: path
+      description: The internal ID of the group
+      required: true
+      type: string
+      format: uuid
+    post:
+      tags:
+      - bill
+      description: Returns the bill object
+      operationId: createBill
+      security:
+        - UserIDAuth: []
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "#/definitions/Bill"
         default:
           description: Error
           schema:
@@ -652,6 +702,10 @@ definitions:
         type: integer
       category:
         type: string
+      billUid:
+        type: string
+        format: uuid
+        readOnly: true
       boughtAt:
         type: string
         format: date-time
@@ -670,6 +724,13 @@ definitions:
       - state
       - createdBy
     properties:
+      uid:
+        type: string
+        format: uuid
+      group_uid:
+        type: string
+        format: uuid
+        readOnly: true
       state:
         type: string
       sum:
@@ -690,6 +751,19 @@ definitions:
         type: string
         format: date-time
         readOnly: true
+  BillList:
+    required:
+    - count
+    - bills
+    properties:
+      count:
+        type: integer
+        readOnly: true
+      bills:
+        type: array
+        readOnly: true
+        items:
+          $ref: "#/definitions/Bill"
   VersionInfo:
     type: object
     required:

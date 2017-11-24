@@ -7,6 +7,7 @@ import (
 	"github.com/wgplaner/wg_planer_server/models"
 	"github.com/wgplaner/wg_planer_server/modules/setting"
 	"github.com/wgplaner/wg_planer_server/restapi/operations"
+	"github.com/wgplaner/wg_planer_server/restapi/operations/bill"
 	"github.com/wgplaner/wg_planer_server/restapi/operations/group"
 	"github.com/wgplaner/wg_planer_server/restapi/operations/info"
 	"github.com/wgplaner/wg_planer_server/restapi/operations/shoppinglist"
@@ -46,6 +47,9 @@ func InitializeControllers(api *operations.WgplanerAPI) {
 
 	// Create API handlers
 	api.InfoGetLatestVersionHandler = info.GetLatestVersionHandlerFunc(GetVersionInfo)
+
+	api.BillCreateBillHandler = bill.CreateBillHandlerFunc(CreateBill)
+	api.BillGetBillListHandler = bill.GetBillListHandlerFunc(GetBillList)
 
 	api.GroupCreateGroupHandler = group.CreateGroupHandlerFunc(CreateGroup)
 	api.GroupCreateGroupCodeHandler = group.CreateGroupCodeHandlerFunc(CreateGroupCode)
