@@ -129,3 +129,13 @@ func TestUpdateListItemUnauthorized(t *testing.T) {
 	)
 	MakeRequest(t, req, http.StatusUnauthorized)
 }
+
+func TestUpdateListItemInvalid(t *testing.T) {
+	prepareTestEnv(t)
+	var (
+		item = models.ListItem{Title: swag.String("Eggs")}
+		req  = NewRequestWithJSON(t, "PUT", "1234567890fakefirebaseid0003",
+			"/shoppinglist/00112233-4455-6677-8899-aabbccddeeff", item)
+	)
+	MakeRequest(t, req, http.StatusUnprocessableEntity)
+}
