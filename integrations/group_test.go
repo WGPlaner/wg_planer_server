@@ -104,3 +104,37 @@ func TestGetJoinGroupHelpInvalid(t *testing.T) {
 	req := NewRequest(t, "GET", "1234567890fakefirebaseid0003", "/groups/join/1234")
 	MakeRequest(t, req, http.StatusBadRequest)
 }
+
+func TestJoinGroupThroughCodeInvalid(t *testing.T) {
+	prepareTestEnv(t)
+	req := NewRequest(t, "POST", "1234567890fakefirebaseid0001", "/groups/join/123123123123")
+	MakeRequest(t, req, http.StatusBadRequest)
+}
+
+func TestJoinGroupThroughCode(t *testing.T) {
+	prepareTestEnv(t)
+	var (
+		userUid = "1234567890fakefirebaseid0001"
+		code    = models.GroupCode{}
+		uid     = strfmt.UUID("00112233-4455-6677-8899-aabbccddeeff")
+		reqCode = NewRequest(t, "GET", userUid, fmt.Sprintf("/groups/%s/create-code", uid))
+		resp    = MakeRequest(t, reqCode, http.StatusOK)
+	)
+	DecodeJSON(t, resp, &code)
+	// Join with generated code
+	req := NewRequest(t, "POST", userUid, "/groups/join/"+*code.Code)
+	MakeRequest(t, req, http.StatusOK)
+}
+
+func TestLeaveGroup(t *testing.T) {
+	prepareTestEnv(t)
+	authInGroup := "1234567890fakefirebaseid0001"
+	req := NewRequest(t, "POST", authInGroup, "/groups/leave")
+	MakeRequest(t, req, http.StatusOK)
+
+	u := &models.User{}
+	req = NewRequest(t, "GET", authInGroup, "/users/"+authInGroup)
+	resp := MakeRequest(t, req, http.StatusOK)
+	DecodeJSON(t, resp, u)
+	assert.Empty(t, u.GroupUID)
+}

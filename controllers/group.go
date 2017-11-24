@@ -180,13 +180,16 @@ func UpdateGroup(params group.UpdateGroupParams, principal *models.User) middlew
 func JoinGroup(params group.JoinGroupParams, principal *models.User) middleware.Responder {
 	theGroup, err := principal.JoinGroupWithCode(params.GroupCode)
 
-	if err == nil {
+	if models.IsErrGroupCodeNotExist(err) {
+		return NewBadRequest("Invalid group code")
+
+	} else if err == nil {
 		return group.NewJoinGroupOK().WithPayload(theGroup)
 	}
 
 	// TODO: Handle different errors
 	groupLog.Error(`Unknown Internal Server Error: `, err)
-	return NewBadRequest("Unknown Server Error")
+	return NewInternalServerError("Unknown Server Error")
 }
 
 func JoinGroupHelp(params group.JoinGroupHelpParams) middleware.Responder {

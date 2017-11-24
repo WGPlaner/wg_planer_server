@@ -157,7 +157,7 @@ func (u *User) JoinGroupWithCode(groupCode string) (*Group, error) {
 
 	// Check the code and get the group uid
 	if exists, theCode = IsGroupCodeValid(groupCode); !exists {
-		return nil, ErrGroupCodeNotExist
+		return nil, ErrGroupCodeNotExist{Code: groupCode}
 	}
 
 	// Check group

@@ -1,7 +1,6 @@
 package models
 
 import (
-	"errors"
 	"time"
 
 	apiErrors "github.com/go-openapi/errors"
@@ -9,10 +8,6 @@ import (
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 	"github.com/wgplaner/wg_planer_server/modules/base"
-)
-
-var (
-	ErrGroupCodeNotExist = errors.New("group code does not exist")
 )
 
 const (
@@ -26,7 +21,7 @@ type GroupCode struct {
 	// code
 	// Required: true
 	// Pattern: ^[A-Z0-9]{12}$
-	Code *string `json:"code"`
+	Code *string `xorm:"pk" json:"code"`
 
 	// group Uid
 	// Required: true
@@ -139,7 +134,7 @@ func GetGroupCode(c string) (*GroupCode, error) {
 	if has, err := x.ID(c).Get(code); err != nil {
 		return nil, err
 	} else if !has {
-		return nil, ErrGroupCodeNotExist
+		return nil, ErrGroupCodeNotExist{Code: c}
 	}
 	return code, nil
 }
