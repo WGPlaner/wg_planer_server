@@ -49,7 +49,6 @@ func randomInt(max *big.Int) int {
 	r, err := rand.Int(rand.Reader, max)
 	if err != nil {
 		panic("ran out of randomness")
-		return 0
 	}
 
 	return int(r.Int64())
