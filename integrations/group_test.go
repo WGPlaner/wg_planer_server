@@ -65,6 +65,34 @@ func TestCreateGroupInvalid(t *testing.T) {
 	MakeRequest(t, req, http.StatusUnprocessableEntity)
 }
 
+func TestUpdateGroup(t *testing.T) {
+	prepareTestEnv(t)
+	var (
+		uG = models.Group{}
+		g  = models.Group{
+			UID:         "00112233-4455-6677-8899-aabbccddeeff",
+			DisplayName: swag.String("Updated Group"),
+		}
+		req  = NewRequestWithJSON(t, "PUT", "1234567890fakefirebaseid0001", "/groups", g)
+		resp = MakeRequest(t, req, http.StatusOK)
+	)
+	DecodeJSON(t, resp, &uG)
+	assert.Equal(t, *g.DisplayName, *uG.DisplayName)
+	assert.NotEqual(t, uG.UpdatedAt, uG.CreatedAt)
+}
+
+func TestUpdateGroupNotAdmin(t *testing.T) {
+	prepareTestEnv(t)
+	var (
+		g = models.Group{
+			UID:         "00112233-4455-6677-8899-aabbccddeeff",
+			DisplayName: swag.String("Updated Group"),
+		}
+		req = NewRequestWithJSON(t, "PUT", "1234567890fakefirebaseid0002", "/groups", g)
+	)
+	MakeRequest(t, req, http.StatusUnauthorized)
+}
+
 func TestCreateGroupCode(t *testing.T) {
 	prepareTestEnv(t)
 	var (

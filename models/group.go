@@ -10,16 +10,16 @@ import (
 	"path"
 	"strings"
 
-	"github.com/go-openapi/strfmt"
-	"github.com/nfnt/resize"
-	"github.com/op/go-logging"
 	"github.com/wgplaner/wg_planer_server/modules/avatar"
 	"github.com/wgplaner/wg_planer_server/modules/base"
 	"github.com/wgplaner/wg_planer_server/modules/setting"
 
 	apiErrors "github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
+	"github.com/nfnt/resize"
+	"github.com/op/go-logging"
 )
 
 var groupLog = logging.MustGetLogger("Group")
