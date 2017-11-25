@@ -6,6 +6,7 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/satori/go.uuid"
 	"github.com/wgplaner/wg_planer_server/models"
+	"github.com/wgplaner/wg_planer_server/modules/mailer"
 	"github.com/wgplaner/wg_planer_server/restapi/operations/shoppinglist"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -100,6 +101,10 @@ func UpdateListItem(params shoppinglist.UpdateListItemParams, principal *models.
 		return NewInternalServerError("Internal Database Error")
 	}
 
+	mailer.SendPushUpdateToUserIDs(g.Members, mailer.PushUpdateShoppingList, []string{
+		string(params.Body.ID),
+	})
+
 	// Get list item with its data
 	if listItem, err = models.GetListItemByUIDs(listItem.GroupUID, listItem.ID); err != nil {
 		shoppingLog.Critical("Database error querying list item!", err)
@@ -159,6 +164,10 @@ func CreateListItem(params shoppinglist.CreateListItemParams, principal *models.
 		shoppingLog.Critical("Database error inserting list item!", err)
 		return NewInternalServerError("Internal Database Error")
 	}
+
+	mailer.SendPushUpdateToUserIDs(g.Members, mailer.PushUpdateShoppingList, []string{
+		string(params.Body.ID),
+	})
 
 	return shoppinglist.NewCreateListItemOK().WithPayload(&listItem)
 }

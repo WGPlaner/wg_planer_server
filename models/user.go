@@ -303,21 +303,3 @@ func (u *User) UploadUserImage(data []byte) error {
 
 	return nil
 }
-
-func SendUpdateToUsers(users []*User, t string, s []string) {
-	userLog.Debug(`Send a firebase update data message to users`)
-	if setting.AppConfig.Auth.IgnoreFirebase {
-		return
-	}
-
-	var ids []string
-	for _, u := range users {
-		ids = append(ids, u.FirebaseInstanceID)
-	}
-	setting.FireBaseApp.FCM().SendToDevices(context.Background(), ids, firebase.Message{
-		Data: PushUpdateData{
-			Type:    t,
-			Updated: s,
-		},
-	})
-}
