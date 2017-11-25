@@ -34,10 +34,14 @@ func SendPushUpdateToUsers(users []*models.User, t PushUpdateType, data []string
 
 	var receiverIDs []string
 	for _, u := range users {
+		if u.FirebaseInstanceID == "" {
+			fireLog.Debugf(`Empty FirebaseInstanceID for user "%s"`, *u.UID)
+			continue
+		}
 		receiverIDs = append(receiverIDs, u.FirebaseInstanceID)
 	}
 
-	resp, err := setting.FireBaseApp.FCM().SendToDevices(context.Background(), receiverIDs, firebase.Message{
+	_, err := setting.FireBaseApp.FCM().SendToDevices(context.Background(), receiverIDs, firebase.Message{
 		Data: PushUpdateData{
 			Type:    t,
 			Updated: data,
@@ -49,7 +53,6 @@ func SendPushUpdateToUsers(users []*models.User, t PushUpdateType, data []string
 		return err
 	}
 
-	fireLog.Debug(resp)
 	return nil
 }
 
