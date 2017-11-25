@@ -166,7 +166,7 @@ func CreateListItem(params shoppinglist.CreateListItemParams, principal *models.
 	}
 
 	mailer.SendPushUpdateToUserIDs(g.Members, mailer.PushUpdateShoppingList, []string{
-		string(params.Body.ID),
+		string(listItem.ID),
 	})
 
 	return shoppinglist.NewCreateListItemOK().WithPayload(&listItem)
