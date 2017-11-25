@@ -11,7 +11,7 @@ import (
 var billLog = logging.MustGetLogger("Bill")
 
 func GetBillList(params bill.GetBillListParams, principal *models.User) middleware.Responder {
-	bills, err := models.GetBillsByGroupUID(params.GroupID)
+	bills, err := models.GetBillsByGroupUID(params.GroupUID)
 	if err != nil {
 		return NewInternalServerError("Internal Server Error")
 	}
@@ -27,12 +27,12 @@ func GetBillList(params bill.GetBillListParams, principal *models.User) middlewa
 }
 
 func CreateBill(params bill.CreateBillParams, principal *models.User) middleware.Responder {
-	billLog.Debugf(`Start creating bill for group "%s"`, params.GroupID)
+	billLog.Debugf(`Start creating bill for group "%s"`, params.GroupUID)
 
 	// TODO: Check authorization, etc
 
 	g := &models.Group{
-		UID: params.GroupID,
+		UID: params.GroupUID,
 	}
 
 	b, err := models.CreateBillForGroup(g, principal)

@@ -46,7 +46,7 @@ func InitializeControllers(api *operations.WgplanerAPI) {
 	api.FirebaseIDAuthAuth = FirebaseIDAuth
 
 	// Create API handlers
-	api.InfoGetLatestVersionHandler = info.GetLatestVersionHandlerFunc(GetVersionInfo)
+	api.InfoGetVersionHandler = info.GetVersionHandlerFunc(GetVersionInfo)
 
 	api.BillCreateBillHandler = bill.CreateBillHandlerFunc(CreateBill)
 	api.BillGetBillListHandler = bill.GetBillListHandlerFunc(GetBillList)

@@ -17,7 +17,7 @@ var VersionInfo = models.VersionInfo{
 	APIVersionString:     "v0.0.5",
 }
 
-func GetVersionInfo(_ info.GetLatestVersionParams) middleware.Responder {
+func GetVersionInfo(_ info.GetVersionParams) middleware.Responder {
 	infoLog.Debug(`Get version info`)
-	return info.NewGetLatestVersionOK().WithPayload(&VersionInfo)
+	return info.NewGetVersionOK().WithPayload(&VersionInfo)
 }

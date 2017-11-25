@@ -22,7 +22,7 @@ func TestNotFoundResponse(t *testing.T) {
 
 func TestGetVersionInfo(t *testing.T) {
 	prepareTestEnv(t)
-	req := NewRequest(t, "GET", AuthEmpty, "/latest-version")
+	req := NewRequest(t, "GET", AuthEmpty, "/version")
 	resp := MakeRequest(t, req, http.StatusOK)
 	DecodeJSON(t, resp, &models.VersionInfo{})
 }

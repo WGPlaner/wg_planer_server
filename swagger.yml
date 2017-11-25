@@ -44,23 +44,119 @@ securityDefinitions:
     in: header
 
 paths:
-  /latest-version:
+
+  /version:
     get:
       tags:
       - info
-      description: Get the latest version code for the API and android client
+      description: Get the version code for the API and android client.
+      operationId: getVersion
       responses:
         200:
           description: Success
           schema:
             $ref: "#/definitions/VersionInfo"
-  /groups/{groupId}/create-code:
+
+  /groups:
     parameters:
-      - name: groupId
+      - in: body
+        name: body
+        description: The group to update (contains uid, displayName, etc)
+        required: true
+        schema:
+          $ref: "#/definitions/Group"
+    post:
+      tags:
+      - group
+      description: Create a new group for the authenticated user. The authenticated user
+                   will be a member and admin of the new group.
+      operationId: createGroup
+      security:
+        - UserIDAuth: []
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "#/definitions/Group"
+        400:
+          description: Invalid group data
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          description: Unauthorized User
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    put:
+      tags:
+      - group
+      description: Update the group that is given through the UID in the body.
+                   The authenticated user has to be an admin.
+      operationId: updateGroup
+      security:
+        - UserIDAuth: []
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "#/definitions/Group"
+        400:
+          description: Invalid group data
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          description: Unauthorized User
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /groups/{groupUID}:
+    parameters:
+    - name: groupUID
+      in: path
+      description: The internal ID of the group
+      required: true
+      type: string
+      format: uuid
+    get:
+      tags:
+      - group
+      description: Get the group given with the UID in the URL.
+      operationId: getGroup
+      security:
+        - UserIDAuth: []
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "#/definitions/Group"
+        400:
+          description: Invalid groupUID
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          description: Group not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /groups/{groupUID}/create-code:
+    parameters:
+      - name: groupUID
         in: path
         description: The internal ID of the group
         required: true
         type: string
+        format: uuid
     get:
       tags:
       - group
@@ -70,11 +166,11 @@ paths:
         - UserIDAuth: []
       responses:
         200:
-          description: Success
+          description: Success with GroupCode (code + valid until date)
           schema:
             $ref: "#/definitions/GroupCode"
         400:
-          description: Invalid groupId
+          description: Invalid groupUID
           schema:
             $ref: "#/definitions/ErrorResponse"
         401:
@@ -89,6 +185,71 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResponse"
+
+  /groups/{groupUID}/image:
+    parameters:
+      - name: groupUID
+        in: path
+        description: The internal ID of the group
+        required: true
+        type: string
+        format: uuid
+    get:
+      tags:
+      - group
+      description: Get the group's profile image. Returns a JPEG with 'application/octet-stream'
+                   Content-Type in header. The authenticated user must be a member of the group.
+      operationId: getGroupImage
+      security:
+        - UserIDAuth: []
+      produces:
+        - application/octet-stream
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            type: string
+            format: binary
+            readOnly: true
+        400:
+          description: Invalid groupUID
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    put:
+      tags:
+      - group
+      description: Update the group's profile image. Must be a JPEG with 'application/octet-stream'
+                   Content-Type in header. The authenticated user must be a member of the group.
+      operationId: updateGroupImage
+      security:
+      - UserIDAuth: []
+      parameters:
+      - name: profileImage
+        in: formData
+        description: The profile image.
+        required: true
+        type: file
+      consumes:
+      - multipart/form-data
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "#/definitions/SuccessResponse"
+        400:
+          description: Invalid groupUID
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
   /groups/join/{groupCode}:
     get:
       tags:
@@ -135,38 +296,6 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResponse"
-  /groups/{groupId}:
-    parameters:
-    - name: groupId
-      in: path
-      description: The internal ID of the group
-      required: true
-      type: string
-      format: uuid
-    get:
-      tags:
-      - group
-      description: Returns the group object
-      operationId: getGroup
-      security:
-        - UserIDAuth: []
-      responses:
-        200:
-          description: Success
-          schema:
-            $ref: "#/definitions/Group"
-        400:
-          description: Invalid groupId
-          schema:
-            $ref: "#/definitions/ErrorResponse"
-        404:
-          description: Group not found
-          schema:
-            $ref: "#/definitions/ErrorResponse"
-        default:
-          description: Error
-          schema:
-            $ref: "#/definitions/ErrorResponse"
   /groups/leave:
     post:
       tags:
@@ -184,126 +313,9 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResponse"
-  /groups:
+  /group/{groupUID}/bills:
     parameters:
-      - in: body
-        name: body
-        description: The group to update (contains uid, displayName, etc)
-        required: true
-        schema:
-          $ref: "#/definitions/Group"
-    post:
-      tags:
-      - group
-      description: Creates a new group
-      operationId: createGroup
-      security:
-        - UserIDAuth: []
-      responses:
-        200:
-          description: Success
-          schema:
-            $ref: "#/definitions/Group"
-        400:
-          description: Invalid group data
-          schema:
-            $ref: "#/definitions/ErrorResponse"
-        401:
-          description: Unauthorized User
-          schema:
-            $ref: "#/definitions/ErrorResponse"
-        default:
-          description: Error
-          schema:
-            $ref: "#/definitions/ErrorResponse"
-    put:
-      tags:
-      - group
-      description: Updates a group
-      operationId: updateGroup
-      security:
-        - UserIDAuth: []
-      responses:
-        200:
-          description: Success
-          schema:
-            $ref: "#/definitions/Group"
-        400:
-          description: Invalid group data
-          schema:
-            $ref: "#/definitions/ErrorResponse"
-        401:
-          description: Unauthorized User
-          schema:
-            $ref: "#/definitions/ErrorResponse"
-        default:
-          description: Error
-          schema:
-            $ref: "#/definitions/ErrorResponse"
-  /groups/{groupId}/image:
-    parameters:
-      - name: groupId
-        in: path
-        description: The internal ID of the group
-        required: true
-        type: string
-        format: uuid
-    get:
-      tags:
-      - group
-      description: Get the group's profile image
-      operationId: getGroupImage
-      security:
-        - UserIDAuth: []
-      produces:
-        - application/octet-stream
-        - application/json
-      responses:
-        200:
-          description: Success
-          schema:
-            type: string
-            format: binary
-            readOnly: true
-        400:
-          description: Invalid groupId
-          schema:
-            $ref: "#/definitions/ErrorResponse"
-        default:
-          description: Error
-          schema:
-            $ref: "#/definitions/ErrorResponse"
-    put:
-      tags:
-      - group
-      description: Update the group's profile image
-      operationId: updateGroupImage
-      security:
-        - UserIDAuth: []
-      parameters:
-        - name: profileImage
-          in: formData
-          description: Success
-          required: true
-          type: file
-      consumes:
-        - multipart/form-data
-      responses:
-        200:
-          description: Success
-          schema:
-            $ref: "#/definitions/SuccessResponse"
-        400:
-          description: Invalid groupId
-          schema:
-            $ref: "#/definitions/ErrorResponse"
-        default:
-          description: Error
-          schema:
-            $ref: "#/definitions/ErrorResponse"
-  /group/{groupId}/bills:
-    parameters:
-    - name: groupId
+    - name: groupUID
       in: path
       description: The internal ID of the group
       required: true
@@ -325,9 +337,9 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResponse"
-  /group/{groupId}/bills/create:
+  /group/{groupUID}/bills/create:
     parameters:
-    - name: groupId
+    - name: groupUID
       in: path
       description: The internal ID of the group
       required: true
@@ -349,106 +361,7 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResponse"
-  /users/{userId}:
-    parameters:
-      - name: userId
-        in: path
-        description: The internal ID of the user
-        required: true
-        type: string
-    get:
-      tags:
-      - user
-      description: Returns the user object
-      operationId: getUser
-      security:
-        - FirebaseIDAuth: []
-      responses:
-        200:
-          description: Success
-          schema:
-            $ref: "#/definitions/User"
-        400:
-          description: Invalid userId
-          schema:
-            $ref: "#/definitions/ErrorResponse"
-        401:
-          description: Unauthorized User
-          schema:
-            $ref: "#/definitions/ErrorResponse"
-        404:
-          description: User not found on server
-          schema:
-            $ref: "#/definitions/ErrorResponse"
-        default:
-          description: Error
-          schema:
-            $ref: "#/definitions/ErrorResponse"
-  /users/{userId}/image:
-    parameters:
-      - name: userId
-        in: path
-        description: The internal ID of the user
-        required: true
-        type: string
-    get:
-      tags:
-      - user
-      description: Get the user's profile image
-      operationId: getUserImage
-      security:
-        - UserIDAuth: []
-      produces:
-        - application/octet-stream
-        - application/json
-      responses:
-        200:
-          description: Success
-          schema:
-            type: string
-            format: binary
-            readOnly: true
-        400:
-          description: Invalid userId
-          schema:
-            $ref: "#/definitions/ErrorResponse"
-        default:
-          description: Error
-          schema:
-            $ref: "#/definitions/ErrorResponse"
-    put:
-      tags:
-      - user
-      description: Update the user's profile image
-      operationId: updateUserImage
-      security:
-        - UserIDAuth: []
-      parameters:
-        - name: userId
-          in: path
-          description: The internal ID of the user
-          required: true
-          type: string
-        - name: profileImage
-          in: formData
-          description: Success
-          required: true
-          type: file
-      consumes:
-        - multipart/form-data
-      responses:
-        200:
-          description: Success
-          schema:
-            $ref: "#/definitions/SuccessResponse"
-        400:
-          description: Invalid userId
-          schema:
-            $ref: "#/definitions/ErrorResponse"
-        default:
-          description: Error
-          schema:
-            $ref: "#/definitions/ErrorResponse"
+
   /users:
     post:
       tags:
@@ -504,9 +417,114 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResponse"
-  /shoppinglist/{groupUid}:
+
+  /users/{userID}:
     parameters:
-    - name: groupUid
+      - name: userID
+        in: path
+        description: The internal ID of the user
+        required: true
+        type: string
+        pattern: "^[a-zA-Z0-9]{28}$"
+    get:
+      tags:
+      - user
+      description: Get user data
+      operationId: getUser
+      security:
+        - FirebaseIDAuth: []
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "#/definitions/User"
+        400:
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          description: Unauthorized User
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          description: User not found on server
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /users/{userID}/image:
+    parameters:
+      - name: userID
+        in: path
+        description: The internal ID of the user
+        required: true
+        type: string
+        pattern: "^[a-zA-Z0-9]{28}$"
+    get:
+      tags:
+      - user
+      description: Get the user's profile image
+      operationId: getUserImage
+      security:
+        - UserIDAuth: []
+      produces:
+        - application/octet-stream
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            type: string
+            format: binary
+            readOnly: true
+        400:
+          description: Invalid userID
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    put:
+      tags:
+        - user
+      description: Update the user's profile image
+      operationId: updateUserImage
+      security:
+        - UserIDAuth: []
+      parameters:
+        - name: userID
+          in: path
+          description: The internal ID of the user
+          required: true
+          type: string
+          pattern: "^[a-zA-Z0-9]{28}$"
+        - name: profileImage
+          in: formData
+          description: Success
+          required: true
+          type: file
+      consumes:
+        - multipart/form-data
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "#/definitions/SuccessResponse"
+        400:
+          description: Invalid userID
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /shoppinglist/{groupUID}:
+    parameters:
+    - name: groupUID
       in: path
       description: The internal ID of the group
       required: true
@@ -575,6 +593,37 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
 
+  /shoppinglist/{groupUID}/item/{itemUid}:
+    parameters:
+    - name: groupUID
+      in: path
+      description: The internal ID of the group
+      required: true
+      type: string
+      format: uuid
+    - name: itemUid
+      in: path
+      description: The internal ID of the item
+      required: true
+      type: string
+      format: uuid
+    get:
+      tags:
+      - shoppinglist
+      description: Get a specified shopping list item.
+      operationId: getListItem
+      security:
+        - FirebaseIDAuth: []
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "#/definitions/ShoppingList"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
 definitions:
   User:
     required:
@@ -583,11 +632,12 @@ definitions:
     properties:
       uid:
         type: string
+        pattern: "^[a-zA-Z0-9]{28}$"
       displayName:
         type: string
         maxLength: 20
         minLength: 3
-      groupUid:
+      groupUID:
         type: string
         format: uuid
       firebaseInstanceId:
@@ -629,11 +679,13 @@ definitions:
         type: array
         items:
           type: string
+          pattern: "^[a-zA-Z0-9]{28}$"
         readOnly: true
       members:
         type: array
         items:
           type: string
+          pattern: "^[a-zA-Z0-9]{28}$"
         readOnly: true
       createdAt:
         type: string
@@ -645,16 +697,18 @@ definitions:
         readOnly: true
   GroupCode:
     required:
-      - groupUid
+      - groupUID
       - code
       - validUntil
     properties:
-      groupUid:
+      groupUID:
         type: string
         format: uuid
+        readOnly: true
       code:
         type: string
         pattern: '^[A-Z0-9]{12}$'
+        readOnly: true
       validUntil:
         type: string
         format: date-time
@@ -689,7 +743,7 @@ definitions:
         type: array
         items:
           type: string
-      groupUid:
+      groupUID:
         type: string
         format: uuid
         readOnly: true

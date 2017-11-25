@@ -25,13 +25,13 @@ import (
 var groupLog = logging.MustGetLogger("Group")
 
 func GetGroup(params group.GetGroupParams, principal *models.User) middleware.Responder {
-	groupLog.Debugf(`Get group "%s"`, params.GroupID)
+	groupLog.Debugf(`Get group "%s"`, params.GroupUID)
 
 	var g *models.Group
 	var err error
 
 	// Database
-	if g, err = models.GetGroupByUID(params.GroupID); models.IsErrGroupNotExist(err) {
+	if g, err = models.GetGroupByUID(params.GroupUID); models.IsErrGroupNotExist(err) {
 		groupLog.Debugf(`Can't find database group with id "%s"!`, g.UID)
 		return NewNotFoundResponse("Group not found on server")
 
@@ -51,7 +51,7 @@ func GetGroupImage(params group.GetGroupImageParams, principal *models.User) mid
 	var g *models.Group
 	var err error
 
-	if g, err = models.GetGroupByUID(params.GroupID); models.IsErrGroupNotExist(err) {
+	if g, err = models.GetGroupByUID(params.GroupUID); models.IsErrGroupNotExist(err) {
 		groupLog.Debugf(`Can't find database group with id "%s"!`, g.UID)
 		return NewNotFoundResponse("Group not found on server")
 
@@ -82,13 +82,13 @@ func GetGroupImage(params group.GetGroupImageParams, principal *models.User) mid
 }
 
 func CreateGroupCode(params group.CreateGroupCodeParams, principal *models.User) middleware.Responder {
-	groupLog.Debugf(`Generate group code for group "%s"!`, params.GroupID)
+	groupLog.Debugf(`Generate group code for group "%s"!`, params.GroupUID)
 
 	var (
 		c   *models.GroupCode
 		err error
 
-		groupUid = strfmt.UUID(params.GroupID)
+		groupUid = strfmt.UUID(params.GroupUID)
 	)
 
 	if principal.GroupUID != groupUid {
@@ -97,7 +97,7 @@ func CreateGroupCode(params group.CreateGroupCodeParams, principal *models.User)
 
 	// Group MUST exist or we have inconsistencies
 	if _, err = models.GetGroupByUID(groupUid); err != nil {
-		groupLog.Debugf(`Error validating group "%s": "%s"`, params.GroupID, err.Error())
+		groupLog.Debugf(`Error validating group "%s": "%s"`, params.GroupUID, err.Error())
 		return NewInternalServerError("Internal Server Error")
 	}
 
@@ -246,8 +246,8 @@ func UpdateGroupImage(params group.UpdateGroupImageParams, principal *models.Use
 	)
 
 	// Database
-	if g, err = models.GetGroupByUID(params.GroupID); models.IsErrUserNotExist(err) {
-		groupLog.Debugf(`Can't find database group with id "%s"!`, params.GroupID)
+	if g, err = models.GetGroupByUID(params.GroupUID); models.IsErrUserNotExist(err) {
+		groupLog.Debugf(`Can't find database group with id "%s"!`, params.GroupUID)
 		return NewNotFoundResponse("Unknown group")
 
 	} else if err != nil {
