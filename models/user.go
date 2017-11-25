@@ -42,10 +42,10 @@ type User struct {
 
 	// firebase instance Id
 	// Pattern: ^[-_:a-zA-Z0-9]{152}$
-	FirebaseInstanceID string `xorm:"VARCHAR(152)" json:"firebaseInstanceId,omitempty"`
+	FirebaseInstanceID string `xorm:"VARCHAR(152)" json:"firebaseInstanceID,omitempty"`
 
-	// group Uid
-	GroupUID strfmt.UUID `xorm:"VARCHAR(36) INDEX" json:"groupUid,omitempty"`
+	// group UID
+	GroupUID strfmt.UUID `xorm:"VARCHAR(36) INDEX" json:"groupUID,omitempty"`
 
 	// locale
 	Locale string `xorm:"VARCHAR(5)" json:"locale,omitempty"`
@@ -101,7 +101,7 @@ func (u *User) validateFirebaseInstanceID(formats strfmt.Registry) error {
 	if swag.IsZero(u.FirebaseInstanceID) { // not required
 		return nil
 	}
-	if err := validate.Pattern("firebaseInstanceId", "body", string(u.FirebaseInstanceID), `^[-_:a-zA-Z0-9]{152}$`); err != nil {
+	if err := validate.Pattern("firebaseInstanceID", "body", string(u.FirebaseInstanceID), `^[-_:a-zA-Z0-9]{152}$`); err != nil {
 		return err
 	}
 	return nil
@@ -270,7 +270,7 @@ func GetUserImageDefault() (*os.File, error) {
 }
 
 func GetUserImageURL(uid string) string {
-	return strings.Replace(`/users/{userId}/image`, `{userId}`, uid, -1)
+	return strings.Replace(`/users/{userID}/image`, `{userID}`, uid, -1)
 }
 
 func (u *User) UploadUserImage(data []byte) error {

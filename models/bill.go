@@ -28,7 +28,7 @@ type Bill struct {
 
 	// group uid
 	// Read Only: true
-	GroupUID strfmt.UUID `json:"group_uid,omitempty"`
+	GroupUID strfmt.UUID `json:"groupUID,omitempty"`
 
 	// state
 	// Required: true

@@ -63,7 +63,7 @@ func TestCreateListItem(t *testing.T) {
 	prepareTestEnv(t)
 	var (
 		authInGroup = "1234567890fakefirebaseid0001"
-		groupUid    = "00112233-4455-6677-8899-aabbccddeeff"
+		groupUID    = "00112233-4455-6677-8899-aabbccddeeff"
 		item        = models.ListItem{
 			Title:        swag.String("Eggs"),
 			Category:     swag.String("Groceries"),
@@ -71,12 +71,12 @@ func TestCreateListItem(t *testing.T) {
 			RequestedFor: []string{authInGroup},
 		}
 		req = NewRequestWithJSON(t, "POST", authInGroup,
-			"/shoppinglist/"+groupUid, item)
+			"/shoppinglist/"+groupUID, item)
 		resp = MakeRequest(t, req, http.StatusOK)
 	)
 	// Check that the item was created.
 	var shopList = models.ShoppingList{}
-	req = NewRequest(t, "GET", authInGroup, "/shoppinglist/"+groupUid)
+	req = NewRequest(t, "GET", authInGroup, "/shoppinglist/"+groupUID)
 	resp = MakeRequest(t, req, http.StatusOK)
 	DecodeJSON(t, resp, &shopList)
 	assert.Len(t, shopList.ListItems, 4)
@@ -87,11 +87,11 @@ func TestUpdateListItem(t *testing.T) {
 	prepareTestEnv(t)
 	var (
 		authInGroup = "1234567890fakefirebaseid0001"
-		groupUid    = "00112233-4455-6677-8899-aabbccddeeff"
+		groupUID    = "00112233-4455-6677-8899-aabbccddeeff"
 		uItem       = models.ListItem{}
 		item        = models.ListItem{
 			ID:           "00112233-4455-6677-8899-000000000001",
-			GroupUID:     strfmt.UUID(groupUid),
+			GroupUID:     strfmt.UUID(groupUID),
 			Title:        swag.String("New Milk"),
 			Category:     swag.String("New Groceries"),
 			Count:        swag.Int64(2),
@@ -99,7 +99,7 @@ func TestUpdateListItem(t *testing.T) {
 			RequestedFor: []string{authInGroup},
 		}
 		req = NewRequestWithJSON(t, "PUT", authInGroup,
-			"/shoppinglist/"+groupUid, item)
+			"/shoppinglist/"+groupUID, item)
 		resp = MakeRequest(t, req, http.StatusOK)
 	)
 	DecodeJSON(t, resp, &uItem)
@@ -114,10 +114,10 @@ func TestUpdateListItemUnauthorized(t *testing.T) {
 	prepareTestEnv(t)
 	var (
 		authInGroup = "1234567890fakefirebaseid0003"
-		groupUid    = "00112233-4455-6677-8899-aabbccddeeff"
+		groupUID    = "00112233-4455-6677-8899-aabbccddeeff"
 		item        = models.ListItem{
 			ID:           "00112233-4455-6677-8899-000000000001",
-			GroupUID:     strfmt.UUID(groupUid),
+			GroupUID:     strfmt.UUID(groupUID),
 			Title:        swag.String("New Milk"),
 			Category:     swag.String("New Groceries"),
 			Count:        swag.Int64(2),
@@ -125,7 +125,7 @@ func TestUpdateListItemUnauthorized(t *testing.T) {
 			RequestedFor: []string{authInGroup},
 		}
 		req = NewRequestWithJSON(t, "PUT", authInGroup,
-			"/shoppinglist/"+groupUid, item)
+			"/shoppinglist/"+groupUID, item)
 	)
 	MakeRequest(t, req, http.StatusUnauthorized)
 }

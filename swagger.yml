@@ -593,7 +593,7 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
 
-  /shoppinglist/{groupUID}/item/{itemUid}:
+  /shoppinglist/{groupUID}/item/{itemUID}:
     parameters:
     - name: groupUID
       in: path
@@ -601,7 +601,7 @@ paths:
       required: true
       type: string
       format: uuid
-    - name: itemUid
+    - name: itemUID
       in: path
       description: The internal ID of the item
       required: true
@@ -640,7 +640,7 @@ definitions:
       groupUID:
         type: string
         format: uuid
-      firebaseInstanceId:
+      firebaseInstanceID:
         type: string
         pattern: "^[-_:a-zA-Z0-9]{152}$"
       locale:
@@ -756,7 +756,7 @@ definitions:
         type: integer
       category:
         type: string
-      billUid:
+      billUID:
         type: string
         format: uuid
         readOnly: true
@@ -781,7 +781,7 @@ definitions:
       uid:
         type: string
         format: uuid
-      group_uid:
+      groupUID:
         type: string
         format: uuid
         readOnly: true

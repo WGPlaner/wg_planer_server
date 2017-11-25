@@ -40,14 +40,14 @@ func SendPushUpdateToUsers(users []*models.User, t PushUpdateType, s []string) e
 	return SendPushUpdateToUserIDs(ids, t, s)
 }
 
-func SendPushUpdateToUserIDs(reseiverIds []string, t PushUpdateType, data []string) error {
+func SendPushUpdateToUserIDs(reseiverIDs []string, t PushUpdateType, data []string) error {
 	fireLog.Debug(`Send a firebase update data message to users (ids)`)
 
 	if setting.AppConfig.Auth.IgnoreFirebase {
 		return nil
 	}
 
-	resp, err := setting.FireBaseApp.FCM().SendToDevices(context.Background(), reseiverIds, firebase.Message{
+	resp, err := setting.FireBaseApp.FCM().SendToDevices(context.Background(), reseiverIDs, firebase.Message{
 		Data: PushUpdateData{
 			Type:    t,
 			Updated: data,

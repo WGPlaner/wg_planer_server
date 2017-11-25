@@ -175,7 +175,7 @@ func GetUserImage(params user.GetUserImageParams, principal *models.User) middle
 func UpdateUserImage(params user.UpdateUserImageParams, principal *models.User) middleware.Responder {
 	userLog.Debug("Start put user image")
 
-	// Check if auth and userId are the same.
+	// Check if auth and userID are the same.
 	// We don't have to get the user again since principal contains the loaded user
 	if params.UserID != swag.StringValue(principal.UID) {
 		return NewUnauthorizedResponse("Can't change profile image of other users")

@@ -89,22 +89,22 @@ func CreateGroupCode(params group.CreateGroupCodeParams, principal *models.User)
 		c   *models.GroupCode
 		err error
 
-		groupUid = strfmt.UUID(params.GroupUID)
+		groupUID = strfmt.UUID(params.GroupUID)
 	)
 
-	if principal.GroupUID != groupUid {
+	if principal.GroupUID != groupUID {
 		return NewUnauthorizedResponse("Can't create group code for other groups")
 	}
 
 	// Group MUST exist or we have inconsistencies
-	if _, err = models.GetGroupByUID(groupUid); err != nil {
+	if _, err = models.GetGroupByUID(groupUID); err != nil {
 		groupLog.Debugf(`Error validating group "%s": "%s"`, params.GroupUID, err.Error())
 		return NewInternalServerError("Internal Server Error")
 	}
 
 	// TODO: Check authorization for user in the group
 
-	if c, err = models.CreateGroupCode(groupUid); err != nil {
+	if c, err = models.CreateGroupCode(groupUID); err != nil {
 		groupLog.Critical("Database error!", err)
 		return NewInternalServerError("Internal Database Error")
 	}

@@ -244,7 +244,7 @@ func GetGroupImageDefault() (*os.File, error) {
 }
 
 func GetGroupImageURL(uid string) string {
-	return strings.Replace(`/users/{userId}/image`, `{userId}`, uid, -1)
+	return strings.Replace(`/users/{userID}/image`, `{userID}`, uid, -1)
 }
 
 func (g *Group) UploadGroupImage(data []byte) error {

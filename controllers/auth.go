@@ -13,7 +13,7 @@ import (
 var authLog = logging.MustGetLogger("Auth")
 
 func UserIDAuth(token string) (*models.User, error) {
-	authLog.Debugf(`Check userId authorization for user id "%s"`, token)
+	authLog.Debugf(`Check userID authorization for user id "%s"`, token)
 
 	var u *models.User
 	var err error

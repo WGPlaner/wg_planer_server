@@ -25,7 +25,7 @@ type GroupCode struct {
 
 	// group Uid
 	// Required: true
-	GroupUID *strfmt.UUID `json:"groupUid"`
+	GroupUID *strfmt.UUID `json:"groupUID"`
 
 	// valid until
 	// Required: true
@@ -65,10 +65,10 @@ func (m *GroupCode) validateCode(formats strfmt.Registry) error {
 }
 
 func (m *GroupCode) validateGroupUID(formats strfmt.Registry) error {
-	if err := validate.Required("groupUid", "body", m.GroupUID); err != nil {
+	if err := validate.Required("groupUID", "body", m.GroupUID); err != nil {
 		return err
 	}
-	if err := validate.FormatOf("groupUid", "body", "uuid", m.GroupUID.String(), formats); err != nil {
+	if err := validate.FormatOf("groupUID", "body", "uuid", m.GroupUID.String(), formats); err != nil {
 		return err
 	}
 	return nil

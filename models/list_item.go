@@ -8,9 +8,9 @@ import (
 )
 
 type ListItem struct {
-	// bill Uid
+	// bill UID
 	// Read Only: true
-	BillUID strfmt.UUID `json:"billUid,omitempty"`
+	BillUID strfmt.UUID `json:"billUID,omitempty"`
 
 	// bought at
 	// Read Only: true
@@ -24,9 +24,9 @@ type ListItem struct {
 	// Required: true
 	Count *int64 `xorm:"DEFAULT 0" json:"count"`
 
-	// group Uid
+	// group UID
 	// Read Only: true
-	GroupUID strfmt.UUID `xorm:"index(uid) unique(uid)" json:"groupUid,omitempty"`
+	GroupUID strfmt.UUID `xorm:"index(uid) unique(uid)" json:"groupUID,omitempty"`
 
 	// id
 	// Read Only: true

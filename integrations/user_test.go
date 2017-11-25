@@ -21,14 +21,14 @@ func TestGetUserUnauthorized(t *testing.T) {
 func TestGetOwnUser(t *testing.T) {
 	prepareTestEnv(t)
 	var (
-		userId  = "1234567890fakefirebaseid0001"
-		req     = NewRequest(t, "GET", userId, "/users/"+userId)
+		userID  = "1234567890fakefirebaseid0001"
+		req     = NewRequest(t, "GET", userID, "/users/"+userID)
 		resp    = MakeRequest(t, req, http.StatusOK)
 		apiUser *models.User
 	)
 
 	if DecodeJSON(t, resp, &apiUser) {
-		assert.Equal(t, userId, *apiUser.UID)
+		assert.Equal(t, userID, *apiUser.UID)
 		assert.Equal(t, "John Doe", *apiUser.DisplayName)
 	}
 }
@@ -36,15 +36,15 @@ func TestGetOwnUser(t *testing.T) {
 func TestGetOtherUser(t *testing.T) {
 	prepareTestEnv(t)
 	var (
-		ownUserId = "1234567890fakefirebaseid0001"
-		userId    = "1234567890fakefirebaseid0002"
-		req       = NewRequest(t, "GET", ownUserId, "/users/"+userId)
+		ownUserID = "1234567890fakefirebaseid0001"
+		userID    = "1234567890fakefirebaseid0002"
+		req       = NewRequest(t, "GET", ownUserID, "/users/"+userID)
 		resp      = MakeRequest(t, req, http.StatusOK)
 		apiUser   *models.User
 	)
 
 	if DecodeJSON(t, resp, &apiUser) {
-		assert.Equal(t, userId, *apiUser.UID)
+		assert.Equal(t, userID, *apiUser.UID)
 		assert.Equal(t, "Max Meier", *apiUser.DisplayName)
 	}
 }
@@ -52,9 +52,9 @@ func TestGetOtherUser(t *testing.T) {
 func TestGetUserImage(t *testing.T) {
 	prepareTestEnv(t)
 	var (
-		authId      = "1234567890fakefirebaseid0001"
-		userId      = "1234567890fakefirebaseid0002"
-		urlBuilder  = user.GetUserImageURL{UserID: userId}
+		authID      = "1234567890fakefirebaseid0001"
+		userID      = "1234567890fakefirebaseid0002"
+		urlBuilder  = user.GetUserImageURL{UserID: userID}
 		imgURL, err = urlBuilder.Build()
 	)
 
@@ -63,7 +63,7 @@ func TestGetUserImage(t *testing.T) {
 	}
 
 	var (
-		req  = NewRequest(t, "GET", authId, imgURL.String())
+		req  = NewRequest(t, "GET", authID, imgURL.String())
 		resp = MakeRequest(t, req, http.StatusOK)
 	)
 
