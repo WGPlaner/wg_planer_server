@@ -23,6 +23,7 @@ script:
   - go tool vet .
   - go build -o "build/wg_planer_server" cmd/wgplaner-api/wgplaner-api.go
   - go test -race -v ./...
+  - ./coverage.sh
 
 before_deploy:
   - mkdir -p build/config && cp config/* build/config
@@ -30,6 +31,9 @@ before_deploy:
   - java -jar swagger-codegen-cli.jar generate -i swagger.yml -l java --library=okhttp-gson -o build/android_client
   - java -jar swagger-codegen-cli.jar generate -i swagger.yml -l html2 -o build/api_doc_html
   - tar -zcvf wg_planer_server.tar.gz build
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
 
 notifications:
   email:
