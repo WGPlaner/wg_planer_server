@@ -12,6 +12,7 @@ import (
 
 	"github.com/wgplaner/wg_planer_server/models"
 	"github.com/wgplaner/wg_planer_server/modules/base"
+	"github.com/wgplaner/wg_planer_server/modules/mailer"
 	"github.com/wgplaner/wg_planer_server/modules/setting"
 	"github.com/wgplaner/wg_planer_server/restapi/operations/group"
 
@@ -182,24 +183,32 @@ func UpdateGroup(params group.UpdateGroupParams, principal *models.User) middlew
 		return NewInternalServerError("Internal Database Error")
 	}
 
+	mailer.SendPushUpdateToUserIDs(g.Members, mailer.PushUpdateGroup, []string{
+		string(g.UID),
+	})
+
 	groupLog.Infof(`Updated group "%s"`, g.UID)
 
 	return group.NewCreateGroupOK().WithPayload(g)
 }
 
 func JoinGroup(params group.JoinGroupParams, principal *models.User) middleware.Responder {
-	theGroup, err := principal.JoinGroupWithCode(params.GroupCode)
+	g, err := principal.JoinGroupWithCode(params.GroupCode)
 
 	if models.IsErrGroupCodeNotExist(err) {
 		return NewBadRequest("Invalid group code")
 
-	} else if err == nil {
-		return group.NewJoinGroupOK().WithPayload(theGroup)
+	} else if err != nil {
+		// TODO: Handle different errors
+		groupLog.Error(`Unknown Internal Server Error: `, err)
+		return NewInternalServerError("Unknown Server Error")
 	}
 
-	// TODO: Handle different errors
-	groupLog.Error(`Unknown Internal Server Error: `, err)
-	return NewInternalServerError("Unknown Server Error")
+	mailer.SendPushUpdateToUserIDs(g.Members, mailer.PushUpdateGroupNewMember, []string{
+		string(*principal.UID),
+	})
+
+	return group.NewJoinGroupOK().WithPayload(g)
 }
 
 func JoinGroupHelp(params group.JoinGroupHelpParams) middleware.Responder {
@@ -278,6 +287,10 @@ func UpdateGroupImage(params group.UpdateGroupImageParams, principal *models.Use
 		userLog.Critical(`Error uploading group avatar.`)
 		return NewInternalServerError("Internal Server Error")
 	}
+
+	mailer.SendPushUpdateToUserIDs(g.Members, mailer.PushUpdateGroup, []string{
+		string(g.UID),
+	})
 
 	return group.NewUpdateGroupImageOK().WithPayload(&models.SuccessResponse{
 		Message: swag.String("Successfully uploaded image file"),
