@@ -2,6 +2,7 @@
 
 [![Build Status AppVeyor](https://ci.appveyor.com/api/projects/status/ok5rq84eh6sx8lxd/branch/master?svg=true)](https://ci.appveyor.com/project/archer96/wg-planer-server/branch/master)
 [![Build Status Travis](https://travis-ci.org/WGPlaner/wg_planer_server.svg?branch=master)](https://travis-ci.org/WGPlaner/wg_planer_server)
+[![Coverage Status](https://coveralls.io/repos/github/WGPlaner/wg_planer_server/badge.svg?branch=master)](https://coveralls.io/github/WGPlaner/wg_planer_server?branch=master)
 
 ## Setup
 To generate the go API, install `go-swagger`.
