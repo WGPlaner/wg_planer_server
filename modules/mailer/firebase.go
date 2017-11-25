@@ -27,27 +27,17 @@ const (
 	PushUpdateShoppingList   = PushUpdateType("ShoppingList")
 )
 
-func SendPushUpdateToUsers(users []*models.User, t PushUpdateType, s []string) error {
+func SendPushUpdateToUsers(users []*models.User, t PushUpdateType, data []string) error {
 	if setting.AppConfig.Auth.IgnoreFirebase {
 		return nil
 	}
 
-	var ids []string
+	var receiverIDs []string
 	for _, u := range users {
-		ids = append(ids, u.FirebaseInstanceID)
+		receiverIDs = append(receiverIDs, u.FirebaseInstanceID)
 	}
 
-	return SendPushUpdateToUserIDs(ids, t, s)
-}
-
-func SendPushUpdateToUserIDs(reseiverIDs []string, t PushUpdateType, data []string) error {
-	fireLog.Debug(`Send a firebase update data message to users (ids)`)
-
-	if setting.AppConfig.Auth.IgnoreFirebase {
-		return nil
-	}
-
-	resp, err := setting.FireBaseApp.FCM().SendToDevices(context.Background(), reseiverIDs, firebase.Message{
+	resp, err := setting.FireBaseApp.FCM().SendToDevices(context.Background(), receiverIDs, firebase.Message{
 		Data: PushUpdateData{
 			Type:    t,
 			Updated: data,
@@ -56,10 +46,29 @@ func SendPushUpdateToUserIDs(reseiverIDs []string, t PushUpdateType, data []stri
 
 	if err != nil {
 		fireLog.Debug(`Error sending firebase update.`)
+		return err
 	}
 
 	fireLog.Debug(resp)
+	return nil
+}
 
-	return err
+func SendPushUpdateToUserIDs(receiverIDs []string, t PushUpdateType, data []string) error {
+	fireLog.Debug(`Send a firebase update data message to users (ids)`)
 
+	if setting.AppConfig.Auth.IgnoreFirebase {
+		return nil
+	}
+
+	users := make([]*models.User, 0, 10)
+
+	for _, id := range receiverIDs {
+		u, err := models.GetUserByUID(id)
+		if err != nil {
+			return err
+		}
+		users = append(users, u)
+	}
+
+	return SendPushUpdateToUsers(users, t, data)
 }
