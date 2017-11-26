@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -14,7 +16,7 @@ type ListItem struct {
 
 	// bought at
 	// Read Only: true
-	BoughtAt strfmt.DateTime `json:"boughtAt,omitempty"`
+	BoughtAt *time.Time `json:"boughtAt,omitempty"`
 
 	// category
 	// Required: true
@@ -54,6 +56,14 @@ type ListItem struct {
 	// updated at
 	// Read Only: true
 	UpdatedAt strfmt.DateTime `xorm:"updated" json:"updatedAt,omitempty"`
+}
+
+// AfterLoad is invoked from XORM after setting the values of all fields of this object.
+func (l *ListItem) AfterLoad() {
+	// Clear date if it is before 2000
+	if l.BoughtAt != nil && time.Date(2000, 1, 0, 0, 0, 0, 0, time.Local).After(*l.BoughtAt) {
+		l.BoughtAt = nil
+	}
 }
 
 // Validate validates this list item

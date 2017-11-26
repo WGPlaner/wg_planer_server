@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"time"
-
 	"github.com/go-openapi/strfmt"
 	"github.com/satori/go.uuid"
 	"github.com/wgplaner/wg_planer_server/models"
@@ -156,7 +154,6 @@ func CreateListItem(params shoppinglist.CreateListItemParams, principal *models.
 		RequestedFor: params.Body.RequestedFor,
 		RequestedBy:  *principal.UID,
 		GroupUID:     g.UID,
-		BoughtAt:     strfmt.DateTime(time.Time{}), // Not bought, yet
 	}
 
 	// Insert new code into database
