@@ -432,7 +432,7 @@ paths:
       description: Get user data
       operationId: getUser
       security:
-        - FirebaseIDAuth: []
+        - UserIDAuth: []
       responses:
         200:
           description: Success
@@ -536,7 +536,7 @@ paths:
       description: Get all items of the group
       operationId: getListItems
       security:
-        - FirebaseIDAuth: []
+        - UserIDAuth: []
       responses:
         200:
           description: Success
@@ -552,7 +552,7 @@ paths:
       description: Creates a new shopping list item
       operationId: createListItem
       security:
-        - FirebaseIDAuth: []
+        - UserIDAuth: []
       parameters:
       - in: body
         name: body
@@ -575,7 +575,7 @@ paths:
       description: Updates a shopping list item
       operationId: updateListItem
       security:
-        - FirebaseIDAuth: []
+        - UserIDAuth: []
       parameters:
       - in: body
         name: body
@@ -613,7 +613,7 @@ paths:
       description: Get a specified shopping list item.
       operationId: getListItem
       security:
-        - FirebaseIDAuth: []
+        - UserIDAuth: []
       responses:
         200:
           description: Success
