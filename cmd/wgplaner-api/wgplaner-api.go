@@ -24,7 +24,6 @@ func main() {
 
 	defer server.Shutdown()
 
-	setting.NewConfigContext()
 	controllers.GlobalInit()
 	controllers.InitializeControllers(api)
 
