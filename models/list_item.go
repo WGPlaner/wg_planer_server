@@ -41,6 +41,10 @@ type ListItem struct {
 	// Read Only: true
 	RequestedBy string `xorm:"NOT NULL" json:"requestedBy,omitempty"`
 
+	// bought by
+	// Read Only: true
+	BoughtBy string `xorm:"NULL" json:"boughtBy,omitempty"`
+
 	// requested for
 	RequestedFor []string `xorm:"NOT NULL" json:"requestedFor"`
 

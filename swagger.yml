@@ -593,6 +593,39 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
 
+  /shoppinglist/{groupUID}/buy-items:
+    post:
+      tags:
+      - shoppinglist
+      description: Buy specified list items (mark them as bought)
+      operationId: buyListItems
+      security:
+        - UserIDAuth: []
+      parameters:
+      - name: groupUID
+        in: path
+        description: The internal ID of the group
+        required: true
+        type: string
+        format: uuid
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "#/definitions/SuccessResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
   /shoppinglist/{groupUID}/item/{itemUID}:
     parameters:
     - name: groupUID
@@ -759,6 +792,10 @@ definitions:
       billUID:
         type: string
         format: uuid
+        readOnly: true
+      boughtBy:
+        type: string
+        pattern: "^[a-zA-Z0-9]{28}$"
         readOnly: true
       boughtAt:
         type: string

@@ -139,3 +139,13 @@ func TestUpdateListItemInvalid(t *testing.T) {
 	)
 	MakeRequest(t, req, http.StatusUnprocessableEntity)
 }
+
+func TestBuyListItems(t *testing.T) {
+	prepareTestEnv(t)
+	var (
+		items = []string{"00112233-4455-6677-8899-000000000002", "00112233-4455-6677-8899-000000000003"}
+		req   = NewRequestWithJSON(t, "POST", "1234567890fakefirebaseid0002",
+			"/shoppinglist/00112233-4455-6677-8899-aabbccddeeff/buy-items", items)
+	)
+	MakeRequest(t, req, http.StatusOK)
+}
