@@ -11,6 +11,9 @@ data/groups/*
 restapi
 build
 swagger-codegen-cli.jar
+coverage.all
+coverage.txt
+coverage.tmp
 
 *.sqlite
 .idea

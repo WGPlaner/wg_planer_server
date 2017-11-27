@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/wgplaner/wg_planer_server/modules/avatar"
 	"github.com/wgplaner/wg_planer_server/modules/setting"
@@ -173,7 +174,24 @@ func (u *User) JoinGroupWithCode(groupCode string) (*Group, error) {
 		return nil, err
 	}
 
+	// get updated group
+	// TODO: Is this necessary?
+	if g, err = GetGroupByUID(g.UID); err != nil {
+		return nil, err
+	}
+
 	return g, nil
+}
+
+func (u *User) BuyListItemsByUIDs(itemUIDs []strfmt.UUID) error {
+	_, err := x.Cols(`bought_by`, `bought_at`).
+		Where(`group_uid=?`, u.GroupUID).
+		In(`id`, itemUIDs).
+		Update(&ListItem{
+			BoughtAt: swag.Time(time.Now().UTC()),
+			BoughtBy: *u.UID,
+		})
+	return err
 }
 
 func IsValidUserIDFormat(uid string) bool {

@@ -536,7 +536,7 @@ paths:
       description: Get all items of the group
       operationId: getListItems
       security:
-        - FirebaseIDAuth: []
+        - UserIDAuth: []
       responses:
         200:
           description: Success
@@ -552,7 +552,7 @@ paths:
       description: Creates a new shopping list item
       operationId: createListItem
       security:
-        - FirebaseIDAuth: []
+        - UserIDAuth: []
       parameters:
       - in: body
         name: body
@@ -575,7 +575,7 @@ paths:
       description: Updates a shopping list item
       operationId: updateListItem
       security:
-        - FirebaseIDAuth: []
+        - UserIDAuth: []
       parameters:
       - in: body
         name: body
@@ -588,6 +588,39 @@ paths:
           description: Success
           schema:
             $ref: "#/definitions/ListItem"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /shoppinglist/{groupUID}/buy-items:
+    post:
+      tags:
+      - shoppinglist
+      description: Buy specified list items (mark them as bought)
+      operationId: buyListItems
+      security:
+        - UserIDAuth: []
+      parameters:
+      - name: groupUID
+        in: path
+        description: The internal ID of the group
+        required: true
+        type: string
+        format: uuid
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "#/definitions/SuccessResponse"
         default:
           description: Error
           schema:
@@ -613,7 +646,7 @@ paths:
       description: Get a specified shopping list item.
       operationId: getListItem
       security:
-        - FirebaseIDAuth: []
+        - UserIDAuth: []
       responses:
         200:
           description: Success
@@ -759,6 +792,10 @@ definitions:
       billUID:
         type: string
         format: uuid
+        readOnly: true
+      boughtBy:
+        type: string
+        pattern: "^[a-zA-Z0-9]{28}$"
         readOnly: true
       boughtAt:
         type: string

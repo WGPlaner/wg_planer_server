@@ -1,9 +1,8 @@
 package controllers
 
 import (
-	"time"
-
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 	"github.com/satori/go.uuid"
 	"github.com/wgplaner/wg_planer_server/models"
 	"github.com/wgplaner/wg_planer_server/modules/mailer"
@@ -156,7 +155,6 @@ func CreateListItem(params shoppinglist.CreateListItemParams, principal *models.
 		RequestedFor: params.Body.RequestedFor,
 		RequestedBy:  *principal.UID,
 		GroupUID:     g.UID,
-		BoughtAt:     strfmt.DateTime(time.Time{}), // Not bought, yet
 	}
 
 	// Insert new code into database
@@ -170,4 +168,32 @@ func CreateListItem(params shoppinglist.CreateListItemParams, principal *models.
 	})
 
 	return shoppinglist.NewCreateListItemOK().WithPayload(&listItem)
+}
+
+func BuyListItems(params shoppinglist.BuyListItemsParams, principal *models.User) middleware.Responder {
+	var err error
+
+	if _, err = models.GetGroupByUID(params.GroupUID); models.IsErrGroupNotExist(err) {
+		return NewNotFoundResponse("Group not found")
+
+	} else if err != nil {
+		shoppingLog.Debugf(`Error validating group "%s": "%s"`, params.GroupUID, err.Error())
+		return NewBadRequest(err.Error())
+	}
+
+	if principal.GroupUID != params.GroupUID {
+		return NewUnauthorizedResponse("Can't buy items for another group")
+	}
+
+	// TODO: Sanity checks, etc.
+
+	err = principal.BuyListItemsByUIDs(params.Body)
+	if err != nil {
+		return NewInternalServerError("Error buying items")
+	}
+
+	return shoppinglist.NewBuyListItemsOK().WithPayload(&models.SuccessResponse{
+		Message: swag.String("nought items"),
+		Status:  swag.Int64(200),
+	})
 }
