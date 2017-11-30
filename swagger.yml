@@ -204,7 +204,6 @@ paths:
         - UserIDAuth: []
       produces:
         - application/octet-stream
-        - application/json
       responses:
         200:
           description: Success
@@ -212,14 +211,12 @@ paths:
             type: string
             format: binary
             readOnly: true
-        400:
-          description: Invalid groupUID
-          schema:
-            $ref: "#/definitions/ErrorResponse"
         default:
           description: Error
           schema:
-            $ref: "#/definitions/ErrorResponse"
+            type: string
+            format: binary
+            readOnly: true
     put:
       tags:
       - group
@@ -472,7 +469,6 @@ paths:
         - UserIDAuth: []
       produces:
         - application/octet-stream
-        - application/json
       responses:
         200:
           description: Success
