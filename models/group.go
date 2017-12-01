@@ -2,7 +2,6 @@ package models
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"image"
 	"image/jpeg"
@@ -26,10 +25,6 @@ var groupLog = logging.MustGetLogger("Group")
 
 const (
 	GROUP_PROFILE_IMAGE_FILE_NAME = "group_image.jpg"
-)
-
-var (
-	ErrGroupInvalidUUID = errors.New("UUID for group is invalid")
 )
 
 // Group group
@@ -212,6 +207,10 @@ func UpdateGroupCols(g *Group, cols ...string) error {
 }
 
 func GetGroupByUID(uid strfmt.UUID) (*Group, error) {
+	if !strfmt.IsUUID(string(uid)) {
+		return nil, ErrGroupInvalidUUID{UID: string(uid)}
+	}
+
 	g := new(Group)
 
 	if has, err := x.ID(uid).Get(g); err != nil {

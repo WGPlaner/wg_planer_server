@@ -184,6 +184,19 @@ func (u *User) JoinGroupWithCode(groupCode string) (*Group, error) {
 }
 
 func (u *User) BuyListItemsByUIDs(itemUIDs []strfmt.UUID) error {
+	// TODO: Test if already bought
+
+	// Check if items exist
+	count, errCount := x.Where(`group_uid=?`, u.GroupUID).
+		In(`id`, itemUIDs).
+		Count(new(ListItem))
+
+	if errCount != nil {
+		return errCount
+	} else if int(count) != len(itemUIDs) {
+		return ErrListItemNotExist{}
+	}
+
 	_, err := x.Cols(`bought_by`, `bought_at`).
 		Where(`group_uid=?`, u.GroupUID).
 		In(`id`, itemUIDs).

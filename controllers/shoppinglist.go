@@ -188,7 +188,10 @@ func BuyListItems(params shoppinglist.BuyListItemsParams, principal *models.User
 
 	// TODO: Sanity checks, etc.
 	err = principal.BuyListItemsByUIDs(params.Body)
-	if err != nil {
+	if models.IsErrListItemNotExist(err) {
+		return NewBadRequest(err.Error())
+
+	} else if err != nil {
 		return NewInternalServerError("Error buying items")
 	}
 

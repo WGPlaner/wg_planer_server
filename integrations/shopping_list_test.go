@@ -149,3 +149,43 @@ func TestBuyListItems(t *testing.T) {
 	)
 	MakeRequest(t, req, http.StatusOK)
 }
+
+func TestBuyListItemsInvalidGroup(t *testing.T) {
+	prepareTestEnv(t)
+	var (
+		items = []string{"00112233-4455-6677-8899-000000000002", "00112233-4455-6677-8899-000000000003"}
+		req   = NewRequestWithJSON(t, "POST", "1234567890fakefirebaseid0002",
+			"/shoppinglist/000-invalid-format-111/buy-items", items)
+	)
+	MakeRequest(t, req, http.StatusBadRequest)
+}
+
+func TestBuyListItemsUnknownGroup(t *testing.T) {
+	prepareTestEnv(t)
+	var (
+		items = []string{"00112233-4455-6677-8899-000000000002", "00112233-4455-6677-8899-000000000003"}
+		req   = NewRequestWithJSON(t, "POST", "1234567890fakefirebaseid0002",
+			"/shoppinglist/00112233-4455-6677-8899-000000000000/buy-items", items)
+	)
+	MakeRequest(t, req, http.StatusNotFound)
+}
+
+func TestBuyListItemsUnauthorizedForGroup(t *testing.T) {
+	prepareTestEnv(t)
+	var (
+		items = []string{"00112233-4455-6677-8899-000000000002", "00112233-4455-6677-8899-000000000003"}
+		req   = NewRequestWithJSON(t, "POST", "1234567890fakefirebaseid0003",
+			"/shoppinglist/00112233-4455-6677-8899-aabbccddeeff/buy-items", items)
+	)
+	MakeRequest(t, req, http.StatusUnauthorized)
+}
+
+func TestBuyListItemsThatDoNotExist(t *testing.T) {
+	prepareTestEnv(t)
+	var (
+		items = []string{"00112233-4455-6677-8899-ccbbaa000000"}
+		req   = NewRequestWithJSON(t, "POST", "1234567890fakefirebaseid0002",
+			"/shoppinglist/00112233-4455-6677-8899-aabbccddeeff/buy-items", items)
+	)
+	MakeRequest(t, req, http.StatusBadRequest)
+}
