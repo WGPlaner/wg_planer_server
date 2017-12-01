@@ -172,8 +172,9 @@ func CreateListItem(params shoppinglist.CreateListItemParams, principal *models.
 
 func BuyListItems(params shoppinglist.BuyListItemsParams, principal *models.User) middleware.Responder {
 	var err error
+	var g *models.Group
 
-	if _, err = models.GetGroupByUID(params.GroupUID); models.IsErrGroupNotExist(err) {
+	if g, err = models.GetGroupByUID(params.GroupUID); models.IsErrGroupNotExist(err) {
 		return NewNotFoundResponse("Group not found")
 
 	} else if err != nil {
@@ -186,14 +187,20 @@ func BuyListItems(params shoppinglist.BuyListItemsParams, principal *models.User
 	}
 
 	// TODO: Sanity checks, etc.
-
 	err = principal.BuyListItemsByUIDs(params.Body)
 	if err != nil {
 		return NewInternalServerError("Error buying items")
 	}
 
+	// Send push notification
+	list := make([]string, len(params.Body))
+	for _, item := range params.Body {
+		list = append(list, string(item))
+	}
+	mailer.SendPushUpdateToUserIDs(g.Members, mailer.PushUpdateShoppingList, list)
+
 	return shoppinglist.NewBuyListItemsOK().WithPayload(&models.SuccessResponse{
-		Message: swag.String("nought items"),
+		Message: swag.String("bought items"),
 		Status:  swag.Int64(200),
 	})
 }
