@@ -26,6 +26,13 @@ func TestGetGroup(t *testing.T) {
 	MakeRequest(t, req, http.StatusOK)
 }
 
+func TestGetGroupNotFound(t *testing.T) {
+	prepareTestEnv(t)
+	authInGroup := "1234567890fakefirebaseid0001"
+	req := NewRequest(t, "GET", authInGroup, "/groups/00112233-4455-6677-8899-000000000000")
+	MakeRequest(t, req, http.StatusNotFound)
+}
+
 func TestGetGroupImageUnauthorized(t *testing.T) {
 	prepareTestEnv(t)
 	authInGroup := "1234567890fakefirebaseid0003"
@@ -38,6 +45,13 @@ func TestGetGroupImage(t *testing.T) {
 	authInGroup := "1234567890fakefirebaseid0001"
 	req := NewRequest(t, "GET", authInGroup, "/groups/00112233-4455-6677-8899-aabbccddeeff/image")
 	MakeRequest(t, req, http.StatusOK)
+}
+
+func TestGetGroupNotFoundImage(t *testing.T) {
+	prepareTestEnv(t)
+	authInGroup := "1234567890fakefirebaseid0001"
+	req := NewRequest(t, "GET", authInGroup, "/groups/00112233-4455-6677-8899-000000000000/image")
+	MakeRequest(t, req, http.StatusNotFound)
 }
 
 func TestCreateGroup(t *testing.T) {
@@ -80,6 +94,18 @@ func TestUpdateGroup(t *testing.T) {
 	DecodeJSON(t, resp, &uG)
 	assert.Equal(t, *g.DisplayName, *uG.DisplayName)
 	assert.NotEqual(t, uG.UpdatedAt, uG.CreatedAt)
+}
+
+func TestUpdateGroupNotFound(t *testing.T) {
+	prepareTestEnv(t)
+	var (
+		g = models.Group{
+			UID:         "00112233-4455-6677-8899-000000000000",
+			DisplayName: swag.String("Non existent group"),
+		}
+		req = NewRequestWithJSON(t, "PUT", "1234567890fakefirebaseid0001", "/groups", g)
+	)
+	MakeRequest(t, req, http.StatusNotFound)
 }
 
 func TestUpdateGroupNotAdmin(t *testing.T) {

@@ -33,7 +33,7 @@ func GetGroup(params group.GetGroupParams, principal *models.User) middleware.Re
 
 	// Database
 	if g, err = models.GetGroupByUID(params.GroupUID); models.IsErrGroupNotExist(err) {
-		groupLog.Debugf(`Can't find database group with id "%s"!`, g.UID)
+		groupLog.Debugf(`Can't find database group with id "%s"!`, params.GroupUID)
 		return NewNotFoundResponse("Group not found on server")
 
 	} else if err != nil {
@@ -53,7 +53,7 @@ func GetGroupImage(params group.GetGroupImageParams, principal *models.User) mid
 	var err error
 
 	if g, err = models.GetGroupByUID(params.GroupUID); models.IsErrGroupNotExist(err) {
-		groupLog.Debugf(`Can't find database group with id "%s"!`, g.UID)
+		groupLog.Debugf(`Can't find database group with id "%s"!`, params.GroupUID)
 		return NewNotFoundResponse("Group not found on server")
 
 	} else if err != nil {
@@ -162,7 +162,7 @@ func UpdateGroup(params group.UpdateGroupParams, principal *models.User) middlew
 	var err error
 
 	if g, err = models.GetGroupByUID(params.Body.UID); models.IsErrGroupNotExist(err) {
-		groupLog.Debugf(`Update group: "%s" does not exist: %s"`, g.UID, err)
+		groupLog.Debugf(`Update group: "%s" does not exist: %s"`, params.Body.UID, err)
 		return NewNotFoundResponse(`Group does not exist.`)
 
 	} else if err != nil {
