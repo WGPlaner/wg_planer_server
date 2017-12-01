@@ -25,7 +25,7 @@ func TestIntInSlice(t *testing.T) {
 	if IntInSlice(-10, ints) != true {
 		t.Error("Matching should work for negative numbers")
 	}
-	if IntInSlice(0, ints) != false && IntInSlice(100, ints) != false {
+	if IntInSlice(0, ints) != false || IntInSlice(100, ints) != false {
 		t.Error("Expected false")
 	}
 }
