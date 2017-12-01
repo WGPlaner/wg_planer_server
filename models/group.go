@@ -168,6 +168,7 @@ func (g *Group) GetActiveShoppingListItems() ([]*ListItem, error) {
 	err := x.
 		AllCols().
 		Where(`group_uid=?`, g.UID).
+		And(`bought_at IS NULL`).
 		Find(&items)
 	return items, err
 }
