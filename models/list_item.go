@@ -16,7 +16,7 @@ type ListItem struct {
 
 	// bought at
 	// Read Only: true
-	BoughtAt *time.Time `json:"boughtAt,omitempty"`
+	BoughtAt *time.Time `xorm:"NULL" json:"boughtAt,omitempty"`
 
 	// category
 	// Required: true

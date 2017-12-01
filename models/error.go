@@ -118,6 +118,21 @@ func (err ErrGroupCodeNotExist) Error() string {
 	return fmt.Sprintf("group code does not exist [code: %s]", err.Code)
 }
 
+// ErrGroupNotExist represents a "Invalid Group UUID" kind of error.
+type ErrGroupInvalidUUID struct {
+	UID string
+}
+
+// IsErrGroupInvalidUUID checks if an error is a ErrGroupInvalidUUID.
+func IsErrGroupInvalidUUID(err error) bool {
+	_, ok := err.(ErrGroupCodeNotExist)
+	return ok
+}
+
+func (err ErrGroupInvalidUUID) Error() string {
+	return fmt.Sprintf("invalid group UUID [%s]", err.UID)
+}
+
 //  ____  _                       _               _     _     _
 // / ___|| |__   ___  _ __  _ __ (_)_ __   __ _  | |   (_)___| |_
 // \___ \| '_ \ / _ \| '_ \| '_ \| | '_ \ / _` | | |   | / __| __|
