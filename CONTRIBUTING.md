@@ -10,6 +10,7 @@ Before sending code out for review, run all the tests for the
 whole tree to make sure the changes don't break other usage.
 
 ## Styleguide
+Use `go fmt`.
 
 For imports you should use the following format (_without_ the comments)
 ```go
