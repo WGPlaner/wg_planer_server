@@ -81,6 +81,36 @@ func (err ErrUserNotExist) Error() string {
 	return fmt.Sprintf("user does not exist [uid: %s]", err.UID)
 }
 
+// ErrUserInvalidUID represents a "UserNotExist" kind of error.
+type ErrUserInvalidUID struct {
+	UID string
+}
+
+// IsErrUserInvalidUID checks if an error is a ErrUserInvalidUID.
+func IsErrUserInvalidUID(err error) bool {
+	_, ok := err.(ErrUserInvalidUID)
+	return ok
+}
+
+func (err ErrUserInvalidUID) Error() string {
+	return fmt.Sprintf("invalid user id format [UID: %s]", err.UID)
+}
+
+// ErrUserMissingProperty represents a "UserNotExist" kind of error.
+type ErrUserMissingProperty struct {
+	Field string
+}
+
+// IsErrUserMissingProperty checks if an error is a ErrUserMissingProperty.
+func IsErrUserMissingProperty(err error) bool {
+	_, ok := err.(ErrUserMissingProperty)
+	return ok
+}
+
+func (err ErrUserMissingProperty) Error() string {
+	return fmt.Sprintf("missing required property [%s]", err.Field)
+}
+
 //   ____
 //  / ___|_ __ ___  _   _ _ __
 // | |  _| '__/ _ \| | | | '_ \

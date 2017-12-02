@@ -212,8 +212,8 @@ func IsValidUserIDFormat(uid string) bool {
 }
 
 func IsUserExist(uid string) (bool, error) {
-	if len(uid) == 0 {
-		return false, nil
+	if !IsValidUserIDFormat(uid) {
+		return false, ErrUserInvalidUID{}
 	}
 	return x.Exist(&User{UID: &uid})
 }
@@ -234,6 +234,7 @@ func IsUserOnFirebase(uid string) (bool, error) {
 }
 
 func AreUsersExist(uids []string) (bool, error) {
+	// TODO: Better use where in and count
 	for _, uid := range uids {
 		if exists, err := IsUserExist(uid); err != nil {
 			return false, err
@@ -245,7 +246,10 @@ func AreUsersExist(uids []string) (bool, error) {
 }
 
 func CreateUser(u *User) error {
-	u.DisplayName = swag.String(strings.TrimSpace(*u.DisplayName))
+	if u.DisplayName == nil {
+		return ErrUserMissingProperty{}
+	}
+	*u.DisplayName = strings.TrimSpace(*u.DisplayName)
 	_, err := x.InsertOne(u)
 	u.PhotoURL = strfmt.URI(GetUserImageURL(*u.UID))
 	return err
