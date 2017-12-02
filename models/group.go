@@ -146,6 +146,13 @@ func (g *Group) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+func IsGroupExist(uid strfmt.UUID) (bool, error) {
+	if !strfmt.IsUUID(string(uid)) {
+		return false, ErrGroupInvalidUUID{}
+	}
+	return x.Exist(&Group{UID: uid})
+}
+
 func (g *Group) HasMember(uid string) bool {
 	has, _ := x.
 		Where("group_uid=?", g.UID).
