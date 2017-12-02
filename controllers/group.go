@@ -183,7 +183,7 @@ func UpdateGroup(params group.UpdateGroupParams, principal *models.User) middlew
 		return NewInternalServerError("Internal Database Error")
 	}
 
-	mailer.SendPushUpdateToUserIDs(g.Members, mailer.PushUpdateGroup, []string{
+	mailer.SendPushUpdateToUserIDs(g.Members, mailer.PushUpdateGroupData, []string{
 		string(g.UID),
 	})
 
@@ -288,7 +288,7 @@ func UpdateGroupImage(params group.UpdateGroupImageParams, principal *models.Use
 		return NewInternalServerError("Internal Server Error")
 	}
 
-	mailer.SendPushUpdateToUserIDs(g.Members, mailer.PushUpdateGroup, []string{
+	mailer.SendPushUpdateToUserIDs(g.Members, mailer.PushUpdateGroupImage, []string{
 		string(g.UID),
 	})
 

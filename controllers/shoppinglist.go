@@ -100,7 +100,7 @@ func UpdateListItem(params shoppinglist.UpdateListItemParams, principal *models.
 		return NewInternalServerError("Internal Database Error")
 	}
 
-	mailer.SendPushUpdateToUserIDs(g.Members, mailer.PushUpdateShoppingList, []string{
+	mailer.SendPushUpdateToUserIDs(g.Members, mailer.PushShoppingListUpdate, []string{
 		string(params.Body.ID),
 	})
 
@@ -163,7 +163,7 @@ func CreateListItem(params shoppinglist.CreateListItemParams, principal *models.
 		return NewInternalServerError("Internal Database Error")
 	}
 
-	mailer.SendPushUpdateToUserIDs(g.Members, mailer.PushUpdateShoppingList, []string{
+	mailer.SendPushUpdateToUserIDs(g.Members, mailer.PushShoppingListAdd, []string{
 		string(listItem.ID),
 	})
 
@@ -200,7 +200,7 @@ func BuyListItems(params shoppinglist.BuyListItemsParams, principal *models.User
 	for _, item := range params.Body {
 		list = append(list, string(item))
 	}
-	mailer.SendPushUpdateToUserIDs(g.Members, mailer.PushUpdateShoppingList, list)
+	mailer.SendPushUpdateToUserIDs(g.Members, mailer.PushShoppingListBuy, list)
 
 	return shoppinglist.NewBuyListItemsOK().WithPayload(&models.SuccessResponse{
 		Message: swag.String("bought items"),

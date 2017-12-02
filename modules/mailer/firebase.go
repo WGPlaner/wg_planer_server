@@ -21,10 +21,14 @@ type (
 )
 
 const (
-	PushUpdateGroup          = PushUpdateType("Group")
-	PushUpdateGroupNewMember = PushUpdateType("GroupNewMember")
-	PushUpdateUser           = PushUpdateType("User")
-	PushUpdateShoppingList   = PushUpdateType("ShoppingList")
+	PushUpdateGroupData      = PushUpdateType("Group-Data")
+	PushUpdateGroupImage     = PushUpdateType("Group-Image")
+	PushUpdateGroupNewMember = PushUpdateType("Group-NewMember")
+	PushUserUpdate           = PushUpdateType("User-Data")
+	PushUserUpdateImage      = PushUpdateType("User-Image")
+	PushShoppingListAdd      = PushUpdateType("ShoppingList-Add")
+	PushShoppingListUpdate   = PushUpdateType("ShoppingList-Update")
+	PushShoppingListBuy      = PushUpdateType("ShoppingList-Buy")
 )
 
 func SendPushUpdateToUsers(users []*models.User, t PushUpdateType, data []string) error {
