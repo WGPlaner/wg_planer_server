@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,4 +26,24 @@ func TestIsGroupExist(t *testing.T) {
 
 	assert.NoError(t, err3)
 	assert.True(t, exist3)
+}
+
+func TestGroup_MarshalBinary(t *testing.T) {
+	assert.NoError(t, PrepareTestDatabase())
+
+	g := Group{DisplayName: swag.String("G1"), Currency: "€"}
+	b1, err1 := g.MarshalBinary()
+	assert.NoError(t, err1)
+	assert.NotEmpty(t, b1)
+}
+
+func TestGroup_UnmarshalBinary(t *testing.T) {
+	assert.NoError(t, PrepareTestDatabase())
+
+	g1a := Group{DisplayName: swag.String("G1"), Currency: "€"}
+	g1b := Group{}
+	b1, _ := g1a.MarshalBinary()
+	err1b := g1b.UnmarshalBinary(b1)
+	assert.NoError(t, err1b)
+	assert.Equal(t, g1a, g1b)
 }

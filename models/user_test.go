@@ -133,3 +133,23 @@ func TestIsUserExist(t *testing.T) {
 		assert.False(t, exist)
 	}
 }
+
+func TestUser_MarshalBinary(t *testing.T) {
+	assert.NoError(t, PrepareTestDatabase())
+
+	u := User{Email: "test@example.com", Locale: "DE"}
+	b1, err1 := u.MarshalBinary()
+	assert.NoError(t, err1)
+	assert.NotEmpty(t, b1)
+}
+
+func TestUser_UnmarshalBinary(t *testing.T) {
+	assert.NoError(t, PrepareTestDatabase())
+
+	u1a := User{Email: "test@example.com", Locale: "DE"}
+	u1b := User{}
+	b1, _ := u1a.MarshalBinary()
+	err1b := u1b.UnmarshalBinary(b1)
+	assert.NoError(t, err1b)
+	assert.Equal(t, u1a, u1b)
+}
