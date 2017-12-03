@@ -141,7 +141,7 @@ func TestCreateGroupCodeInvalid(t *testing.T) {
 		url = fmt.Sprintf("/groups/%s/create-code", uid)
 		req = NewRequest(t, "GET", "1234567890fakefirebaseid0001", url)
 	)
-	MakeRequest(t, req, http.StatusBadRequest)
+	MakeRequest(t, req, http.StatusUnauthorized)
 }
 
 func TestCreateGroupCodeUnauthorized(t *testing.T) {
