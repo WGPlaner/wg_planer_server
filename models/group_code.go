@@ -103,9 +103,14 @@ func (m *GroupCode) UnmarshalBinary(b []byte) error {
 }
 
 func CreateGroupCode(uid strfmt.UUID) (*GroupCode, error) {
+	g, err := GetGroupByUID(uid)
+	if err != nil {
+		return nil, err
+	}
+
 	// Invalidate old codes
 	oldCodes := GroupCode{ValidUntil: strfmt.DateTime(time.Now().UTC())}
-	if _, err := x.Where("group_uid = ?", uid).Update(&oldCodes); err != nil {
+	if _, err := x.Where("group_uid = ?", g.UID).Update(&oldCodes); err != nil {
 		groupLog.Errorf(`Can't update validUntil date of other (old) codes for group "%s"'; Err: "%s"`, uid, err)
 		return nil, err
 	}
@@ -116,7 +121,7 @@ func CreateGroupCode(uid strfmt.UUID) (*GroupCode, error) {
 	)
 
 	groupCode := &GroupCode{
-		GroupUID:   &uid,
+		GroupUID:   &g.UID,
 		Code:       &code,
 		ValidUntil: strfmt.DateTime(validUntil),
 	}
