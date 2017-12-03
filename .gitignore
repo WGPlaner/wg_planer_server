@@ -11,15 +11,14 @@ data/groups/*
 restapi
 build
 swagger-codegen-cli.jar
-coverage.all
-coverage.txt
-coverage.tmp
+swagger_android.yml
 
 *.sqlite
 .idea
 *.log
 
 # Binaries for programs and plugins
+wgplaner-api
 *.exe
 *.dll
 *.so
