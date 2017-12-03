@@ -3,6 +3,7 @@ package models
 import (
 	"testing"
 
+	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -51,4 +52,24 @@ func TestIsGroupCodeValid(t *testing.T) {
 	exists3, code3 := IsGroupCodeValid("ABCDEFGHI123")
 	assert.True(t, exists3)
 	assert.NotNil(t, code3)
+}
+
+func TestGroupCode_MarshalBinary(t *testing.T) {
+	assert.NoError(t, PrepareTestDatabase())
+
+	c := GroupCode{Code: swag.String("123456789ABC")}
+	b1, err1 := c.MarshalBinary()
+	assert.NoError(t, err1)
+	assert.NotEmpty(t, b1)
+}
+
+func TestGroupCode_UnmarshalBinary(t *testing.T) {
+	assert.NoError(t, PrepareTestDatabase())
+
+	c1a := GroupCode{Code: swag.String("123456789ABC")}
+	c1b := GroupCode{}
+	b1, _ := c1a.MarshalBinary()
+	err1b := c1b.UnmarshalBinary(b1)
+	assert.NoError(t, err1b)
+	assert.Equal(t, c1a, c1b)
 }
