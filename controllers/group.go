@@ -36,6 +36,10 @@ func GetGroup(params group.GetGroupParams, principal *models.User) middleware.Re
 		groupLog.Debugf(`Can't find database group with id "%s"!`, params.GroupUID)
 		return NewNotFoundResponse("Group not found on server")
 
+	} else if models.IsErrGroupInvalidUUID(err) {
+		groupLog.Debugf(err.Error())
+		return NewNotFoundResponse("invalid group uid")
+
 	} else if err != nil {
 		groupLog.Critical(`Database Error!`, err)
 		return NewInternalServerError("Internal Database Error")
@@ -55,6 +59,10 @@ func GetGroupImage(params group.GetGroupImageParams, principal *models.User) mid
 	if g, err = models.GetGroupByUID(params.GroupUID); models.IsErrGroupNotExist(err) {
 		groupLog.Debugf(`Can't find database group with id "%s"!`, params.GroupUID)
 		return NewNotFoundResponse("Group not found on server")
+
+	} else if models.IsErrGroupInvalidUUID(err) {
+		groupLog.Debugf(err.Error())
+		return NewNotFoundResponse("invalid group uid")
 
 	} else if err != nil {
 		groupLog.Critical(`Database Error getting group!`, err)
@@ -165,6 +173,10 @@ func UpdateGroup(params group.UpdateGroupParams, principal *models.User) middlew
 		groupLog.Debugf(`Update group: "%s" does not exist: %s"`, params.Body.UID, err)
 		return NewNotFoundResponse(`Group does not exist.`)
 
+	} else if models.IsErrGroupInvalidUUID(err) {
+		groupLog.Debugf(`Update group: %q"`, err.Error())
+		return NewBadRequest(`invalid group uid format`)
+
 	} else if err != nil {
 		groupLog.Critical("Database error!", err)
 		return NewInternalServerError("Internal Database Error")
@@ -258,6 +270,10 @@ func UpdateGroupImage(params group.UpdateGroupImageParams, principal *models.Use
 	if g, err = models.GetGroupByUID(params.GroupUID); models.IsErrUserNotExist(err) {
 		groupLog.Debugf(`Can't find database group with id "%s"!`, params.GroupUID)
 		return NewNotFoundResponse("Unknown group")
+
+	} else if models.IsErrGroupInvalidUUID(err) {
+		groupLog.Debugf(err.Error())
+		return NewNotFoundResponse("invalid group uid")
 
 	} else if err != nil {
 		groupLog.Critical("Database Error getting group!", err)
