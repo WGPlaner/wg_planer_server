@@ -9,6 +9,7 @@ import (
 	"github.com/go-openapi/swag"
 	"github.com/wgplaner/wg_planer_server/models"
 	"github.com/wgplaner/wg_planer_server/modules/base"
+	"github.com/wgplaner/wg_planer_server/modules/mailer"
 	"github.com/wgplaner/wg_planer_server/modules/setting"
 	"github.com/wgplaner/wg_planer_server/restapi/operations/user"
 
@@ -99,6 +100,19 @@ func UpdateUser(params user.UpdateUserParams, principal *models.User) middleware
 	if theUser, err = models.GetUserByUID(*theUser.UID); err != nil {
 		return NewInternalServerError("Internal Database Error")
 	}
+
+	// Send a notification to all members of the user's group or just himself.
+	var UIDs = []string{*principal.UID}
+	if principal.GroupUID != "" {
+		UIDs, err = models.GetGroupMemberUIDs(principal.GroupUID)
+		if err != nil {
+			userLog.Criticalf("Error getting group members %q", principal.GroupUID)
+			return NewInternalServerError("Internal Server Error")
+		}
+	}
+	mailer.SendPushUpdateToUserIDs(UIDs, mailer.PushUserUpdate, []string{
+		string(*principal.UID),
+	})
 
 	return user.NewUpdateUserOK().WithPayload(theUser)
 }
@@ -199,6 +213,19 @@ func UpdateUserImage(params user.UpdateUserImageParams, principal *models.User) 
 		userLog.Critical(`Error uploading user avatar.`)
 		return NewInternalServerError("Internal Server Error")
 	}
+
+	// Send a notification to all members of the user's group or just himself.
+	var UIDs = []string{*principal.UID}
+	if principal.GroupUID != "" {
+		UIDs, err = models.GetGroupMemberUIDs(principal.GroupUID)
+		if err != nil {
+			userLog.Criticalf("Error getting group members %q", principal.GroupUID)
+			return NewInternalServerError("Internal Server Error")
+		}
+	}
+	mailer.SendPushUpdateToUserIDs(UIDs, mailer.PushUserUpdateImage, []string{
+		string(*principal.UID),
+	})
 
 	return user.NewUpdateUserImageOK().WithPayload(&models.SuccessResponse{
 		Message: swag.String("Successfully uploaded image file"),
