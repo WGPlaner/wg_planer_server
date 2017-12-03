@@ -1,0 +1,14 @@
+codecov:
+  ci:
+    - !appveyor # ignore CI builds by AppVeyor
+coverage:
+  range: 50..90
+  round: down
+  precision: 2
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: new
+  require_changes: false
+  require_base: no
+  require_head: no
+  branches: null
