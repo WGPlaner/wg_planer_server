@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# Stupid check if we're in the correct directory
+if [ ! -f swagger.yml ]
+then
+    echo [Error] Execute this script from the wg_planer_server directory!
+fi
+
 # Packages to test
 PACKAGES=$(go list ./... | grep -v -e vendor -e restapi -e integrations)
 

@@ -24,7 +24,7 @@ script:
   - go tool vet .
   - go build -o "build/wg_planer_server" cmd/wgplaner-api/wgplaner-api.go
   - go test -race -v ./...
-  - ./coverage.sh
+  - ./scripts/coverage.sh
 
 before_deploy:
   - mkdir -p build/config && cp config/* build/config
