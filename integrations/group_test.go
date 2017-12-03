@@ -134,6 +134,17 @@ func TestCreateGroupCode(t *testing.T) {
 	assert.Len(t, *code.Code, 12)
 }
 
+func TestCreateGroupCodeInvalid(t *testing.T) {
+	prepareTestEnv(t)
+	var (
+		code = models.GroupCode{}
+		uid  = strfmt.UUID("00112233-4455-6677-8899-0000000000")
+		url  = fmt.Sprintf("/groups/%s/create-code", uid)
+		req  = NewRequest(t, "GET", "1234567890fakefirebaseid0001", url)
+	)
+	MakeRequest(t, req, http.StatusBadRequest)
+}
+
 func TestCreateGroupCodeUnauthorized(t *testing.T) {
 	prepareTestEnv(t)
 	var (
