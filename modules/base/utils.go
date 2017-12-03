@@ -3,6 +3,8 @@ package base
 import (
 	"crypto/rand"
 	"math/big"
+	"os"
+	"os/exec"
 )
 
 func StringInSlice(a string, list []string) bool {
@@ -59,4 +61,22 @@ func AppendUniqueString(list []string, str string) []string {
 		return append(list, str)
 	}
 	return list
+}
+
+// For unit tests
+// See https://stackoverflow.com/a/33404435
+func IsTestCrasher() bool {
+	return os.Getenv("UNIT_CRASHER") == "1"
+}
+
+// For unit tests
+// See https://stackoverflow.com/a/33404435
+func DoesFuncCrash(f string) bool {
+	cmd := exec.Command(os.Args[0], "-test.run="+f)
+	cmd.Env = append(os.Environ(), "UNIT_CRASHER=1")
+	err := cmd.Run()
+	if e, ok := err.(*exec.ExitError); ok && !e.Success() {
+		return true
+	}
+	return false
 }
