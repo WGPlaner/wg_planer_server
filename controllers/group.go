@@ -26,7 +26,7 @@ import (
 var groupLog = logging.MustGetLogger("Group")
 
 func GetGroup(params group.GetGroupParams, principal *models.User) middleware.Responder {
-	groupLog.Debugf(`Get group "%s"`, params.GroupUID)
+	groupLog.Debugf(`User %q gets group "%s"`, *principal.UID, params.GroupUID)
 
 	var g *models.Group
 	var err error
@@ -53,6 +53,7 @@ func GetGroup(params group.GetGroupParams, principal *models.User) middleware.Re
 }
 
 func GetGroupImage(params group.GetGroupImageParams, principal *models.User) middleware.Responder {
+	groupLog.Debugf(`User %q gets image for group "%s"`, *principal.UID, params.GroupUID)
 	var g *models.Group
 	var err error
 
@@ -91,7 +92,7 @@ func GetGroupImage(params group.GetGroupImageParams, principal *models.User) mid
 }
 
 func CreateGroupCode(params group.CreateGroupCodeParams, principal *models.User) middleware.Responder {
-	groupLog.Debugf(`Generate group code for group "%s"!`, params.GroupUID)
+	groupLog.Debugf(`User %q generates code for group %q!`, *principal.UID, params.GroupUID)
 
 	var (
 		c   *models.GroupCode
@@ -121,7 +122,7 @@ func CreateGroupCode(params group.CreateGroupCodeParams, principal *models.User)
 }
 
 func CreateGroup(params group.CreateGroupParams, principal *models.User) middleware.Responder {
-	groupLog.Debug(`Start creating group`)
+	groupLog.Debugf(`User %q starts creating a group`, *principal.UID)
 
 	var err error
 
@@ -164,7 +165,7 @@ func CreateGroup(params group.CreateGroupParams, principal *models.User) middlew
 }
 
 func UpdateGroup(params group.UpdateGroupParams, principal *models.User) middleware.Responder {
-	groupLog.Debug(`Start updating group`)
+	groupLog.Debugf(`User %q starts updating group %q`, *principal.UID, params.Body.UID)
 
 	var g *models.Group
 	var err error
@@ -205,6 +206,8 @@ func UpdateGroup(params group.UpdateGroupParams, principal *models.User) middlew
 }
 
 func JoinGroup(params group.JoinGroupParams, principal *models.User) middleware.Responder {
+	groupLog.Debugf(`User %q watns to join a group with code %q`, *principal.UID, params.GroupCode)
+
 	g, err := principal.JoinGroupWithCode(params.GroupCode)
 
 	if models.IsErrGroupCodeNotExist(err) {
@@ -247,7 +250,7 @@ func JoinGroupHelp(params group.JoinGroupHelpParams) middleware.Responder {
 }
 
 func LeaveGroup(params group.LeaveGroupParams, principal *models.User) middleware.Responder {
-	groupLog.Debugf(`Start LeaveGroup for user %q`, *principal.UID)
+	groupLog.Debugf(`user %q leaves his group`, *principal.UID)
 
 	g, err := models.GetGroupByUID(principal.GroupUID)
 	if models.IsErrGroupNotExist(err) {
@@ -294,7 +297,7 @@ func LeaveGroup(params group.LeaveGroupParams, principal *models.User) middlewar
 }
 
 func UpdateGroupImage(params group.UpdateGroupImageParams, principal *models.User) middleware.Responder {
-	groupLog.Debug("Start put group image")
+	groupLog.Debugf(`User %q starts updating image of group %q`, *principal.UID, params.GroupUID)
 
 	var (
 		err error
