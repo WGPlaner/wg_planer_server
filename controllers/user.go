@@ -21,7 +21,7 @@ import (
 var userLog = logging.MustGetLogger("User")
 
 func CreateUser(params user.CreateUserParams, principal *models.User) middleware.Responder {
-	userLog.Debugf(`Start creating User "%s"`, *params.Body.UID)
+	userLog.Debugf(`Start creating user %q`, *params.Body.UID)
 
 	if *principal.UID != *params.Body.UID {
 		userLog.Infof(`Authorized user "%s" tried to create account for "%s"`,
@@ -60,7 +60,7 @@ func CreateUser(params user.CreateUserParams, principal *models.User) middleware
 }
 
 func UpdateUser(params user.UpdateUserParams, principal *models.User) middleware.Responder {
-	userLog.Debugf(`Start updating user "%s"`, *params.Body.UID)
+	userLog.Debugf(`Start updating user %q`, *params.Body.UID)
 
 	var theUser *models.User
 
@@ -101,24 +101,26 @@ func UpdateUser(params user.UpdateUserParams, principal *models.User) middleware
 		return NewInternalServerError("Internal Database Error")
 	}
 
-	// Send a notification to all members of the user's group or just himself.
-	var UIDs = []string{*principal.UID}
+	// Send a notification to all members of the user's group.
 	if principal.GroupUID != "" {
-		UIDs, err = models.GetGroupMemberUIDs(principal.GroupUID)
+		userLog.Debugf(`Updated user. Send message to members of group %q`, principal.GroupUID)
+
+		UIDs, err := models.GetGroupMemberUIDs(principal.GroupUID)
 		if err != nil {
 			userLog.Criticalf("Error getting group members %q", principal.GroupUID)
 			return NewInternalServerError("Internal Server Error")
 		}
+
+		mailer.SendPushUpdateToUserIDs(UIDs, mailer.PushUserUpdate, []string{
+			string(*principal.UID),
+		})
 	}
-	mailer.SendPushUpdateToUserIDs(UIDs, mailer.PushUserUpdate, []string{
-		string(*principal.UID),
-	})
 
 	return user.NewUpdateUserOK().WithPayload(theUser)
 }
 
 func GetUser(params user.GetUserParams, principal *models.User) middleware.Responder {
-	userLog.Debugf(`Get user "%s"`, params.UserID)
+	userLog.Debugf(`User %q gets user %q`, *principal.UID, params.UserID)
 
 	var (
 		err error
@@ -158,7 +160,7 @@ func GetUser(params user.GetUserParams, principal *models.User) middleware.Respo
 }
 
 func GetUserImage(params user.GetUserImageParams, principal *models.User) middleware.Responder {
-	userLog.Debug("Get user image")
+	userLog.Debugf("Get user image for user %q", *principal.UID)
 
 	// TODO: Maybe "IsUserExist"
 	if _, err := models.GetUserByUID(params.UserID); models.IsErrUserNotExist(err) {
@@ -187,7 +189,7 @@ func GetUserImage(params user.GetUserImageParams, principal *models.User) middle
 }
 
 func UpdateUserImage(params user.UpdateUserImageParams, principal *models.User) middleware.Responder {
-	userLog.Debug("Start put user image")
+	userLog.Debugf("Start put user image for user %q", *principal.UID)
 
 	// Check if auth and userID are the same.
 	// We don't have to get the user again since principal contains the loaded user

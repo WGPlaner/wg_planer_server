@@ -153,3 +153,15 @@ func TestUser_UnmarshalBinary(t *testing.T) {
 	assert.NoError(t, err1b)
 	assert.Equal(t, u1a, u1b)
 }
+
+func TestUser_IsAdmin(t *testing.T) {
+	assert.NoError(t, PrepareTestDatabase())
+
+	u1, err1 := GetUserByUID("1234567890fakefirebaseid0001")
+	assert.NoError(t, err1)
+	assert.True(t, u1.IsAdmin())
+
+	u2, err2 := GetUserByUID("1234567890fakefirebaseid0002")
+	assert.NoError(t, err2)
+	assert.False(t, u2.IsAdmin())
+}

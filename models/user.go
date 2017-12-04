@@ -141,6 +141,14 @@ func (u *User) Load() (bool, error) {
 	}
 }
 
+func (u *User) IsAdmin() bool {
+	g, err := GetGroupByUID(u.GroupUID)
+	if err != nil {
+		return false
+	}
+	return g.HasAdmin(*u.UID)
+}
+
 func (u *User) LeaveGroup() error {
 	u.GroupUID = ""
 	return UpdateUserCols(u, "group_uid")
