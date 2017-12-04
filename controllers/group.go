@@ -247,6 +247,41 @@ func JoinGroupHelp(params group.JoinGroupHelpParams) middleware.Responder {
 }
 
 func LeaveGroup(params group.LeaveGroupParams, principal *models.User) middleware.Responder {
+	groupLog.Debugf(`Start LeaveGroup for user %q`, *principal.UID)
+
+	g, err := models.GetGroupByUID(principal.GroupUID)
+	if models.IsErrGroupNotExist(err) {
+		return NewBadRequest("user does not have a group")
+
+	} else if err != nil {
+		groupLog.Critical("Unknown Group Error")
+		return NewInternalServerError("Internal Error")
+	}
+
+	if len(g.Members) <= 1 {
+		// TODO: Delete group
+
+	} else if principal.IsAdmin() {
+		// Remove user as admin and add another one
+		// TODO: Put in another function
+		if len(g.Admins) == 1 {
+			g.Admins = []string{}
+		} else {
+			base.RemoveStringFromSlice(g.Admins, *principal.UID)
+		}
+
+		for _, m := range g.Members {
+			if m != *principal.UID {
+				g.Admins = []string{m}
+				break
+			}
+		}
+		err := models.UpdateGroupCols(g, `admins`)
+		if err != nil {
+			groupLog.Critical("Error updating group")
+		}
+	}
+
 	if err := principal.LeaveGroup(); err != nil {
 		groupLog.Critical("Database error updating group!", err)
 		return NewInternalServerError("Internal Database Error")

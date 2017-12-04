@@ -25,6 +25,23 @@ func IntInSlice(a int, list []int) bool {
 	return false
 }
 
+func RemoveStringFromSlice(s []string, str string) []string {
+	index := -1
+	for i, part := range s {
+		if part == str {
+			index = i
+		}
+	}
+	if index > -1 {
+		if index >= len(s)-1 {
+			s = s[:index]
+		} else {
+			s = append(s[:index], s[index+1:]...)
+		}
+	}
+	return s
+}
+
 func GetRandomAlphaNumCode(n int, onlyUpperCase bool) string {
 	const (
 		alphaUpper = "ABCDEFGHIJKLMNOPRSTUVWXYZ"
