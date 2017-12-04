@@ -252,6 +252,7 @@ func JoinGroupHelp(params group.JoinGroupHelpParams) middleware.Responder {
 func LeaveGroup(params group.LeaveGroupParams, principal *models.User) middleware.Responder {
 	groupLog.Debugf(`user %q leaves his group`, *principal.UID)
 
+	// TODO: Own function "u.HasGroupAndLoad()"?
 	g, err := models.GetGroupByUID(principal.GroupUID)
 	if models.IsErrGroupNotExist(err) {
 		return NewBadRequest("user does not have a group")
@@ -289,6 +290,10 @@ func LeaveGroup(params group.LeaveGroupParams, principal *models.User) middlewar
 		groupLog.Critical("Database error updating group!", err)
 		return NewInternalServerError("Internal Database Error")
 	}
+
+	mailer.SendPushUpdateToUserIDs(g.Members, mailer.PushUpdateGroupMemberLeft, []string{
+		string(*principal.UID),
+	})
 
 	return group.NewLeaveGroupOK().WithPayload(&models.SuccessResponse{
 		Message: swag.String("Successfully left group"),
