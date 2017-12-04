@@ -216,18 +216,17 @@ func UpdateUserImage(params user.UpdateUserImageParams, principal *models.User) 
 		return NewInternalServerError("Internal Server Error")
 	}
 
-	// Send a notification to all members of the user's group or just himself.
-	var UIDs = []string{*principal.UID}
+	// Send a notification to all members of the user's group.
 	if principal.GroupUID != "" {
-		UIDs, err = models.GetGroupMemberUIDs(principal.GroupUID)
+		UIDs, err := models.GetGroupMemberUIDs(principal.GroupUID)
 		if err != nil {
 			userLog.Criticalf("Error getting group members %q", principal.GroupUID)
 			return NewInternalServerError("Internal Server Error")
 		}
+		mailer.SendPushUpdateToUserIDs(UIDs, mailer.PushUserUpdateImage, []string{
+			string(*principal.UID),
+		})
 	}
-	mailer.SendPushUpdateToUserIDs(UIDs, mailer.PushUserUpdateImage, []string{
-		string(*principal.UID),
-	})
 
 	return user.NewUpdateUserImageOK().WithPayload(&models.SuccessResponse{
 		Message: swag.String("Successfully uploaded image file"),
