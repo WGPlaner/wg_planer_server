@@ -1,5 +1,6 @@
 # WGPlaner Server
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/492b2e1e8ce9415fa826016952baaa15)](https://www.codacy.com/app/archer96/wg_planer_server?utm_source=github.com&utm_medium=referral&utm_content=WGPlaner/wg_planer_server&utm_campaign=badger)
 [![Build Status AppVeyor](https://ci.appveyor.com/api/projects/status/ok5rq84eh6sx8lxd/branch/master?svg=true)](https://ci.appveyor.com/project/archer96/wg-planer-server/branch/master)
 [![Build Status Travis](https://travis-ci.org/WGPlaner/wg_planer_server.svg?branch=master)](https://travis-ci.org/WGPlaner/wg_planer_server)
 [![codecov](https://codecov.io/gh/WGPlaner/wg_planer_server/branch/master/graph/badge.svg)](https://codecov.io/gh/WGPlaner/wg_planer_server)
