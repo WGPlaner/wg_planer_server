@@ -118,8 +118,13 @@ func GetBillsByGroupUID(guid strfmt.UUID) ([]*Bill, error) {
 }
 
 func CreateBillForGroup(g *Group, u *User) (*Bill, error) {
+	billUID, err := uuid.NewV4()
+	if err != nil {
+		return nil, err
+	}
+
 	b := &Bill{
-		UID:       strfmt.UUID(uuid.NewV4().String()),
+		UID:       strfmt.UUID(billUID.String()),
 		State:     swag.String("TODO"),
 		CreatedBy: u.UID,
 		GroupUID:  g.UID,
@@ -130,7 +135,7 @@ func CreateBillForGroup(g *Group, u *User) (*Bill, error) {
 		return nil, err
 	}
 
-	_, err := x.
+	_, err = x.
 		Cols(`bill_uid`).
 		Where(`group_uid=?`, g.UID).
 		And(`bill_uid IS NULL`).

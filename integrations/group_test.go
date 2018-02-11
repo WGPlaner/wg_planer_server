@@ -137,7 +137,7 @@ func TestCreateGroupCode(t *testing.T) {
 func TestCreateGroupCodeInvalid(t *testing.T) {
 	prepareTestEnv(t)
 	var (
-		uid = strfmt.UUID("00112233-4455-6677-8899-0000000000")
+		uid = strfmt.UUID("00112233-4455-6677-8899-000000000000")
 		url = fmt.Sprintf("/groups/%s/create-code", uid)
 		req = NewRequest(t, "GET", "1234567890fakefirebaseid0001", url)
 	)

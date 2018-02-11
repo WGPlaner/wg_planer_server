@@ -157,7 +157,7 @@ func TestBuyListItemsInvalidGroup(t *testing.T) {
 		req   = NewRequestWithJSON(t, "POST", "1234567890fakefirebaseid0002",
 			"/shoppinglist/000-invalid-format-111/buy-items", items)
 	)
-	MakeRequest(t, req, http.StatusBadRequest)
+	MakeRequest(t, req, http.StatusUnprocessableEntity)
 }
 
 func TestBuyListItemsUnknownGroup(t *testing.T) {
