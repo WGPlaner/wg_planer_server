@@ -146,14 +146,14 @@ func CreateListItem(params shoppinglist.CreateListItemParams, principal *models.
 		return NewBadRequest("A requestedFor user does not exist")
 	}
 
-	itemUid, err := uuid.NewV4()
+	itemUID, err := uuid.NewV4()
 	if err != nil {
 		groupLog.Critical("Error generating NewV4 UID!", err)
 		return NewInternalServerError("Internal Error")
 	}
 
 	listItem := models.ListItem{
-		ID:           strfmt.UUID(itemUid.String()),
+		ID:           strfmt.UUID(itemUID.String()),
 		Title:        params.Body.Title,
 		Category:     params.Body.Category,
 		Count:        params.Body.Count,

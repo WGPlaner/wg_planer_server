@@ -126,14 +126,14 @@ func CreateGroup(params group.CreateGroupParams, principal *models.User) middlew
 
 	var err error
 
-	groupUid, err := uuid.NewV4()
+	groupUID, err := uuid.NewV4()
 	if err != nil {
 		groupLog.Critical("Error generating NewV4 UID!", err)
 		return NewInternalServerError("Internal Error")
 	}
 
 	// Create new group
-	newGroupUid := strfmt.UUID(groupUid.String())
+	newGroupUid := strfmt.UUID(groupUID.String())
 
 	theUser := &models.User{
 		UID:      principal.UID,
