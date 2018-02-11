@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -197,7 +198,7 @@ func UpdateUserImage(params user.UpdateUserImageParams, principal *models.User) 
 		return NewUnauthorizedResponse("Can't change profile image of other users")
 	}
 
-	data, err := ioutil.ReadAll(params.ProfileImage)
+	data, err := ioutil.ReadAll(io.Reader(params.ProfileImage))
 	if err != nil {
 		return NewInternalServerError("Internal Server Error")
 	}
