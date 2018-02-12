@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -334,7 +335,7 @@ func UpdateGroupImage(params group.UpdateGroupImageParams, principal *models.Use
 		return NewUnauthorizedResponse("User not a member of the group.")
 	}
 
-	data, err := ioutil.ReadAll(params.ProfileImage)
+	data, err := ioutil.ReadAll(io.Reader(params.ProfileImage))
 	if err != nil {
 		return NewInternalServerError("Internal Server Error")
 	}
