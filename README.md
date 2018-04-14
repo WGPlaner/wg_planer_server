@@ -27,24 +27,24 @@ To build `wg_planer_server` run:
 go build -v -o "build/wg_planer_server" ./cmd/wgplaner-api/wgplaner-api.go
 ```
 
-### Create Android Library and API documentation
+### Create Android Library
 First download `swagger-codegen`:
 
 ```bash
 wget http://central.maven.org/maven2/io/swagger/swagger-codegen-cli/2.3.1/swagger-codegen-cli-2.3.1.jar -O swagger-codegen-cli.jar
 ```
 
-#### Client Library
 To create the Java Android Library run:
 
 ```bash
 java -jar swagger-codegen-cli.jar generate -i swagger.yml -l java --library=okhttp-gson -o build/android_client
 ```
 
-#### API Documentation
-To create the API documentation run:
+### API Documentation
+Available here: https://doc.wgplaner.ameyering.de/docs
 
+Using `go-swagger`, simply run:
 ```bash
-java -jar swagger-codegen-cli.jar generate -i swagger.yml -l html2 -o build/api_doc_html
+swagger serve swagger.yml
 ```
 

@@ -658,6 +658,7 @@ definitions:
     required:
       - uid
       - displayName
+    type: object
     properties:
       uid:
         type: string
@@ -691,6 +692,7 @@ definitions:
   Group:
     required:
       - displayName
+    type: object
     properties:
       uid:
         type: string
@@ -729,6 +731,7 @@ definitions:
       - groupUID
       - code
       - validUntil
+    type: object
     properties:
       groupUID:
         type: string
@@ -746,6 +749,7 @@ definitions:
     required:
     - listItems
     - count
+    type: object
     properties:
       count:
         type: integer
@@ -760,6 +764,7 @@ definitions:
       - title
       - category
       - count
+    type: object
     properties:
       id:
         type: string
@@ -810,6 +815,7 @@ definitions:
       - billItems
       - state
       - createdBy
+    type: object
     properties:
       uid:
         type: string
@@ -842,6 +848,7 @@ definitions:
     required:
     - count
     - bills
+    type: object
     properties:
       count:
         type: integer
@@ -858,6 +865,7 @@ definitions:
       - api_version_code
       - android_version_string
       - android_version_code
+    type: object
     properties:
       api_version_string:
         type: string
@@ -879,6 +887,7 @@ definitions:
     required:
       - status
       - message
+    type: object
     properties:
       status:
         type: integer
@@ -888,6 +897,7 @@ definitions:
     required:
       - status
       - message
+    type: object
     properties:
       status:
         type: integer
