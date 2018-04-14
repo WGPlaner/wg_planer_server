@@ -27,3 +27,13 @@
   email: arne@example.com
   created_at: 2017-11-08T14:23:56.000+01:00
   updated_at: 2017-11-08T14:23:56.000+01:00
+
+-
+  uid: 1234567890fakefirebaseid0004
+  display_name: Florian Tobias
+  group_uid: 00112233-4455-6677-8899-aabbccddeef0
+  firebase_instance_id:
+  locale: DE
+  email: flo@example.com
+  created_at: 2018-04-06T14:23:56.000+01:00
+  updated_at: 2018-04-07T14:23:56.000+01:00

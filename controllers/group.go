@@ -35,18 +35,18 @@ func GetGroup(params group.GetGroupParams, principal *models.User) middleware.Re
 	if g, err = models.GetGroupByUID(params.GroupUID); models.IsErrGroupNotExist(err) {
 		groupLog.Debugf(`Can't find database group with id "%s"!`, params.GroupUID)
 		return NewNotFoundResponse("Group not found on server")
-
-	} else if models.IsErrGroupInvalidUUID(err) {
+	}
+	if models.IsErrGroupInvalidUUID(err) {
 		groupLog.Debugf(err.Error())
 		return NewNotFoundResponse("invalid group uid")
-
-	} else if err != nil {
+	}
+	if err != nil {
 		groupLog.Critical(`Database Error!`, err)
 		return NewInternalServerError("Internal Database Error")
 	}
 
 	if !g.HasMember(*principal.UID) {
-		return NewUnauthorizedResponse("User is a member of the specified group")
+		return NewUnauthorizedResponse("User is not a member of the specified group")
 	}
 
 	return group.NewGetGroupOK().WithPayload(g)

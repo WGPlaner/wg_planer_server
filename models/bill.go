@@ -23,6 +23,10 @@ type Bill struct {
 	// Required: true
 	CreatedBy *string `xorm:"VARCHAR(28)" json:"createdBy"`
 
+	// sent to
+	// Required: true
+	SentTo []string `xorm:"VARCHAR(28)" json:"sentTo"`
+
 	// due date
 	DueDate string `json:"dueDate,omitempty"`
 
@@ -30,9 +34,9 @@ type Bill struct {
 	// Read Only: true
 	GroupUID strfmt.UUID `json:"groupUID,omitempty"`
 
-	// state
+	// state (can be e.g. paid, todo)
 	// Required: true
-	State *string `json:"state"`
+	State *string `xorm:"VARCHAR(5)" json:"state"`
 
 	// sum
 	Sum int64 `xorm:"-" json:"sum,omitempty"`
@@ -112,6 +116,31 @@ func GetBillsByGroupUID(guid strfmt.UUID) ([]*Bill, error) {
 	err := x.AllCols().Where(`group_uid=?`, guid).Find(&bills)
 	if err != nil {
 		return nil, err
+	}
+
+	return bills, nil
+}
+
+func GetBillsByGroupUIDWithBillItems(guid strfmt.UUID) ([]*Bill, error) {
+	bills, err := GetBillsByGroupUID(guid)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get items for each bill
+	for _, b := range bills {
+		var billItems []ListItem
+		err = x.Cols("id", "price", "count").Where(`bill_uid=?`, b.UID).Find(&billItems)
+		if err != nil {
+			return nil, err
+		}
+		b.Sum = 0
+		for _, i := range billItems {
+			b.BillItems = append(b.BillItems, string(i.ID))
+			if i.Count != nil {
+				b.Sum += i.Price * *i.Count
+			}
+		}
 	}
 
 	return bills, nil
