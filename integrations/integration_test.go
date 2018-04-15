@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/wgplaner/wg_planer_server/controllers"
@@ -53,11 +55,12 @@ func TestMain(m *testing.M) {
 
 func initIntegrationTest() {
 	var api *operations.WgplanerAPI
+	var wgPlanerRoot string
 
-	if wgPlanerRoot := os.Getenv("WGPLANER_ROOT"); wgPlanerRoot == "" {
+	if wgPlanerRoot = os.Getenv("WGPLANER_ROOT"); wgPlanerRoot == "" {
 		log.Fatalln("Environment variable $WGPLANER_ROOT not set. " +
 			"It is required for integration tests!")
-
+		return
 	} else {
 		// Set path so that config and data directory are found
 		setting.AppWorkPath = wgPlanerRoot
@@ -123,6 +126,26 @@ func NewRequestWithBody(t testing.TB, method, auth string, urlStr string, body i
 	assert.NoError(t, err)
 	request.Header.Add("Authorization", auth)
 	request.RequestURI = urlStr
+	return request
+}
+
+func NewRequestWithImage(t testing.TB, method, auth string, urlStr string, imgParamName, pathStr string) *http.Request {
+	// Check that file exists and open it
+	file, err := os.Open(pathStr)
+	assert.NoError(t, err, "Error opening image")
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile(imgParamName, filepath.Base(pathStr))
+	assert.NoError(t, err, "Error creating form file")
+	_, err = io.Copy(part, file)
+
+	err = writer.Close()
+	assert.NoError(t, err, "Error closing writer")
+
+	request := NewRequestWithBody(t, method, auth, urlStr, body)
+	request.Header.Set("Content-Type", writer.FormDataContentType())
 	return request
 }
 

@@ -47,6 +47,29 @@ func TestGetGroupImage(t *testing.T) {
 	MakeRequest(t, req, http.StatusOK)
 }
 
+func TestUpdateGroupImage(t *testing.T) {
+	prepareTestEnv(t)
+
+	groupUID := "00112233-4455-6677-8899-aabbccddeeff"
+	request := NewRequestWithImage(t,
+		"PUT",
+		AuthValid,
+		"/groups/"+groupUID+"/image",
+		"profileImage",
+		models.GetGroupImageDefaultPath())
+	resp := MakeRequest(t, request, http.StatusOK)
+
+	// Check JSON response
+	successResp := models.SuccessResponse{}
+	DecodeJSON(t, resp, &successResp)
+	assert.NotEmpty(t, *successResp.Message)
+	assert.Equal(t, int64(200), *successResp.Status)
+
+	// Check that image is uploaded
+	_, fileErr := models.GetGroupImage(strfmt.UUID(groupUID))
+	assert.NoError(t, fileErr, "Uploaded image not found")
+}
+
 func TestGetGroupNotFoundImage(t *testing.T) {
 	prepareTestEnv(t)
 	authInGroup := "1234567890fakefirebaseid0001"

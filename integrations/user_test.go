@@ -70,6 +70,28 @@ func TestGetUserImage(t *testing.T) {
 	assert.Equal(t, resp.Headers.Get("Content-Type"), "application/octet-stream")
 }
 
+func TestUpdateUserImage(t *testing.T) {
+	prepareTestEnv(t)
+
+	request := NewRequestWithImage(t,
+		"PUT",
+		AuthValid,
+		"/users/"+AuthValid+"/image",
+		"profileImage",
+		models.GetUserImageDefaultPath())
+	resp := MakeRequest(t, request, http.StatusOK)
+
+	// Check JSON response
+	successResp := models.SuccessResponse{}
+	DecodeJSON(t, resp, &successResp)
+	assert.NotEmpty(t, *successResp.Message)
+	assert.Equal(t, int64(200), *successResp.Status)
+
+	// Check that image is uploaded
+	_, fileErr := models.GetUserImage(AuthValid)
+	assert.NoError(t, fileErr, "Uploaded image not found")
+}
+
 func TestCreateUserUnauthorized(t *testing.T) {
 	prepareTestEnv(t)
 	var (

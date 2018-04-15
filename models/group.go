@@ -244,10 +244,14 @@ func GetGroupImage(uid strfmt.UUID) (*os.File, error) {
 }
 
 func GetGroupImageDefault() (*os.File, error) {
-	return os.Open(path.Join(
+	return os.Open(GetGroupImageDefaultPath())
+}
+
+func GetGroupImageDefaultPath() string {
+	return path.Join(
 		setting.AppWorkPath,
-		setting.AppConfig.Data.UserImageDefault,
-	))
+		setting.AppConfig.Data.GroupImageDefault,
+	)
 }
 
 func GetGroupImageURL(uid string) string {
