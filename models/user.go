@@ -306,10 +306,14 @@ func GetUserImage(uid string) (*os.File, error) {
 }
 
 func GetUserImageDefault() (*os.File, error) {
-	return os.Open(path.Join(
+	return os.Open(GetUserImageDefaultPath())
+}
+
+func GetUserImageDefaultPath() string {
+	return path.Join(
 		setting.AppWorkPath,
 		setting.AppConfig.Data.UserImageDefault,
-	))
+	)
 }
 
 func GetUserImageURL(uid string) string {
