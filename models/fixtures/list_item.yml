@@ -31,7 +31,7 @@
 -
   id: 00112233-4455-6677-8899-000000000003
   group_uid: 00112233-4455-6677-8899-aabbccddeeff
-  bill_uid: ""
+  bill_uid: 00112233-4455-6677-8899-123000000001
   title: Chocolate
   category: Groceries
   count: 1

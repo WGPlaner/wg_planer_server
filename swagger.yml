@@ -832,6 +832,10 @@ definitions:
         type: array
         items:
           type: string
+      sentTo:
+        type: array
+        items:
+          type: string
       createdBy:
         type: string
       dueDate:
