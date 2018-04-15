@@ -25,49 +25,57 @@ import (
 
 var groupLog = logging.MustGetLogger("Group")
 
+func getGroupOrError(groupUID strfmt.UUID) (*models.Group, middleware.Responder) {
+	var g *models.Group
+	var err error
+
+	if g, err = models.GetGroupByUID(groupUID); models.IsErrGroupNotExist(err) {
+		groupLog.Debugf(`Can't find database group with id "%s"!`, groupUID)
+		return nil, NewNotFoundResponse("Group not found on server.")
+	}
+	if models.IsErrGroupInvalidUUID(err) {
+		groupLog.Debugf(err.Error())
+		return nil, NewNotFoundResponse("invalid group uid format")
+	}
+	if err != nil {
+		groupLog.Critical(`Database Error!`, err)
+		return nil, NewInternalServerError("Internal Database Error")
+	}
+	return g, nil
+}
+
+func getGroupAuthorizedOrError(groupUID strfmt.UUID, userID string) (*models.Group, middleware.Responder) {
+	var g *models.Group
+	var errResp middleware.Responder
+
+	if g, errResp = getGroupOrError(groupUID); errResp != nil {
+		return nil, errResp
+	}
+	if !g.HasMember(userID) {
+		return nil, NewUnauthorizedResponse("User is not a member of the specified group")
+	}
+	return g, nil
+}
+
 func GetGroup(params group.GetGroupParams, principal *models.User) middleware.Responder {
 	groupLog.Debugf(`User %q gets group "%s"`, *principal.UID, params.GroupUID)
 
 	var g *models.Group
-	var err error
+	var errResp middleware.Responder
 
-	// Database
-	if g, err = models.GetGroupByUID(params.GroupUID); models.IsErrGroupNotExist(err) {
-		groupLog.Debugf(`Can't find database group with id "%s"!`, params.GroupUID)
-		return NewNotFoundResponse("Group not found on server")
+	if g, errResp = getGroupAuthorizedOrError(params.GroupUID, *principal.UID); errResp != nil {
+		return errResp
 	}
-	if models.IsErrGroupInvalidUUID(err) {
-		groupLog.Debugf(err.Error())
-		return NewNotFoundResponse("invalid group uid")
-	}
-	if err != nil {
-		groupLog.Critical(`Database Error!`, err)
-		return NewInternalServerError("Internal Database Error")
-	}
-
-	if !g.HasMember(*principal.UID) {
-		return NewUnauthorizedResponse("User is not a member of the specified group")
-	}
-
 	return group.NewGetGroupOK().WithPayload(g)
 }
 
 func GetGroupImage(params group.GetGroupImageParams, principal *models.User) middleware.Responder {
 	groupLog.Debugf(`User %q gets image for group "%s"`, *principal.UID, params.GroupUID)
 	var g *models.Group
-	var err error
+	var errResp middleware.Responder
 
-	if g, err = models.GetGroupByUID(params.GroupUID); models.IsErrGroupNotExist(err) {
-		groupLog.Debugf(`Can't find database group with id "%s"!`, params.GroupUID)
-		return NewNotFoundResponse("Group not found on server")
-
-	} else if models.IsErrGroupInvalidUUID(err) {
-		groupLog.Debugf(err.Error())
-		return NewNotFoundResponse("invalid group uid")
-
-	} else if err != nil {
-		groupLog.Critical(`Database Error getting group!`, err)
-		return NewInternalServerError("Internal Database Error")
+	if g, errResp = getGroupOrError(params.GroupUID); errResp != nil {
+		return errResp
 	}
 
 	//if !base.StringInSlice(*principal.UID, g.Members) {
@@ -174,19 +182,10 @@ func UpdateGroup(params group.UpdateGroupParams, principal *models.User) middlew
 	groupLog.Debugf(`User %q starts updating group %q`, *principal.UID, params.Body.UID)
 
 	var g *models.Group
-	var err error
+	var errResp middleware.Responder
 
-	if g, err = models.GetGroupByUID(params.Body.UID); models.IsErrGroupNotExist(err) {
-		groupLog.Debugf(`Update group: "%s" does not exist: %s"`, params.Body.UID, err)
-		return NewNotFoundResponse(`Group does not exist.`)
-
-	} else if models.IsErrGroupInvalidUUID(err) {
-		groupLog.Debugf(`Update group: %q"`, err.Error())
-		return NewBadRequest(`invalid group uid format`)
-
-	} else if err != nil {
-		groupLog.Critical("Database error!", err)
-		return NewInternalServerError("Internal Database Error")
+	if g, errResp = getGroupAuthorizedOrError(params.Body.UID, *principal.UID); errResp != nil {
+		return errResp
 	}
 
 	if !g.HasAdmin(*principal.UID) {
@@ -258,14 +257,11 @@ func JoinGroupHelp(params group.JoinGroupHelpParams) middleware.Responder {
 func LeaveGroup(params group.LeaveGroupParams, principal *models.User) middleware.Responder {
 	groupLog.Debugf(`user %q leaves his group`, *principal.UID)
 
-	// TODO: Own function "u.HasGroupAndLoad()"?
-	g, err := models.GetGroupByUID(principal.GroupUID)
-	if models.IsErrGroupNotExist(err) {
-		return NewBadRequest("user does not have a group")
+	var g *models.Group
+	var errResp middleware.Responder
 
-	} else if err != nil {
-		groupLog.Critical("Unknown Group Error")
-		return NewInternalServerError("Internal Error")
+	if g, errResp = getGroupAuthorizedOrError(principal.GroupUID, *principal.UID); errResp != nil {
+		return errResp
 	}
 
 	if len(g.Members) <= 1 {
@@ -310,23 +306,11 @@ func LeaveGroup(params group.LeaveGroupParams, principal *models.User) middlewar
 func UpdateGroupImage(params group.UpdateGroupImageParams, principal *models.User) middleware.Responder {
 	groupLog.Debugf(`User %q starts updating image of group %q`, *principal.UID, params.GroupUID)
 
-	var (
-		err error
-		g   *models.Group
-	)
+	var g *models.Group
+	var errResp middleware.Responder
 
-	// Database
-	if g, err = models.GetGroupByUID(params.GroupUID); models.IsErrUserNotExist(err) {
-		groupLog.Debugf(`Can't find database group with id "%s"!`, params.GroupUID)
-		return NewNotFoundResponse("Unknown group")
-
-	} else if models.IsErrGroupInvalidUUID(err) {
-		groupLog.Debugf(err.Error())
-		return NewNotFoundResponse("invalid group uid")
-
-	} else if err != nil {
-		groupLog.Critical("Database Error getting group!", err)
-		return NewInternalServerError("Internal Server Error")
+	if g, errResp = getGroupOrError(params.GroupUID); errResp != nil {
+		return errResp
 	}
 
 	// TODO: use isAdmin

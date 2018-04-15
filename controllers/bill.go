@@ -14,27 +14,13 @@ func GetBillList(params bill.GetBillListParams, principal *models.User) middlewa
 	groupLog.Debugf(`User %q gets bills for group "%s"`, *principal.UID, params.GroupUID)
 
 	var g *models.Group
-	var err error
+	var errResp middleware.Responder
 
-	// Database - Check group
-	if g, err = models.GetGroupByUID(params.GroupUID); models.IsErrGroupNotExist(err) {
-		groupLog.Debugf(`Can't find database group with id "%s"!`, params.GroupUID)
-		return NewNotFoundResponse("Group not found on server")
-	}
-	if models.IsErrGroupInvalidUUID(err) {
-		groupLog.Debugf(err.Error())
-		return NewNotFoundResponse("invalid group uid")
-	}
-	if err != nil {
-		groupLog.Critical(`Database Error!`, err)
-		return NewInternalServerError("Internal Database Error")
-	}
-	// Check if group has member
-	if !g.HasMember(*principal.UID) {
-		return NewUnauthorizedResponse("User is not a member of the specified group")
+	if g, errResp = getGroupAuthorizedOrError(params.GroupUID, *principal.UID); errResp != nil {
+		return errResp
 	}
 
-	bills, err := models.GetBillsByGroupUIDWithBillItems(params.GroupUID)
+	bills, err := models.GetBillsByGroupUIDWithBillItems(g.UID)
 	if err != nil {
 		return NewInternalServerError("Internal Server Error")
 	}
@@ -54,8 +40,11 @@ func CreateBill(params bill.CreateBillParams, principal *models.User) middleware
 
 	// TODO: Check authorization, etc
 
-	g := &models.Group{
-		UID: params.GroupUID,
+	var g *models.Group
+	var errResp middleware.Responder
+
+	if g, errResp = getGroupAuthorizedOrError(params.GroupUID, *principal.UID); errResp != nil {
+		return errResp
 	}
 
 	b, err := models.CreateBillForGroup(g, principal)
