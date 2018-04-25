@@ -23,6 +23,7 @@ before_install:
 script:
   - go tool vet .
   - go build -o "build/wg_planer_server" cmd/wgplaner-api/wgplaner-api.go
+  - ls -la
   - go test -race -v ./...
   - ./scripts/coverage.sh
 

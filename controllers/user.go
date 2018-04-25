@@ -20,7 +20,7 @@ import (
 
 var userLog = logging.MustGetLogger("User")
 
-func CreateUser(params user.CreateUserParams, principal *models.User) middleware.Responder {
+func createUser(params user.CreateUserParams, principal *models.User) middleware.Responder {
 	userLog.Debugf(`Start creating user %q`, *params.Body.UID)
 
 	if *principal.UID != *params.Body.UID {
@@ -36,7 +36,7 @@ func CreateUser(params user.CreateUserParams, principal *models.User) middleware
 
 	} else if !models.IsErrUserNotExist(err) {
 		userLog.Critical("Database Error!", err)
-		return NewInternalServerError("Internal Database Error")
+		return newInternalServerError("Internal Database Error")
 	}
 
 	// Create new user
@@ -51,7 +51,7 @@ func CreateUser(params user.CreateUserParams, principal *models.User) middleware
 	// Insert new user into database
 	if err := models.CreateUser(u); err != nil {
 		userLog.Critical("Database error!", err)
-		return NewInternalServerError("Internal Database Error")
+		return newInternalServerError("Internal Database Error")
 	}
 
 	userLog.Infof(`Created user "%s"`, *u.UID)
@@ -59,7 +59,7 @@ func CreateUser(params user.CreateUserParams, principal *models.User) middleware
 	return user.NewCreateUserOK().WithPayload(u)
 }
 
-func UpdateUser(params user.UpdateUserParams, principal *models.User) middleware.Responder {
+func updateUser(params user.UpdateUserParams, principal *models.User) middleware.Responder {
 	userLog.Debugf(`Start updating user %q`, *params.Body.UID)
 
 	var theUser *models.User
@@ -78,7 +78,7 @@ func UpdateUser(params user.UpdateUserParams, principal *models.User) middleware
 
 	} else if err != nil {
 		userLog.Critical("Database Error!", err)
-		return NewInternalServerError("Internal Database Error")
+		return newInternalServerError("Internal Database Error")
 	}
 
 	// Create new user
@@ -93,12 +93,12 @@ func UpdateUser(params user.UpdateUserParams, principal *models.User) middleware
 	err = models.UpdateUserCols(theUser, "display_name", "email", "firebase_instance_id")
 	if err != nil {
 		userLog.Critical("Database error!", err)
-		return NewInternalServerError("Internal Database Error")
+		return newInternalServerError("Internal Database Error")
 	}
 
 	// Get the updated user
 	if theUser, err = models.GetUserByUID(*theUser.UID); err != nil {
-		return NewInternalServerError("Internal Database Error")
+		return newInternalServerError("Internal Database Error")
 	}
 
 	// Send a notification to all members of the user's group.
@@ -108,7 +108,7 @@ func UpdateUser(params user.UpdateUserParams, principal *models.User) middleware
 		UIDs, err := models.GetGroupMemberUIDs(principal.GroupUID)
 		if err != nil {
 			userLog.Criticalf("Error getting group members %q", principal.GroupUID)
-			return NewInternalServerError("Internal Server Error")
+			return newInternalServerError("Internal Server Error")
 		}
 
 		mailer.SendPushUpdateToUserIDs(UIDs, mailer.PushUserUpdate, []string{
@@ -119,7 +119,7 @@ func UpdateUser(params user.UpdateUserParams, principal *models.User) middleware
 	return user.NewUpdateUserOK().WithPayload(theUser)
 }
 
-func GetUser(params user.GetUserParams, principal *models.User) middleware.Responder {
+func getUser(params user.GetUserParams, principal *models.User) middleware.Responder {
 	userLog.Debugf(`User %q gets user %q`, *principal.UID, params.UserID)
 
 	var (
@@ -142,34 +142,34 @@ func GetUser(params user.GetUserParams, principal *models.User) middleware.Respo
 
 		} else if err != nil {
 			userLog.Critical("Firebase SDK Error!", err)
-			return NewInternalServerError("Internal Firebase Error")
+			return newInternalServerError("Internal Firebase Error")
 		}
 	}
 
 	// Database
 	if u, err = models.GetUserByUID(params.UserID); models.IsErrUserNotExist(err) {
 		userLog.Debugf(`Can't find database user with id "%s"!`, params.UserID)
-		return NewNotFoundResponse("User not found on server")
+		return newNotFoundResponse("User not found on server")
 
 	} else if err != nil {
 		userLog.Critical("Database Error!", err)
-		return NewInternalServerError("Internal Database Error")
+		return newInternalServerError("Internal Database Error")
 	}
 
 	return user.NewGetUserOK().WithPayload(u)
 }
 
-func GetUserImage(params user.GetUserImageParams, principal *models.User) middleware.Responder {
+func getUserImage(params user.GetUserImageParams, principal *models.User) middleware.Responder {
 	userLog.Debugf("Get user image for user %q", *principal.UID)
 
 	// TODO: Maybe "IsUserExist"
 	if _, err := models.GetUserByUID(params.UserID); models.IsErrUserNotExist(err) {
 		userLog.Debugf(`Can't find database user with id "%s"!`, params.UserID)
-		return NewNotFoundResponse("User not found on server")
+		return newNotFoundResponse("User not found on server")
 
 	} else if err != nil {
 		userLog.Critical("Database Error!", err)
-		return NewInternalServerError("Internal Database Error")
+		return newInternalServerError("Internal Database Error")
 	}
 
 	var imgFile *os.File
@@ -182,13 +182,13 @@ func GetUserImage(params user.GetUserImageParams, principal *models.User) middle
 
 	if fileErr != nil {
 		userLog.Error("Error getting profile image ", fileErr.Error())
-		return NewInternalServerError("Internal Server Error with profile image")
+		return newInternalServerError("Internal Server Error with profile image")
 	}
 
 	return user.NewGetUserImageOK().WithPayload(imgFile)
 }
 
-func UpdateUserImage(params user.UpdateUserImageParams, principal *models.User) middleware.Responder {
+func updateUserImage(params user.UpdateUserImageParams, principal *models.User) middleware.Responder {
 	userLog.Debugf("Start put user image for user %q", *principal.UID)
 
 	// Check if auth and userID are the same.
@@ -199,7 +199,7 @@ func UpdateUserImage(params user.UpdateUserImageParams, principal *models.User) 
 
 	data, err := ioutil.ReadAll(params.ProfileImage)
 	if err != nil {
-		return NewInternalServerError("Internal Server Error")
+		return newInternalServerError("Internal Server Error")
 	}
 
 	if !base.IsFileJPG(data) {
@@ -213,7 +213,7 @@ func UpdateUserImage(params user.UpdateUserImageParams, principal *models.User) 
 
 	if err = principal.UploadUserImage(data); err != nil {
 		userLog.Critical(`Error uploading user avatar.`)
-		return NewInternalServerError("Internal Server Error")
+		return newInternalServerError("Internal Server Error")
 	}
 
 	// Send a notification to all members of the user's group.
@@ -221,7 +221,7 @@ func UpdateUserImage(params user.UpdateUserImageParams, principal *models.User) 
 		UIDs, err := models.GetGroupMemberUIDs(principal.GroupUID)
 		if err != nil {
 			userLog.Criticalf("Error getting group members %q", principal.GroupUID)
-			return NewInternalServerError("Internal Server Error")
+			return newInternalServerError("Internal Server Error")
 		}
 		mailer.SendPushUpdateToUserIDs(UIDs, mailer.PushUserUpdateImage, []string{
 			string(*principal.UID),

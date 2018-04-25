@@ -61,11 +61,11 @@ func initIntegrationTest() {
 		log.Fatalln("Environment variable $WGPLANER_ROOT not set. " +
 			"It is required for integration tests!")
 		return
-	} else {
-		// Set path so that config and data directory are found
-		setting.AppWorkPath = wgPlanerRoot
-		setting.AppPath = path.Join(wgPlanerRoot, "wgplaner")
 	}
+
+	// Set path so that config and data directory are found
+	setting.AppWorkPath = wgPlanerRoot
+	setting.AppPath = path.Join(wgPlanerRoot, "wgplaner")
 
 	setting.NewConfigContext()
 	setting.AppConfig.Auth.IgnoreFirebase = true

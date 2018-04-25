@@ -33,42 +33,41 @@ func GlobalInit() {
 func InitializeControllers(api *operations.WgplanerAPI) {
 	// Producers
 	api.HTMLProducer = runtime.ProducerFunc(func(writer io.Writer, data interface{}) error {
-		if html, ok := data.(string); !ok {
-			return errors.New("error in HTML producer")
-		} else {
+		if html, ok := data.(string); ok {
 			_, err := writer.Write([]byte(html))
 			return err
 		}
+		return errors.New("error in HTML producer")
 	})
 
 	// Authentication
-	api.UserIDAuthAuth = UserIDAuth
-	api.FirebaseIDAuthAuth = FirebaseIDAuth
+	api.UserIDAuthAuth = userIDAuth
+	api.FirebaseIDAuthAuth = firebaseIDAuth
 
 	// Create API handlers
-	api.InfoGetVersionHandler = info.GetVersionHandlerFunc(GetVersionInfo)
+	api.InfoGetVersionHandler = info.GetVersionHandlerFunc(getVersionInfo)
 
-	api.BillCreateBillHandler = bill.CreateBillHandlerFunc(CreateBill)
-	api.BillGetBillListHandler = bill.GetBillListHandlerFunc(GetBillList)
+	api.BillCreateBillHandler = bill.CreateBillHandlerFunc(createBill)
+	api.BillGetBillListHandler = bill.GetBillListHandlerFunc(getBillList)
 
-	api.GroupCreateGroupHandler = group.CreateGroupHandlerFunc(CreateGroup)
-	api.GroupCreateGroupCodeHandler = group.CreateGroupCodeHandlerFunc(CreateGroupCode)
-	api.GroupGetGroupHandler = group.GetGroupHandlerFunc(GetGroup)
-	api.GroupGetGroupImageHandler = group.GetGroupImageHandlerFunc(GetGroupImage)
-	api.GroupUpdateGroupHandler = group.UpdateGroupHandlerFunc(UpdateGroup)
-	api.GroupUpdateGroupImageHandler = group.UpdateGroupImageHandlerFunc(UpdateGroupImage)
-	api.GroupJoinGroupHandler = group.JoinGroupHandlerFunc(JoinGroup)
-	api.GroupJoinGroupHelpHandler = group.JoinGroupHelpHandlerFunc(JoinGroupHelp)
-	api.GroupLeaveGroupHandler = group.LeaveGroupHandlerFunc(LeaveGroup)
+	api.GroupCreateGroupHandler = group.CreateGroupHandlerFunc(createGroup)
+	api.GroupCreateGroupCodeHandler = group.CreateGroupCodeHandlerFunc(createGroupCode)
+	api.GroupGetGroupHandler = group.GetGroupHandlerFunc(getGroup)
+	api.GroupGetGroupImageHandler = group.GetGroupImageHandlerFunc(getGroupImage)
+	api.GroupUpdateGroupHandler = group.UpdateGroupHandlerFunc(updateGroup)
+	api.GroupUpdateGroupImageHandler = group.UpdateGroupImageHandlerFunc(updateGroupImage)
+	api.GroupJoinGroupHandler = group.JoinGroupHandlerFunc(joinGroup)
+	api.GroupJoinGroupHelpHandler = group.JoinGroupHelpHandlerFunc(joinGroupHelp)
+	api.GroupLeaveGroupHandler = group.LeaveGroupHandlerFunc(leaveGroup)
 
-	api.UserCreateUserHandler = user.CreateUserHandlerFunc(CreateUser)
-	api.UserGetUserHandler = user.GetUserHandlerFunc(GetUser)
-	api.UserGetUserImageHandler = user.GetUserImageHandlerFunc(GetUserImage)
-	api.UserUpdateUserHandler = user.UpdateUserHandlerFunc(UpdateUser)
-	api.UserUpdateUserImageHandler = user.UpdateUserImageHandlerFunc(UpdateUserImage)
+	api.UserCreateUserHandler = user.CreateUserHandlerFunc(createUser)
+	api.UserGetUserHandler = user.GetUserHandlerFunc(getUser)
+	api.UserGetUserImageHandler = user.GetUserImageHandlerFunc(getUserImage)
+	api.UserUpdateUserHandler = user.UpdateUserHandlerFunc(updateUser)
+	api.UserUpdateUserImageHandler = user.UpdateUserImageHandlerFunc(updateUserImage)
 
-	api.ShoppinglistCreateListItemHandler = shoppinglist.CreateListItemHandlerFunc(CreateListItem)
-	api.ShoppinglistGetListItemsHandler = shoppinglist.GetListItemsHandlerFunc(GetListItems)
-	api.ShoppinglistUpdateListItemHandler = shoppinglist.UpdateListItemHandlerFunc(UpdateListItem)
-	api.ShoppinglistBuyListItemsHandler = shoppinglist.BuyListItemsHandlerFunc(BuyListItems)
+	api.ShoppinglistCreateListItemHandler = shoppinglist.CreateListItemHandlerFunc(createListItem)
+	api.ShoppinglistGetListItemsHandler = shoppinglist.GetListItemsHandlerFunc(getListItems)
+	api.ShoppinglistUpdateListItemHandler = shoppinglist.UpdateListItemHandlerFunc(updateListItem)
+	api.ShoppinglistBuyListItemsHandler = shoppinglist.BuyListItemsHandlerFunc(buyListItems)
 }

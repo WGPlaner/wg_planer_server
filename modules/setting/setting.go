@@ -22,8 +22,8 @@ import (
 var settingLog = logging.MustGetLogger("Config")
 
 const (
-	DRIVER_SQLITE = "sqlite"
-	DRIVER_MYSQL  = "mysql"
+	DriverSQLite = "sqlite"
+	DriverMySQL  = "mysql"
 )
 
 type serverConfig struct {
@@ -32,7 +32,7 @@ type serverConfig struct {
 
 type authConfig struct {
 	IgnoreFirebase    bool   `toml:"ignore_firebase"`
-	FirebaseProjectId string `toml:"firebase_project_id"`
+	FirebaseProjectID string `toml:"firebase_project_id"`
 	FirebaseServerKey string `toml:"firebase_server_key"`
 }
 
@@ -72,11 +72,13 @@ type appConfigType struct {
 }
 
 var (
-	// Global settings
-	AppConfig   *appConfigType
-	AppPath     string // Path to executable
-	AppVersion  string
-	AppWorkPath string // Working directory
+	// AppConfig contains global settings
+	AppConfig *appConfigType
+	// AppPath contains the path to the executable
+	AppPath    string
+	AppVersion string
+	// AppWorkPath contains the path to the working directory
+	AppWorkPath string
 
 	IsWindows bool
 )
@@ -118,13 +120,12 @@ func NewConfigContext() {
 }
 
 func LoadSwaggerSpec(msg json.RawMessage) *loads.Document {
-	if swaggerSpec, errSpec := loads.Analyzed(msg, ""); errSpec != nil {
-		settingLog.Fatal(errSpec)
-		return nil
-
-	} else {
+	swaggerSpec, errSpec := loads.Analyzed(msg, "")
+	if errSpec == nil {
 		return swaggerSpec
 	}
+	settingLog.Fatal(errSpec)
+	return nil
 }
 
 func getAppPath() (string, error) {
@@ -209,7 +210,7 @@ func validateAuthConfig() {
 	var e []string
 
 	if !AppConfig.Auth.IgnoreFirebase {
-		if AppConfig.Auth.FirebaseProjectId == "" {
+		if AppConfig.Auth.FirebaseProjectID == "" {
 			e = append(e, "[Config] Firebase Project ID is required if firebase is not deactivated")
 		}
 		if AppConfig.Auth.FirebaseServerKey == "" {
@@ -226,7 +227,7 @@ func validateDriverConfig() {
 	var e []string
 
 	switch AppConfig.Database.Driver {
-	case DRIVER_MYSQL:
+	case DriverMySQL:
 		if AppConfig.Database.MysqlServer == "" {
 			e = append(e, "[Config][MySQL] Server is empty!")
 		}
@@ -240,7 +241,7 @@ func validateDriverConfig() {
 			e = append(e, "[Config][MySQL] Databasename is empty!")
 		}
 
-	case DRIVER_SQLITE:
+	case DriverSQLite:
 		if AppConfig.Database.SqliteFile == "" {
 			e = append(e, "[Config][SQLite] File is empty! Must specify a filename!")
 		}

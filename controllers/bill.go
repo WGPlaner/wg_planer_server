@@ -10,7 +10,8 @@ import (
 
 var billLog = logging.MustGetLogger("Bill")
 
-func GetBillList(params bill.GetBillListParams, principal *models.User) middleware.Responder {
+// getBillList returns a list of bills for the requested group.
+func getBillList(params bill.GetBillListParams, principal *models.User) middleware.Responder {
 	groupLog.Debugf(`User %q gets bills for group "%s"`, *principal.UID, params.GroupUID)
 
 	var g *models.Group
@@ -22,7 +23,7 @@ func GetBillList(params bill.GetBillListParams, principal *models.User) middlewa
 
 	bills, err := models.GetBillsByGroupUIDWithBillItems(g.UID)
 	if err != nil {
-		return NewInternalServerError("Internal Server Error")
+		return newInternalServerError("Internal Server Error")
 	}
 
 	// TODO: Check authorization, etc
@@ -35,7 +36,8 @@ func GetBillList(params bill.GetBillListParams, principal *models.User) middlewa
 	return bill.NewGetBillListOK().WithPayload(billList)
 }
 
-func CreateBill(params bill.CreateBillParams, principal *models.User) middleware.Responder {
+// createBill creates a bill for the requested group.
+func createBill(params bill.CreateBillParams, principal *models.User) middleware.Responder {
 	billLog.Debugf(`Start creating bill for group "%s"`, params.GroupUID)
 
 	// TODO: Check authorization, etc
@@ -49,7 +51,7 @@ func CreateBill(params bill.CreateBillParams, principal *models.User) middleware
 
 	b, err := models.CreateBillForGroup(g, principal)
 	if err != nil {
-		return NewInternalServerError("Internal Server Error")
+		return newInternalServerError("Internal Server Error")
 	}
 
 	return bill.NewCreateBillOK().WithPayload(b)

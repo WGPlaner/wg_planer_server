@@ -8,10 +8,13 @@ import (
 
 	"github.com/wgplaner/wg_planer_server/modules/setting"
 
+	// Load MySQL driver
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/core"
 	"github.com/go-xorm/xorm"
+	// Load PostgreSQL driver
 	_ "github.com/lib/pq"
+	// Load SQLite3 driver
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -61,10 +64,10 @@ func getEngine() *xorm.Engine {
 	var engine *xorm.Engine
 
 	switch setting.AppConfig.Database.Driver {
-	case setting.DRIVER_MYSQL:
+	case setting.DriverMySQL:
 		engine, err = getMysqlEngine()
 
-	case setting.DRIVER_SQLITE:
+	case setting.DriverSQLite:
 		filePath := path.Join(setting.AppWorkPath, setting.AppConfig.Database.SqliteFile)
 		engine, err = xorm.NewEngine("sqlite3", filePath)
 

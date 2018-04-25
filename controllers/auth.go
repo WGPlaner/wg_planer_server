@@ -3,16 +3,17 @@ package controllers
 import (
 	"net/http"
 
-	"github.com/wgplaner/wg_planer_server/models"
-	"github.com/wgplaner/wg_planer_server/modules/setting"
-
 	"github.com/go-openapi/errors"
 	"github.com/op/go-logging"
+	"github.com/wgplaner/wg_planer_server/models"
+	"github.com/wgplaner/wg_planer_server/modules/setting"
 )
 
 var authLog = logging.MustGetLogger("Auth")
 
-func UserIDAuth(token string) (*models.User, error) {
+// userIDAuth takes an auth token and validates that token against the database.
+// It returns the user if the auth token is valid and an error otherwise.
+func userIDAuth(token string) (*models.User, error) {
 	authLog.Debugf(`Check userID authorization for user id "%s"`, token)
 
 	var u *models.User
@@ -30,7 +31,9 @@ func UserIDAuth(token string) (*models.User, error) {
 	return u, nil
 }
 
-func FirebaseIDAuth(token string) (*models.User, error) {
+// firebaseIDAuth takes an auth token and validates that token against firebase.
+// It returns a user with only its ID set if the auth token is valid and an error otherwise.
+func firebaseIDAuth(token string) (*models.User, error) {
 	authLog.Debugf(`Check firebaseId authorization for user id "%s"`, token)
 
 	if !models.IsValidUserIDFormat(token) {

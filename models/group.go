@@ -24,7 +24,7 @@ import (
 var groupLog = logging.MustGetLogger("Group")
 
 const (
-	GROUP_PROFILE_IMAGE_FILE_NAME = "group_image.jpg"
+	GroupProfileImageFileName = "group_image.jpg"
 )
 
 // Group group
@@ -235,7 +235,7 @@ func GetGroupImagePath(uid strfmt.UUID) string {
 		setting.AppWorkPath,
 		setting.AppConfig.Data.GroupImageDir,
 		string(uid),
-		GROUP_PROFILE_IMAGE_FILE_NAME,
+		GroupProfileImageFileName,
 	)
 }
 

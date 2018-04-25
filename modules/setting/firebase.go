@@ -22,7 +22,7 @@ func CreateFirebaseConnection() *firebase.App {
 	base.FileMustExist(keyfilePath)
 
 	fireBaseApp, err = firebase.InitializeApp(context.Background(), firebase.AppOptions{
-		ProjectID: AppConfig.Auth.FirebaseProjectId,
+		ProjectID: AppConfig.Auth.FirebaseProjectID,
 		APIKey:    AppConfig.Auth.FirebaseServerKey,
 	}, option.WithCredentialsFile(keyfilePath))
 

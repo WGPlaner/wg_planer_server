@@ -71,21 +71,21 @@ func (l *ListItem) AfterLoad() {
 }
 
 // Validate validates this list item
-func (m *ListItem) Validate(formats strfmt.Registry) error {
+func (l *ListItem) Validate(formats strfmt.Registry) error {
 	var res []error
-	if err := m.validateCategory(formats); err != nil {
+	if err := l.validateCategory(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
-	if err := m.validateCount(formats); err != nil {
+	if err := l.validateCount(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
-	if err := m.validateRequestedFor(formats); err != nil {
+	if err := l.validateRequestedFor(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
-	if err := m.validateTitle(formats); err != nil {
+	if err := l.validateTitle(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -95,52 +95,52 @@ func (m *ListItem) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ListItem) validateCategory(formats strfmt.Registry) error {
-	if err := validate.Required("category", "body", m.Category); err != nil {
+func (l *ListItem) validateCategory(formats strfmt.Registry) error {
+	if err := validate.Required("category", "body", l.Category); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ListItem) validateCount(formats strfmt.Registry) error {
-	if err := validate.Required("count", "body", m.Count); err != nil {
+func (l *ListItem) validateCount(formats strfmt.Registry) error {
+	if err := validate.Required("count", "body", l.Count); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ListItem) validateRequestedFor(formats strfmt.Registry) error {
-	if swag.IsZero(m.RequestedFor) { // not required
+func (l *ListItem) validateRequestedFor(formats strfmt.Registry) error {
+	if swag.IsZero(l.RequestedFor) { // not required
 		return nil
 	}
 	return nil
 }
 
-func (m *ListItem) validateTitle(formats strfmt.Registry) error {
-	if err := validate.Required("title", "body", m.Title); err != nil {
+func (l *ListItem) validateTitle(formats strfmt.Registry) error {
+	if err := validate.Required("title", "body", l.Title); err != nil {
 		return err
 	}
-	if err := validate.MaxLength("title", "body", string(*m.Title), 150); err != nil {
+	if err := validate.MaxLength("title", "body", string(*l.Title), 150); err != nil {
 		return err
 	}
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ListItem) MarshalBinary() ([]byte, error) {
-	if m == nil {
+func (l *ListItem) MarshalBinary() ([]byte, error) {
+	if l == nil {
 		return nil, nil
 	}
-	return swag.WriteJSON(m)
+	return swag.WriteJSON(l)
 }
 
 // UnmarshalBinary interface implementation
-func (m *ListItem) UnmarshalBinary(b []byte) error {
+func (l *ListItem) UnmarshalBinary(b []byte) error {
 	var res ListItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
-	*m = res
+	*l = res
 	return nil
 }
 

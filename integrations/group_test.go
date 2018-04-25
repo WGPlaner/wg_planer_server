@@ -202,15 +202,15 @@ func TestJoinGroupThroughCodeInvalid(t *testing.T) {
 func TestJoinGroupThroughCode(t *testing.T) {
 	prepareTestEnv(t)
 	var (
-		userUid = "1234567890fakefirebaseid0001"
+		userUID = "1234567890fakefirebaseid0001"
 		code    = models.GroupCode{}
 		uid     = strfmt.UUID("00112233-4455-6677-8899-aabbccddeeff")
-		reqCode = NewRequest(t, "GET", userUid, fmt.Sprintf("/groups/%s/create-code", uid))
+		reqCode = NewRequest(t, "GET", userUID, fmt.Sprintf("/groups/%s/create-code", uid))
 		resp    = MakeRequest(t, reqCode, http.StatusOK)
 	)
 	DecodeJSON(t, resp, &code)
 	// Join with generated code
-	req := NewRequest(t, "POST", userUid, "/groups/join/"+*code.Code)
+	req := NewRequest(t, "POST", userUID, "/groups/join/"+*code.Code)
 	MakeRequest(t, req, http.StatusOK)
 }
 

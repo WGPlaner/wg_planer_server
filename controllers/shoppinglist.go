@@ -14,7 +14,7 @@ import (
 
 var shoppingLog = logging.MustGetLogger("Shop")
 
-func GetListItems(params shoppinglist.GetListItemsParams, principal *models.User) middleware.Responder {
+func getListItems(params shoppinglist.GetListItemsParams, principal *models.User) middleware.Responder {
 	var (
 		err   error
 		g     *models.Group
@@ -22,9 +22,9 @@ func GetListItems(params shoppinglist.GetListItemsParams, principal *models.User
 	)
 
 	if g, err = models.GetGroupByUID(params.GroupUID); models.IsErrGroupNotExist(err) {
-		return NewNotFoundResponse("Group not found")
+		return newNotFoundResponse("Group not found")
 	} else if err != nil {
-		return NewInternalServerError("Internal Server Error")
+		return newInternalServerError("Internal Server Error")
 	}
 
 	if !g.HasMember(*principal.UID) {
@@ -33,7 +33,7 @@ func GetListItems(params shoppinglist.GetListItemsParams, principal *models.User
 
 	if items, err = g.GetActiveShoppingListItems(); err != nil {
 		shoppingLog.Criticalf(`Database error finding list items for group "%s"`, g.UID)
-		return NewInternalServerError("Database Error")
+		return newInternalServerError("Database Error")
 	}
 
 	// TODO: Add filters (limit), etc.
@@ -44,7 +44,7 @@ func GetListItems(params shoppinglist.GetListItemsParams, principal *models.User
 	})
 }
 
-func UpdateListItem(params shoppinglist.UpdateListItemParams, principal *models.User) middleware.Responder {
+func updateListItem(params shoppinglist.UpdateListItemParams, principal *models.User) middleware.Responder {
 	shoppingLog.Debugf(`Updating shopping list item. User "%s" for group "%s"`,
 		*principal.UID, params.GroupUID)
 
@@ -62,7 +62,7 @@ func UpdateListItem(params shoppinglist.UpdateListItemParams, principal *models.
 	}
 
 	if g, err = models.GetGroupByUID(params.GroupUID); models.IsErrGroupNotExist(err) {
-		return NewNotFoundResponse("Group not found")
+		return newNotFoundResponse("Group not found")
 
 	} else if err != nil {
 		shoppingLog.Debugf(`Error validating group "%s": "%s"`, params.GroupUID, err.Error())
@@ -75,7 +75,7 @@ func UpdateListItem(params shoppinglist.UpdateListItemParams, principal *models.
 
 	// TODO: Check if user is unique
 	if exists, err := models.AreUsersExist(params.Body.RequestedFor); err != nil {
-		return NewInternalServerError(err.Error())
+		return newInternalServerError(err.Error())
 
 	} else if !exists {
 		return NewBadRequest("A requestedFor user does not exist")
@@ -97,7 +97,7 @@ func UpdateListItem(params shoppinglist.UpdateListItemParams, principal *models.
 	// Insert new code into database
 	if err := models.UpdateListItemCols(listItem, `title`, `category`, `count`, `price`, `requested_for`); err != nil {
 		shoppingLog.Critical("Database error updating list item!", err)
-		return NewInternalServerError("Internal Database Error")
+		return newInternalServerError("Internal Database Error")
 	}
 
 	mailer.SendPushUpdateToUserIDs(g.Members, mailer.PushShoppingListUpdate, []string{
@@ -107,13 +107,13 @@ func UpdateListItem(params shoppinglist.UpdateListItemParams, principal *models.
 	// Get list item with its data
 	if listItem, err = models.GetListItemByUIDs(listItem.GroupUID, listItem.ID); err != nil {
 		shoppingLog.Critical("Database error querying list item!", err)
-		return NewInternalServerError("Internal Database Error")
+		return newInternalServerError("Internal Database Error")
 	}
 
 	return shoppinglist.NewUpdateListItemOK().WithPayload(listItem)
 }
 
-func CreateListItem(params shoppinglist.CreateListItemParams, principal *models.User) middleware.Responder {
+func createListItem(params shoppinglist.CreateListItemParams, principal *models.User) middleware.Responder {
 	shoppingLog.Debugf(`Creating shopping list item. User "%s" for group "%s"`,
 		*principal.UID, params.GroupUID)
 
@@ -127,7 +127,7 @@ func CreateListItem(params shoppinglist.CreateListItemParams, principal *models.
 	}
 
 	if g, err = models.GetGroupByUID(params.GroupUID); models.IsErrGroupNotExist(err) {
-		return NewNotFoundResponse("Group not found")
+		return newNotFoundResponse("Group not found")
 
 	} else if err != nil {
 		shoppingLog.Debugf(`Error validating group "%s": "%s"`, params.GroupUID, err.Error())
@@ -140,7 +140,7 @@ func CreateListItem(params shoppinglist.CreateListItemParams, principal *models.
 
 	// TODO: Check if user is unique
 	if exists, err := models.AreUsersExist(params.Body.RequestedFor); err != nil {
-		return NewInternalServerError(err.Error())
+		return newInternalServerError(err.Error())
 
 	} else if !exists {
 		return NewBadRequest("A requestedFor user does not exist")
@@ -149,7 +149,7 @@ func CreateListItem(params shoppinglist.CreateListItemParams, principal *models.
 	itemUID, err := uuid.NewV4()
 	if err != nil {
 		groupLog.Critical("Error generating NewV4 UID!", err)
-		return NewInternalServerError("Internal Error")
+		return newInternalServerError("Internal Error")
 	}
 
 	listItem := models.ListItem{
@@ -166,7 +166,7 @@ func CreateListItem(params shoppinglist.CreateListItemParams, principal *models.
 	// Insert new code into database
 	if err := models.CreateListItem(&listItem); err != nil {
 		shoppingLog.Critical("Database error inserting list item!", err)
-		return NewInternalServerError("Internal Database Error")
+		return newInternalServerError("Internal Database Error")
 	}
 
 	mailer.SendPushUpdateToUserIDs(g.Members, mailer.PushShoppingListAdd, []string{
@@ -176,12 +176,12 @@ func CreateListItem(params shoppinglist.CreateListItemParams, principal *models.
 	return shoppinglist.NewCreateListItemOK().WithPayload(&listItem)
 }
 
-func BuyListItems(params shoppinglist.BuyListItemsParams, principal *models.User) middleware.Responder {
+func buyListItems(params shoppinglist.BuyListItemsParams, principal *models.User) middleware.Responder {
 	var err error
 	var g *models.Group
 
 	if g, err = models.GetGroupByUID(params.GroupUID); models.IsErrGroupNotExist(err) {
-		return NewNotFoundResponse("Group not found")
+		return newNotFoundResponse("Group not found")
 
 	} else if err != nil {
 		shoppingLog.Debugf(`Error validating group "%s": "%s"`, params.GroupUID, err.Error())
@@ -198,7 +198,7 @@ func BuyListItems(params shoppinglist.BuyListItemsParams, principal *models.User
 		return NewBadRequest(err.Error())
 
 	} else if err != nil {
-		return NewInternalServerError("Error buying items")
+		return newInternalServerError("Error buying items")
 	}
 
 	// Send push notification

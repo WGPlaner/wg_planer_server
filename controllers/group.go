@@ -31,15 +31,15 @@ func getGroupOrError(groupUID strfmt.UUID) (*models.Group, middleware.Responder)
 
 	if g, err = models.GetGroupByUID(groupUID); models.IsErrGroupNotExist(err) {
 		groupLog.Debugf(`Can't find database group with id "%s"!`, groupUID)
-		return nil, NewNotFoundResponse("Group not found on server.")
+		return nil, newNotFoundResponse("Group not found on server.")
 	}
 	if models.IsErrGroupInvalidUUID(err) {
 		groupLog.Debugf(err.Error())
-		return nil, NewNotFoundResponse("invalid group uid format")
+		return nil, newNotFoundResponse("invalid group uid format")
 	}
 	if err != nil {
 		groupLog.Critical(`Database Error!`, err)
-		return nil, NewInternalServerError("Internal Database Error")
+		return nil, newInternalServerError("Internal Database Error")
 	}
 	return g, nil
 }
@@ -57,7 +57,7 @@ func getGroupAuthorizedOrError(groupUID strfmt.UUID, userID string) (*models.Gro
 	return g, nil
 }
 
-func GetGroup(params group.GetGroupParams, principal *models.User) middleware.Responder {
+func getGroup(params group.GetGroupParams, principal *models.User) middleware.Responder {
 	groupLog.Debugf(`User %q gets group "%s"`, *principal.UID, params.GroupUID)
 
 	var g *models.Group
@@ -69,7 +69,7 @@ func GetGroup(params group.GetGroupParams, principal *models.User) middleware.Re
 	return group.NewGetGroupOK().WithPayload(g)
 }
 
-func GetGroupImage(params group.GetGroupImageParams, principal *models.User) middleware.Responder {
+func getGroupImage(params group.GetGroupImageParams, principal *models.User) middleware.Responder {
 	groupLog.Debugf(`User %q gets image for group "%s"`, *principal.UID, params.GroupUID)
 	var g *models.Group
 	var errResp middleware.Responder
@@ -92,14 +92,14 @@ func GetGroupImage(params group.GetGroupImageParams, principal *models.User) mid
 
 	if fileErr != nil {
 		groupLog.Error("Error getting group's profile image ", fileErr.Error())
-		return NewInternalServerError("Internal Server Error with profile image")
+		return newInternalServerError("Internal Server Error with profile image")
 	}
 
 	return group.NewGetGroupImageOK().WithPayload(imgFile)
 
 }
 
-func CreateGroupCode(params group.CreateGroupCodeParams, principal *models.User) middleware.Responder {
+func createGroupCode(params group.CreateGroupCodeParams, principal *models.User) middleware.Responder {
 	groupLog.Debugf(`User %q generates code for group %q!`, *principal.UID, params.GroupUID)
 
 	var (
@@ -116,20 +116,20 @@ func CreateGroupCode(params group.CreateGroupCodeParams, principal *models.User)
 	// Group MUST exist or we have inconsistencies
 	if _, err = models.GetGroupByUID(groupUID); err != nil {
 		groupLog.Debugf(`Error validating group "%s": "%s"`, params.GroupUID, err.Error())
-		return NewInternalServerError("Internal Server Error")
+		return newInternalServerError("Internal Server Error")
 	}
 
 	// TODO: Check authorization for user in the group
 
 	if c, err = models.CreateGroupCode(groupUID); err != nil {
 		groupLog.Critical("Database error!", err)
-		return NewInternalServerError("Internal Database Error")
+		return newInternalServerError("Internal Database Error")
 	}
 
 	return group.NewCreateGroupCodeOK().WithPayload(c)
 }
 
-func CreateGroup(params group.CreateGroupParams, principal *models.User) middleware.Responder {
+func createGroup(params group.CreateGroupParams, principal *models.User) middleware.Responder {
 	groupLog.Debugf(`User %q starts creating a group`, *principal.UID)
 
 	var err error
@@ -137,19 +137,19 @@ func CreateGroup(params group.CreateGroupParams, principal *models.User) middlew
 	groupUID, err := uuid.NewV4()
 	if err != nil {
 		groupLog.Critical("Error generating NewV4 UID!", err)
-		return NewInternalServerError("Internal Error")
+		return newInternalServerError("Internal Error")
 	}
 
 	// Create new group
-	newGroupUid := strfmt.UUID(groupUID.String())
+	newGroupUID := strfmt.UUID(groupUID.String())
 
 	theUser := &models.User{
 		UID:      principal.UID,
-		GroupUID: newGroupUid,
+		GroupUID: newGroupUID,
 	}
 
 	theGroup := &models.Group{
-		UID:         newGroupUid,
+		UID:         newGroupUID,
 		Admins:      []string{*principal.UID},
 		DisplayName: params.Body.DisplayName,
 		Currency:    params.Body.Currency,
@@ -159,18 +159,18 @@ func CreateGroup(params group.CreateGroupParams, principal *models.User) middlew
 
 	if err = models.UpdateUserCols(theUser, "group_uid"); err != nil {
 		groupLog.Critical("Database error!", err)
-		return NewInternalServerError("Internal Database Error")
+		return newInternalServerError("Internal Database Error")
 	}
 
 	// Insert new user into database
 	if err = models.CreateGroup(theGroup); err != nil {
 		groupLog.Critical("Database error!", err)
-		return NewInternalServerError("Internal Database Error")
+		return newInternalServerError("Internal Database Error")
 	}
 
 	if theGroup, err = models.GetGroupByUID(theGroup.UID); err != nil {
 		groupLog.Critical("Database error!", err)
-		return NewInternalServerError("Internal Database Error")
+		return newInternalServerError("Internal Database Error")
 	}
 
 	groupLog.Infof(`Created group "%s"`, theGroup.UID)
@@ -178,7 +178,7 @@ func CreateGroup(params group.CreateGroupParams, principal *models.User) middlew
 	return group.NewCreateGroupOK().WithPayload(theGroup)
 }
 
-func UpdateGroup(params group.UpdateGroupParams, principal *models.User) middleware.Responder {
+func updateGroup(params group.UpdateGroupParams, principal *models.User) middleware.Responder {
 	groupLog.Debugf(`User %q starts updating group %q`, *principal.UID, params.Body.UID)
 
 	var g *models.Group
@@ -198,7 +198,7 @@ func UpdateGroup(params group.UpdateGroupParams, principal *models.User) middlew
 	// Update user into database
 	if err := models.UpdateGroupCols(g, `display_name`, `currency`); err != nil {
 		groupLog.Critical("Database error!", err)
-		return NewInternalServerError("Internal Database Error")
+		return newInternalServerError("Internal Database Error")
 	}
 
 	mailer.SendPushUpdateToUserIDs(g.Members, mailer.PushUpdateGroupData, []string{
@@ -210,7 +210,7 @@ func UpdateGroup(params group.UpdateGroupParams, principal *models.User) middlew
 	return group.NewCreateGroupOK().WithPayload(g)
 }
 
-func JoinGroup(params group.JoinGroupParams, principal *models.User) middleware.Responder {
+func joinGroup(params group.JoinGroupParams, principal *models.User) middleware.Responder {
 	groupLog.Debugf(`User %q watns to join a group with code %q`, *principal.UID, params.GroupCode)
 
 	g, err := principal.JoinGroupWithCode(params.GroupCode)
@@ -221,7 +221,7 @@ func JoinGroup(params group.JoinGroupParams, principal *models.User) middleware.
 	} else if err != nil {
 		// TODO: Handle different errors
 		groupLog.Error(`Unknown Internal Server Error: `, err)
-		return NewInternalServerError("Unknown Server Error")
+		return newInternalServerError("Unknown Server Error")
 	}
 
 	mailer.SendPushUpdateToUserIDs(g.Members, mailer.PushUpdateGroupNewMember, []string{
@@ -231,7 +231,7 @@ func JoinGroup(params group.JoinGroupParams, principal *models.User) middleware.
 	return group.NewJoinGroupOK().WithPayload(g)
 }
 
-func JoinGroupHelp(params group.JoinGroupHelpParams) middleware.Responder {
+func joinGroupHelp(params group.JoinGroupHelpParams) middleware.Responder {
 	groupLog.Debug(`Get help site for joining group`)
 
 	var (
@@ -254,7 +254,7 @@ func JoinGroupHelp(params group.JoinGroupHelpParams) middleware.Responder {
 	return group.NewJoinGroupHelpOK().WithPayload(buf.String())
 }
 
-func LeaveGroup(params group.LeaveGroupParams, principal *models.User) middleware.Responder {
+func leaveGroup(params group.LeaveGroupParams, principal *models.User) middleware.Responder {
 	groupLog.Debugf(`user %q leaves his group`, *principal.UID)
 
 	var g *models.Group
@@ -290,7 +290,7 @@ func LeaveGroup(params group.LeaveGroupParams, principal *models.User) middlewar
 
 	if err := principal.LeaveGroup(); err != nil {
 		groupLog.Critical("Database error updating group!", err)
-		return NewInternalServerError("Internal Database Error")
+		return newInternalServerError("Internal Database Error")
 	}
 
 	mailer.SendPushUpdateToUserIDs(g.Members, mailer.PushUpdateGroupMemberLeft, []string{
@@ -303,7 +303,7 @@ func LeaveGroup(params group.LeaveGroupParams, principal *models.User) middlewar
 	})
 }
 
-func UpdateGroupImage(params group.UpdateGroupImageParams, principal *models.User) middleware.Responder {
+func updateGroupImage(params group.UpdateGroupImageParams, principal *models.User) middleware.Responder {
 	groupLog.Debugf(`User %q starts updating image of group %q`, *principal.UID, params.GroupUID)
 
 	var g *models.Group
@@ -320,7 +320,7 @@ func UpdateGroupImage(params group.UpdateGroupImageParams, principal *models.Use
 
 	data, err := ioutil.ReadAll(params.ProfileImage)
 	if err != nil {
-		return NewInternalServerError("Internal Server Error")
+		return newInternalServerError("Internal Server Error")
 	}
 
 	if !base.IsFileJPG(data) {
@@ -334,7 +334,7 @@ func UpdateGroupImage(params group.UpdateGroupImageParams, principal *models.Use
 
 	if err = g.UploadGroupImage(data); err != nil {
 		userLog.Critical(`Error uploading group avatar.`)
-		return NewInternalServerError("Internal Server Error")
+		return newInternalServerError("Internal Server Error")
 	}
 
 	mailer.SendPushUpdateToUserIDs(g.Members, mailer.PushUpdateGroupImage, []string{

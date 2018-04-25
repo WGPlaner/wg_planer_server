@@ -26,7 +26,7 @@ import (
 var userLog = logging.MustGetLogger("Group")
 
 const (
-	PROFILE_IMAGE_FILE_NAME = "profile_image.jpg"
+	ProfileImageFileName = "profile_image.jpg"
 )
 
 // User user
@@ -133,12 +133,13 @@ func (u *User) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// Load returns whether the user exists on the database.
 func (u *User) Load() (bool, error) {
-	if isRegistered, err := x.Get(u); err != nil {
-		return false, err
-	} else {
+	isRegistered, err := x.Get(u)
+	if err == nil {
 		return isRegistered, nil
 	}
+	return false, err
 }
 
 func (u *User) IsAdmin() bool {
@@ -297,18 +298,21 @@ func GetUserImagePath(uid string) string {
 		setting.AppWorkPath,
 		setting.AppConfig.Data.UserImageDir,
 		uid,
-		PROFILE_IMAGE_FILE_NAME,
+		ProfileImageFileName,
 	)
 }
 
+// GetUserImage returns the user image or an error if user does not exist
 func GetUserImage(uid string) (*os.File, error) {
 	return os.Open(GetUserImagePath(uid))
 }
 
+// GetUserImageDefault returns the default user image or an error if it does not exist
 func GetUserImageDefault() (*os.File, error) {
 	return os.Open(GetUserImageDefaultPath())
 }
 
+// GetUserImageDefaultPath returns the path of the default user image as a string.
 func GetUserImageDefaultPath() string {
 	return path.Join(
 		setting.AppWorkPath,
@@ -316,10 +320,13 @@ func GetUserImageDefaultPath() string {
 	)
 }
 
+// GetUserImageURL returns the API URL of the user image as a string.
 func GetUserImageURL(uid string) string {
 	return strings.Replace(`/users/{userID}/image`, `{userID}`, uid, -1)
 }
 
+// UploadUserImage takes "data" and saves it on disk.
+// Returns an error which is nil if everything worked.
 func (u *User) UploadUserImage(data []byte) error {
 	filePath := GetUserImagePath(*u.UID)
 	img, _, err := image.Decode(bytes.NewReader(data))
