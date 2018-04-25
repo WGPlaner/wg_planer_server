@@ -97,7 +97,7 @@ type NotFoundResponse struct {
 	Payload *models.ErrorResponse `json:"body,omitempty"`
 }
 
-func NewNotFoundResponse(msg string) *NotFoundResponse {
+func newNotFoundResponse(msg string) *NotFoundResponse {
 	return &NotFoundResponse{
 		Payload: &models.ErrorResponse{
 			Message: swag.String(msg),
@@ -135,7 +135,7 @@ type InternalServerError struct {
 	Payload *models.ErrorResponse `json:"body,omitempty"`
 }
 
-func NewInternalServerError(msg string) *InternalServerError {
+func newInternalServerError(msg string) *InternalServerError {
 	return &InternalServerError{
 		Payload: &models.ErrorResponse{
 			Message: swag.String(msg),

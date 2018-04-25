@@ -20,6 +20,7 @@ type (
 	}
 )
 
+// Push notification types
 const (
 	PushUpdateGroupData       = PushUpdateType("Group-Data")
 	PushUpdateGroupImage      = PushUpdateType("Group-Image")

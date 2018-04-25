@@ -49,7 +49,7 @@ func SendMail(to []string, subject string, body string) error {
 	return err
 }
 
-// Send a test mail to check if the SMTP connection works!
+// SendTestMail sends a test mail to check if the SMTP connection works.
 func SendTestMail() {
 	err := SendMail(
 		[]string{AppConfig.Mail.SMTPIdentity},

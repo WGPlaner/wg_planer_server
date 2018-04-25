@@ -133,7 +133,7 @@ func (err ErrGroupNotExist) Error() string {
 	return fmt.Sprintf("group does not exist [uid: %s]", err.UID)
 }
 
-// ErrGroupNotExist represents a "GroupNotExist" kind of error.
+// ErrGroupCodeNotExist represents a "CodeNotExist" kind of error.
 type ErrGroupCodeNotExist struct {
 	Code string
 }
@@ -148,7 +148,7 @@ func (err ErrGroupCodeNotExist) Error() string {
 	return fmt.Sprintf("group code does not exist [code: %s]", err.Code)
 }
 
-// ErrGroupNotExist represents a "Invalid Group UUID" kind of error.
+// ErrGroupInvalidUUID represents a "Invalid Group UUID" kind of error.
 type ErrGroupInvalidUUID struct {
 	UID string
 }
@@ -170,7 +170,7 @@ func (err ErrGroupInvalidUUID) Error() string {
 // |____/|_| |_|\___/| .__/| .__/|_|_| |_|\__, | |_____|_|___/\__|
 //                   |_|   |_|            |___/
 
-// ErrGroupNotExist represents a "ListItemNotExist" kind of error.
+// ErrListItemNotExist represents a "ListItemNotExist" kind of error.
 type ErrListItemNotExist struct {
 	ID       strfmt.UUID
 	GroupUID strfmt.UUID

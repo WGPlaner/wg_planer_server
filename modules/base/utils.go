@@ -80,13 +80,13 @@ func AppendUniqueString(list []string, str string) []string {
 	return list
 }
 
-// For unit tests
+// IsTestCrasher is used for unit tests and checks if the current process is a crasher test.
 // See https://stackoverflow.com/a/33404435
 func IsTestCrasher() bool {
 	return os.Getenv("UNIT_CRASHER") == "1"
 }
 
-// For unit tests
+// DoesFuncCrash is used for unit tests and checks if the function crashes.
 // See https://stackoverflow.com/a/33404435
 func DoesFuncCrash(f string) bool {
 	cmd := exec.Command(os.Args[0], "-test.run="+f)

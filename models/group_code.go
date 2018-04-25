@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	GROUP_CODE_LENGTH     = 12
-	GROUP_CODE_VALID_DAYS = 3
+	GroupCodeLength    = 12
+	GroupCodeValidDays = 3
 )
 
 // GroupCode group code
@@ -116,8 +116,8 @@ func CreateGroupCode(uid strfmt.UUID) (*GroupCode, error) {
 	}
 
 	var (
-		code       = base.GetRandomAlphaNumCode(GROUP_CODE_LENGTH, true)
-		validUntil = time.Now().UTC().AddDate(0, 0, GROUP_CODE_VALID_DAYS)
+		code       = base.GetRandomAlphaNumCode(GroupCodeLength, true)
+		validUntil = time.Now().UTC().AddDate(0, 0, GroupCodeValidDays)
 	)
 
 	groupCode := &GroupCode{
