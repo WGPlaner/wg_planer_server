@@ -38,17 +38,11 @@ func (m *BillList) Validate(formats strfmt.Registry) error {
 }
 
 func (m *BillList) validateBills(formats strfmt.Registry) error {
-	if err := validate.Required("bills", "body", m.Bills); err != nil {
-		return err
-	}
-	return nil
+	return validate.Required("bills", "body", m.Bills)
 }
 
 func (m *BillList) validateCount(formats strfmt.Registry) error {
-	if err := validate.Required("count", "body", int64(m.Count)); err != nil {
-		return err
-	}
-	return nil
+	return validate.Required("count", "body", int64(m.Count))
 }
 
 // MarshalBinary interface implementation

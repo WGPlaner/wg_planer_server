@@ -41,10 +41,7 @@ func (m *ShoppingList) Validate(formats strfmt.Registry) error {
 }
 
 func (m *ShoppingList) validateCount(formats strfmt.Registry) error {
-	if err := validate.Required("count", "body", int64(m.Count)); err != nil {
-		return err
-	}
-	return nil
+	return validate.Required("count", "body", int64(m.Count))
 }
 
 func (m *ShoppingList) validateListItems(formats strfmt.Registry) error {

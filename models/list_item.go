@@ -96,17 +96,11 @@ func (l *ListItem) Validate(formats strfmt.Registry) error {
 }
 
 func (l *ListItem) validateCategory(formats strfmt.Registry) error {
-	if err := validate.Required("category", "body", l.Category); err != nil {
-		return err
-	}
-	return nil
+	return validate.Required("category", "body", l.Category)
 }
 
 func (l *ListItem) validateCount(formats strfmt.Registry) error {
-	if err := validate.Required("count", "body", l.Count); err != nil {
-		return err
-	}
-	return nil
+	return validate.Required("count", "body", l.Count)
 }
 
 func (l *ListItem) validateRequestedFor(formats strfmt.Registry) error {
