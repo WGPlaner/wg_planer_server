@@ -72,24 +72,15 @@ func (m *Bill) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Bill) validateBillItems(formats strfmt.Registry) error {
-	if err := validate.Required("billItems", "body", m.BillItems); err != nil {
-		return err
-	}
-	return nil
+	return validate.Required("billItems", "body", m.BillItems)
 }
 
 func (m *Bill) validateCreatedBy(formats strfmt.Registry) error {
-	if err := validate.Required("createdBy", "body", m.CreatedBy); err != nil {
-		return err
-	}
-	return nil
+	return validate.Required("createdBy", "body", m.CreatedBy)
 }
 
 func (m *Bill) validateState(formats strfmt.Registry) error {
-	if err := validate.Required("state", "body", m.State); err != nil {
-		return err
-	}
-	return nil
+	return validate.Required("state", "body", m.State)
 }
 
 // MarshalBinary interface implementation

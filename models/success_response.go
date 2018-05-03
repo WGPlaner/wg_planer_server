@@ -37,17 +37,11 @@ func (r *SuccessResponse) Validate(formats strfmt.Registry) error {
 }
 
 func (r *SuccessResponse) validateMessage(formats strfmt.Registry) error {
-	if err := validate.Required("message", "body", r.Message); err != nil {
-		return err
-	}
-	return nil
+	return validate.Required("message", "body", r.Message)
 }
 
 func (r *SuccessResponse) validateStatus(formats strfmt.Registry) error {
-	if err := validate.Required("status", "body", r.Status); err != nil {
-		return err
-	}
-	return nil
+	return validate.Required("status", "body", r.Status)
 }
 
 // MarshalBinary interface implementation

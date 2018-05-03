@@ -109,10 +109,7 @@ func (u *User) validateFirebaseInstanceID(formats strfmt.Registry) error {
 }
 
 func (u *User) validateUID(formats strfmt.Registry) error {
-	if err := validate.Required("uid", "body", u.UID); err != nil {
-		return err
-	}
-	return nil
+	return validate.Required("uid", "body", u.UID)
 }
 
 // MarshalBinary interface implementation

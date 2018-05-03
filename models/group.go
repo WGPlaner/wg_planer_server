@@ -108,17 +108,11 @@ func (g *Group) validateCurrency(formats strfmt.Registry) error {
 	if swag.IsZero(g.Currency) { // not required
 		return nil
 	}
-	if err := validate.MaxLength("currency", "body", string(g.Currency), 4); err != nil {
-		return err
-	}
-	return nil
+	return validate.MaxLength("currency", "body", string(g.Currency), 4)
 }
 
 func (g *Group) validateDisplayName(formats strfmt.Registry) error {
-	if err := validate.Required("displayName", "body", g.DisplayName); err != nil {
-		return err
-	}
-	return nil
+	return validate.Required("displayName", "body", g.DisplayName)
 }
 
 func (g *Group) validateMembers(formats strfmt.Registry) error {
