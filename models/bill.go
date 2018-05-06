@@ -17,7 +17,7 @@ type Bill struct {
 
 	// bill items
 	// Required: true
-	BillItems []string `xorm:"-" json:"billItems"`
+	BoughtItems []string `xorm:"-" json:"boughtItems"`
 
 	// created by
 	// Required: true
@@ -26,6 +26,9 @@ type Bill struct {
 	// sent to
 	// Required: true
 	SentTo []string `xorm:"VARCHAR(28)" json:"sentTo"`
+
+	// payed by
+	PayedBy []string `xorm:"VARCHAR(28)" json:"payedBy"`
 
 	// due date
 	DueDate string `json:"dueDate,omitempty"`
@@ -53,7 +56,7 @@ type Bill struct {
 // Validate validates this bill
 func (m *Bill) Validate(formats strfmt.Registry) error {
 	var res []error
-	if err := m.validateBillItems(formats); err != nil {
+	if err := m.validateBoughtItems(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -71,8 +74,8 @@ func (m *Bill) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Bill) validateBillItems(formats strfmt.Registry) error {
-	if err := validate.Required("billItems", "body", m.BillItems); err != nil {
+func (m *Bill) validateBoughtItems(formats strfmt.Registry) error {
+	if err := validate.Required("boughtItems", "body", m.BoughtItems); err != nil {
 		return err
 	}
 	return nil
@@ -121,7 +124,8 @@ func GetBillsByGroupUID(guid strfmt.UUID) ([]*Bill, error) {
 	return bills, nil
 }
 
-func GetBillsByGroupUIDWithBillItems(guid strfmt.UUID) ([]*Bill, error) {
+// GetBillsByGroupUIDWithBoughtItems get bills with bought items for given group
+func GetBillsByGroupUIDWithBoughtItems(guid strfmt.UUID) ([]*Bill, error) {
 	bills, err := GetBillsByGroupUID(guid)
 	if err != nil {
 		return nil, err
@@ -129,14 +133,14 @@ func GetBillsByGroupUIDWithBillItems(guid strfmt.UUID) ([]*Bill, error) {
 
 	// Get items for each bill
 	for _, b := range bills {
-		var billItems []ListItem
-		err = x.Cols("id", "price", "count").Where(`bill_uid=?`, b.UID).Find(&billItems)
+		var boughtItems []ListItem
+		err = x.Cols("id", "price", "count").Where(`bill_uid=?`, b.UID).Find(&boughtItems)
 		if err != nil {
 			return nil, err
 		}
 		b.Sum = 0
-		for _, i := range billItems {
-			b.BillItems = append(b.BillItems, string(i.ID))
+		for _, i := range boughtItems {
+			b.BoughtItems = append(b.BoughtItems, string(i.ID))
 			if i.Count != nil {
 				b.Sum += i.Price * *i.Count
 			}
@@ -146,7 +150,8 @@ func GetBillsByGroupUIDWithBillItems(guid strfmt.UUID) ([]*Bill, error) {
 	return bills, nil
 }
 
-func CreateBillForGroup(g *Group, u *User) (*Bill, error) {
+// CreateBillForUser create a bill for a user
+func CreateBillForUser(u *User) (*Bill, error) {
 	billUID, err := uuid.NewV4()
 	if err != nil {
 		return nil, err
@@ -154,9 +159,12 @@ func CreateBillForGroup(g *Group, u *User) (*Bill, error) {
 
 	b := &Bill{
 		UID:       strfmt.UUID(billUID.String()),
-		State:     swag.String("TODO"),
 		CreatedBy: u.UID,
-		GroupUID:  g.UID,
+		GroupUID:  u.GroupUID,
+		SentTo:    []string{},
+		PayedBy:   []string{},
+		DueDate:   "2019-01-01",
+		State:     swag.String("todo"),
 		// TODO: Other fields
 	}
 
@@ -166,9 +174,20 @@ func CreateBillForGroup(g *Group, u *User) (*Bill, error) {
 
 	_, err = x.
 		Cols(`bill_uid`).
-		Where(`group_uid=?`, g.UID).
-		And(`bill_uid IS NULL`).
+		Where(`bill_uid IS NULL`).
+		And(`requested_by = ?`, *u.UID).
 		Update(ListItem{BillUID: b.UID})
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Get Items
+	var items []ListItem
+	err = x.Cols(`id`).Where(`bill_uid = ?`, b.UID).Find(&items)
+	for _, item := range items {
+		b.BoughtItems = append(b.BoughtItems, string(item.ID))
+	}
 
 	if err != nil {
 		return nil, err

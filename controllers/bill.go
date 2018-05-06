@@ -21,8 +21,9 @@ func getBillList(params bill.GetBillListParams, principal *models.User) middlewa
 		return errResp
 	}
 
-	bills, err := models.GetBillsByGroupUIDWithBillItems(g.UID)
+	bills, err := models.GetBillsByGroupUIDWithBoughtItems(g.UID)
 	if err != nil {
+		billLog.Critical("Can't get bill list for group", g.UID, err)
 		return newInternalServerError("Internal Server Error")
 	}
 
@@ -38,19 +39,17 @@ func getBillList(params bill.GetBillListParams, principal *models.User) middlewa
 
 // createBill creates a bill for the requested group.
 func createBill(params bill.CreateBillParams, principal *models.User) middleware.Responder {
-	billLog.Debugf(`Start creating bill for group "%s"`, params.GroupUID)
+	billLog.Debugf(`Start creating bill for user "%s"`, *principal.UID)
 
 	// TODO: Check authorization, etc
 
-	var g *models.Group
-	var errResp middleware.Responder
-
-	if g, errResp = getGroupAuthorizedOrError(params.GroupUID, *principal.UID); errResp != nil {
+	if _, errResp := getGroupAuthorizedOrError(params.GroupUID, *principal.UID); errResp != nil {
 		return errResp
 	}
 
-	b, err := models.CreateBillForGroup(g, principal)
+	b, err := models.CreateBillForUser(principal)
 	if err != nil {
+		billLog.Critical("Can't create bill for user", *principal.UID, err)
 		return newInternalServerError("Internal Server Error")
 	}
 

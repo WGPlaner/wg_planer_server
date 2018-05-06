@@ -812,7 +812,7 @@ definitions:
         readOnly: true
   Bill:
     required:
-      - billItems
+      - boughtItems
       - state
       - createdBy
     type: object
@@ -828,11 +828,15 @@ definitions:
         type: string
       sum:
         type: integer
-      billItems:
+      boughtItems:
         type: array
         items:
           type: string
       sentTo:
+        type: array
+        items:
+          type: string
+      payedBy:
         type: array
         items:
           type: string
