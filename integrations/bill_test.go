@@ -36,7 +36,7 @@ func TestGetBills(t *testing.T) {
 
 	assert.Len(t, billList.Bills, 1)
 	assert.Equal(t, int64(1), billList.Count)
-	assert.Len(t, billList.Bills[0].BillItems, 2)
+	assert.Len(t, billList.Bills[0].BoughtItems, 2)
 	assert.Len(t, billList.Bills[0].SentTo, 2)
 	assert.Equal(t, "todo", *billList.Bills[0].State)
 	assert.Equal(t, int64(370), billList.Bills[0].Sum)

@@ -21,7 +21,7 @@ func getBillList(params bill.GetBillListParams, principal *models.User) middlewa
 		return errResp
 	}
 
-	bills, err := models.GetBillsByGroupUIDWithBillItems(g.UID)
+	bills, err := models.GetBillsByGroupUIDWithBoughtItems(g.UID)
 	if err != nil {
 		return newInternalServerError("Internal Server Error")
 	}
