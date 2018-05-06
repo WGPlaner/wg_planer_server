@@ -836,6 +836,10 @@ definitions:
         type: array
         items:
           type: string
+      payedBy:
+        type: array
+        items:
+          type: string
       createdBy:
         type: string
       dueDate:

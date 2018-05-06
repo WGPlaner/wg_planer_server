@@ -16,15 +16,15 @@
 -
   id: 00112233-4455-6677-8899-000000000002
   group_uid: 00112233-4455-6677-8899-aabbccddeeff
-  bill_uid: ""
+  bill_uid:
   title: Apples
   category: Groceries
   count: 15
   price: 80
   requested_by: 1234567890fakefirebaseid0001
   requested_for: ["1234567890fakefirebaseid0001"]
-  bought_at: null
-  bought_by: ""
+  bought_at:
+  bought_by:
   created_at: 2017-11-09T19:23:41.000+01:00
   updated_at: 2017-11-09T19:23:41.000+01:00
 
@@ -38,7 +38,7 @@
   price: 170
   requested_by: 1234567890fakefirebaseid0002
   requested_for: ["1234567890fakefirebaseid0002"]
-  bought_at: null
-  bought_by: ""
+  bought_at:
+  bought_by:
   created_at: 2017-11-09T10:32:01.000+01:00
   updated_at: 2017-11-09T10:42:01.000+01:00

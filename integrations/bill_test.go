@@ -11,9 +11,20 @@ import (
 
 func TestCreateBill(t *testing.T) {
 	prepareTestEnv(t)
-	authValid := "1234567890fakefirebaseid0001"
-	req := NewRequest(t, "POST", authValid, "/group/00112233-4455-6677-8899-aabbccddeeff/bills/create")
-	MakeRequest(t, req, http.StatusOK)
+	var (
+		authValid = "1234567890fakefirebaseid0001"
+		bill      = models.Bill{}
+		req       = NewRequest(t, "POST", authValid, "/group/00112233-4455-6677-8899-aabbccddeeff/bills/create")
+		resp      = MakeRequest(t, req, http.StatusOK)
+	)
+	DecodeJSON(t, resp, &bill)
+	assert.Len(t, bill.BoughtItems, 1)
+	assert.Equal(t, "00112233-4455-6677-8899-000000000002", bill.BoughtItems[0])
+
+	// Assert that items exist in database
+	item := models.AssertExistsAndLoadBean(t, &models.ListItem{ID: "00112233-4455-6677-8899-000000000002"}).(*models.ListItem)
+	assert.Equal(t, bill.UID, item.BillUID)
+	models.AssertCount(t, &models.Bill{}, 2)
 }
 
 func TestGetBillUnauthorizedGroup(t *testing.T) {

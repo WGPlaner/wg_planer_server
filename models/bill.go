@@ -124,6 +124,7 @@ func GetBillsByGroupUID(guid strfmt.UUID) ([]*Bill, error) {
 	return bills, nil
 }
 
+// GetBillsByGroupUIDWithBoughtItems get bills with bought items for given group
 func GetBillsByGroupUIDWithBoughtItems(guid strfmt.UUID) ([]*Bill, error) {
 	bills, err := GetBillsByGroupUID(guid)
 	if err != nil {
@@ -149,7 +150,8 @@ func GetBillsByGroupUIDWithBoughtItems(guid strfmt.UUID) ([]*Bill, error) {
 	return bills, nil
 }
 
-func CreateBillForGroup(g *Group, u *User) (*Bill, error) {
+// CreateBillForUser create a bill for a user
+func CreateBillForUser(u *User) (*Bill, error) {
 	billUID, err := uuid.NewV4()
 	if err != nil {
 		return nil, err
@@ -157,9 +159,12 @@ func CreateBillForGroup(g *Group, u *User) (*Bill, error) {
 
 	b := &Bill{
 		UID:       strfmt.UUID(billUID.String()),
-		State:     swag.String("TODO"),
 		CreatedBy: u.UID,
-		GroupUID:  g.UID,
+		GroupUID:  u.GroupUID,
+		SentTo:    []string{},
+		PayedBy:   []string{},
+		DueDate:   "2019-01-01",
+		State:     swag.String("todo"),
 		// TODO: Other fields
 	}
 
@@ -169,9 +174,20 @@ func CreateBillForGroup(g *Group, u *User) (*Bill, error) {
 
 	_, err = x.
 		Cols(`bill_uid`).
-		Where(`group_uid=?`, g.UID).
-		And(`bill_uid IS NULL`).
+		Where(`bill_uid IS NULL`).
+		And(`requested_by = ?`, *u.UID).
 		Update(ListItem{BillUID: b.UID})
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Get Items
+	var items []ListItem
+	err = x.Cols(`id`).Where(`bill_uid = ?`, b.UID).Find(&items)
+	for _, item := range items {
+		b.BoughtItems = append(b.BoughtItems, string(item.ID))
+	}
 
 	if err != nil {
 		return nil, err
