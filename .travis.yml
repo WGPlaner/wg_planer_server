@@ -1,6 +1,7 @@
 language: go
 go:
   - 1.9.x
+  - 1.10.x
   - master
 go_import_path: github.com/wgplaner/wg_planer_server/
 
@@ -26,20 +27,18 @@ script:
   - ls -la
   - go test -race -v ./...
   - ./scripts/coverage.sh
-
-before_deploy:
   - mkdir -p build/config && cp config/* build/config
   - wget http://central.maven.org/maven2/io/swagger/swagger-codegen-cli/2.3.1/swagger-codegen-cli-2.3.1.jar -O swagger-codegen-cli.jar
   - java -jar swagger-codegen-cli.jar generate -i swagger.yml -l html2 -o build/api_doc_html
   - java -jar swagger-codegen-cli.jar generate -i swagger.yml -l java --library=okhttp-gson -o build/android_client
-  - cd build/android_client && ./gradlew jar
-  - cd ${TRAVIS_BUILD_DIR}
-  - tar -zcvf wg_planer_server.tar.gz build
-  - ./scripts/bintray_deploy.sh
+  - cd build/android_client && chmod +x gradlew
+  - ./gradlew jar
 
 after_success:
+  - cd ${TRAVIS_BUILD_DIR}
   - bash <(curl -s https://codecov.io/bash) -f integration.coverage.out -F integration
   - bash <(curl -s https://codecov.io/bash) -f unit.coverage.out -F unittests
+  - ./scripts/bintray_deploy.sh
 
 notifications:
   email:
@@ -60,8 +59,8 @@ deploy:
   skip_cleanup: true
   on:
     branch: master
-    condition: -f ./scripts/bintray.json
+    condition: "-f ./scripts/bintray.json"
   user: bugwelle
   key:
-    secure: r+LUmf0cgZsXBlYnlCmQZslST1G9gsVcPh82ZyOaMwSwJ+jmreBzAlrJSNqphlhbtWgp09ur9tNy7aJ6J/3jzS5IJw4XegnYEzkPxefL9ABgKrsaFZReTXCFgatctQVnuV2wX8l8Ng1UpcEXJu93CVx5va0KjYWAeQ++xdsFdF2yubxlHHso/ml8mpNZddxYBz/kRLhfCeZICcptp++YyEVU1/LwOoNFQ+fRrU11HuCRBos/CARRb/cA5rdxoSHAlEsBGPsJmMRplLQZdIrRMiy4eTzkx15tM6zEW0aFnm3fwNiA09Qsqxaho9kv8eh/ecwObfXyRG+MRZ5dKG6MCgFZ2EGyOx3g4cJdqhwT/09b3eVfMNZmBuN2ymGpOtyjYLDsly001IWS5OdYZz8TwJGQgj8qA8mIQgzG1mKDqVxFK+LoAyzCJr4QRfJAjRSKGFAg8waY6BFjE66qhRl+xbKrRKhWJ3putyZg5sMhQ+hVe4IEsyk8nNcB4UxgYbIi6ilclC6+a20eCnLKo0KfTtHV8YqoE0H/t/tRLcSnsR8teY1CHKqZQwnEsZ0dC/nkXCiv3+yJc4cNxvw40TpbPXMlCE3T6eaBP9vFnn0zeGC5yqMtYDPwd7ISNDHPLM3jVW3Ju/41V6h4gNhFZiU+ovk6nu4emvolEPTcM1p1QV0=
-  file: ./scripts/bintray.json
+    secure: belROymz+H+U/vsuFelRnIyvh2Nt2nGB3KpdU3GCuTFcYHXN2DQ9gMSKeIp9l79k+e1pqrKAC9QSDpfjtOpBpafFai/jaioK3ZrdE7p33PiF/WWrV1IxK6x4Sx5THATQCCa9rjnOCPramaWqAXVasAUL2Z5qs6KkYOO0iqPPI8rCzlapVCUFZh5Dzsjy+lriyhZTMwS6ab0L1YSJSq3IC+TlYrNENXXXOA5r+cJMks2Hsq1QWGi3QzDq/KoTGc7Kwr9JCDY2Bcrf2YW5aCULGsG3vicGb8yqNZrmqetWculq1bpqSh8RED/qUKg94AzYqymGWBXOhIj3va/RprFhFt3ygLt01WWT/lo54IdEQV9dkXknqtKZli7N4IVpfSQaDpkS0hZc95WGdmyNcsPMPTG2z2pl8jADVOiz5mx3x1aAfejtnlwq4YYdIeIfrwZ5gQJAoH64t4Os4lYUSW/byfJ4NdSPJr5DGTsGSx3WLMnus03Il7O6fUBZLnjTz8YdMOvMHMYKt1sTwzAJl/z1pz5hzWNVVVDCkfIO3b38nS1PT33ciDGxeBljuC6h/NbGQwKm1v0/hDW9MNx0rMC/1SHxTYEn/l0y00joavkCY59kViRc2+dgRHbH5e+yuzENR/75KNu3wsSb0u78CYJkxDPbybJYSwuYH1w4pyYG2Fc=
+  file: "${TRAVIS_BUILD_DIR}/scripts/bintray.json"
