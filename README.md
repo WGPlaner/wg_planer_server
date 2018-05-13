@@ -32,7 +32,7 @@ go build -v -o "build/wg_planer_server" ./cmd/wgplaner-api/wgplaner-api.go
 First download `swagger-codegen`:
 
 ```bash
-wget http://central.maven.org/maven2/io/swagger/swagger-codegen-cli/2.3.1/swagger-codegen-cli-2.3.1.jar -O swagger-codegen-cli.jar
+wget -O swagger-codegen-cli.jar https://oss.sonatype.org/content/repositories/releases/io/swagger/swagger-codegen-cli/2.2.3/swagger-codegen-cli-2.2.3.jar
 ```
 
 To create the Java Android Library run:
