@@ -357,3 +357,25 @@ func (u *User) UploadUserImage(data []byte) error {
 
 	return nil
 }
+
+// GetBoughtItems
+func (u *User) GetBoughtItems() (ShoppingList, error) {
+	items := make([]*ListItem, 0, 10)
+
+	// Check if items exist
+	err := x.AllCols().
+		Where(`bought_by=?`, u.UID).
+		And(`bill_uid IS NULL`).
+		Find(&items)
+
+	if err != nil {
+		return ShoppingList{}, err
+	}
+
+	shoppingList := ShoppingList{
+		Count:     int64(len(items)),
+		ListItems: items,
+	}
+
+	return shoppingList, nil
+}
