@@ -12,17 +12,17 @@ import (
 func TestCreateBill(t *testing.T) {
 	prepareTestEnv(t)
 	var (
-		authValid = "1234567890fakefirebaseid0001"
+		authValid = "1234567890fakefirebaseid0002"
 		bill      = models.Bill{}
 		req       = NewRequest(t, "POST", authValid, "/group/00112233-4455-6677-8899-aabbccddeeff/bills/create")
 		resp      = MakeRequest(t, req, http.StatusOK)
 	)
 	DecodeJSON(t, resp, &bill)
 	assert.Len(t, bill.BoughtItems, 1)
-	assert.Equal(t, "00112233-4455-6677-8899-000000000002", bill.BoughtItems[0])
+	assert.Equal(t, "00112233-4455-6677-8899-000000000004", bill.BoughtItems[0])
 
 	// Assert that items exist in database
-	item := models.AssertExistsAndLoadBean(t, &models.ListItem{ID: "00112233-4455-6677-8899-000000000002"}).(*models.ListItem)
+	item := models.AssertExistsAndLoadBean(t, &models.ListItem{ID: "00112233-4455-6677-8899-000000000004"}).(*models.ListItem)
 	assert.Equal(t, bill.UID, item.BillUID)
 	models.AssertCount(t, &models.Bill{}, 2)
 }

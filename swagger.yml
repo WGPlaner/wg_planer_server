@@ -518,6 +518,44 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResponse"
+
+  /users/{userID}/bought:
+    parameters:
+      - name: userID
+        in: path
+        description: The internal ID of the user
+        required: true
+        type: string
+        pattern: "^[a-zA-Z0-9]{28}$"
+    get:
+      tags:
+      - user
+      description: Get bought items of the user which haven't been added to a bill.
+      operationId: getUserBoughtItems
+      security:
+        - FirebaseIDAuth: []
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "#/definitions/ShoppingList"
+        400:
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          description: Unauthorized User
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          description: User not found on server
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
   /shoppinglist/{groupUID}:
     parameters:
     - name: groupUID

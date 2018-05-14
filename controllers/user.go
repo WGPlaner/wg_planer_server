@@ -159,6 +159,30 @@ func getUser(params user.GetUserParams, principal *models.User) middleware.Respo
 	return user.NewGetUserOK().WithPayload(u)
 }
 
+func getUserBoughtItems(params user.GetUserBoughtItemsParams, principal *models.User) middleware.Responder {
+	userLog.Debugf("Get bought items for user %q", *principal.UID)
+	// TODO: Check if user is authorized to get bought items
+	var err error
+	var itemUser *models.User
+
+	if itemUser, err = models.GetUserByUID(params.UserID); models.IsErrUserNotExist(err) {
+		userLog.Debugf(`Can't find database user with id "%s"!`, params.UserID)
+		return newNotFoundResponse("User not found on server")
+
+	} else if err != nil {
+		userLog.Critical("Database Error!", err)
+		return newInternalServerError("Internal Database Error")
+	}
+
+	items, err := itemUser.GetBoughtItems()
+	if err != nil {
+		userLog.Critical("Error getting bought items!", err)
+		return newInternalServerError("Internal Database Error")
+	}
+
+	return user.NewGetUserBoughtItemsOK().WithPayload(&items)
+}
+
 func getUserImage(params user.GetUserImageParams, principal *models.User) middleware.Responder {
 	userLog.Debugf("Get user image for user %q", *principal.UID)
 

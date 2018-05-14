@@ -70,6 +70,21 @@ func TestGetUserImage(t *testing.T) {
 	assert.Equal(t, resp.Headers.Get("Content-Type"), "application/octet-stream")
 }
 
+func TestGetUserBoughtItems(t *testing.T) {
+	prepareTestEnv(t)
+	var (
+		authID = "1234567890fakefirebaseid0001"
+		userID = "1234567890fakefirebaseid0002"
+		req    = NewRequest(t, "GET", authID, "/users/"+userID+"/bought")
+		resp   = MakeRequest(t, req, http.StatusOK)
+	)
+
+	boughtItems := models.ShoppingList{}
+	DecodeJSON(t, resp, &boughtItems)
+	assert.Equal(t, int64(1), boughtItems.Count)
+	assert.Equal(t, int64(1510337621), boughtItems.ListItems[0].BoughtAt.Unix())
+}
+
 func TestUpdateUserImage(t *testing.T) {
 	prepareTestEnv(t)
 

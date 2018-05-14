@@ -175,7 +175,7 @@ func CreateBillForUser(u *User) (*Bill, error) {
 	_, err = x.
 		Cols(`bill_uid`).
 		Where(`bill_uid IS NULL`).
-		And(`requested_by = ?`, *u.UID).
+		And(`bought_by = ?`, *u.UID).
 		Update(ListItem{BillUID: b.UID})
 
 	if err != nil {

@@ -38,7 +38,37 @@
   price: 170
   requested_by: 1234567890fakefirebaseid0002
   requested_for: ["1234567890fakefirebaseid0002"]
-  bought_at:
-  bought_by:
+  bought_at: 2018-03-10T19:13:41.000+01:00
+  bought_by: 1234567890fakefirebaseid0002
   created_at: 2017-11-09T10:32:01.000+01:00
   updated_at: 2017-11-09T10:42:01.000+01:00
+
+-
+  id: 00112233-4455-6677-8899-000000000004
+  group_uid: 00112233-4455-6677-8899-aabbccddeeff
+  bill_uid:
+  title: Eggs
+  category: Groceries
+  count: 1
+  price: 129
+  requested_by: 1234567890fakefirebaseid0001
+  requested_for: ["1234567890fakefirebaseid0001"]
+  bought_at: 2017-11-10T19:13:41.000+01:00
+  bought_by: 1234567890fakefirebaseid0002
+  created_at: 2017-11-09T19:23:41.000+01:00
+  updated_at: 2017-11-09T19:23:41.000+01:00
+
+-
+  id: 00112233-4455-6677-8899-000000000005
+  group_uid: 00112233-4455-6677-8899-aabbccddeeff
+  bill_uid:
+  title: Apples
+  category: Groceries
+  count: 20
+  price: 80
+  requested_by: 1234567890fakefirebaseid0001
+  requested_for: ["1234567890fakefirebaseid0002"]
+  bought_at:
+  bought_by:
+  created_at: 2017-11-09T20:23:41.000+01:00
+  updated_at: 2017-11-09T21:20:41.000+01:00
