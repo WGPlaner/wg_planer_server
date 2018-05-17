@@ -143,11 +143,16 @@ func TestUpdateListItemInvalid(t *testing.T) {
 func TestBuyListItems(t *testing.T) {
 	prepareTestEnv(t)
 	var (
-		items = []string{"00112233-4455-6677-8899-000000000002", "00112233-4455-6677-8899-000000000003"}
-		req   = NewRequestWithJSON(t, "POST", "1234567890fakefirebaseid0002",
+		boughByID = "1234567890fakefirebaseid0002"
+		items     = []string{"00112233-4455-6677-8899-000000000002", "00112233-4455-6677-8899-000000000003"}
+		req       = NewRequestWithJSON(t, "POST", boughByID,
 			"/shoppinglist/00112233-4455-6677-8899-aabbccddeeff/buy-items", items)
 	)
 	MakeRequest(t, req, http.StatusOK)
+	// Check database
+	listItem := models.AssertExistsAndLoadBean(t,
+		&models.ListItem{ID: strfmt.UUID(items[0])}).(*models.ListItem)
+	assert.Equal(t, boughByID, listItem.BoughtBy)
 }
 
 func TestBuyListItemsInvalidGroup(t *testing.T) {
