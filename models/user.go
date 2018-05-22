@@ -281,14 +281,14 @@ func GetUserByUID(uid string) (*User, error) {
 
 func UpdateUser(u *User) error {
 	u.DisplayName = swag.String(strings.TrimSpace(*u.DisplayName))
-	_, err := x.ID(u.UID).AllCols().Update(u)
+	_, err := x.ID(*u.UID).AllCols().Update(u)
 	u.PhotoURL = strfmt.URI(GetUserImageURL(*u.UID))
 	return err
 }
 
 func UpdateUserCols(u *User, cols ...string) error {
 	u.DisplayName = swag.String(strings.TrimSpace(swag.StringValue(u.DisplayName)))
-	_, err := x.ID(u.UID).Cols(cols...).Update(u)
+	_, err := x.ID(*u.UID).Cols(cols...).Update(u)
 	u.PhotoURL = strfmt.URI(GetUserImageURL(*u.UID))
 	return err
 }
@@ -364,8 +364,8 @@ func (u *User) GetBoughtItems() (ShoppingList, error) {
 
 	// Check if items exist
 	err := x.AllCols().
-		Where(`bought_by=?`, u.UID).
-		And(`bill_uid IS NULL`).
+		Where(`bought_by=?`, *u.UID).
+		And(`bill_uid IS NULL OR bill_uid=""`).
 		Find(&items)
 
 	if err != nil {
