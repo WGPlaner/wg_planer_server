@@ -216,6 +216,35 @@ func (u *User) BuyListItemsByUIDs(itemUIDs []strfmt.UUID) error {
 	return err
 }
 
+// RevertListItemPurchaseByUID reverts the buying action for given list items.
+func (u *User) RevertListItemPurchaseByUID(itemUID strfmt.UUID) error {
+	var item ListItem
+	// Check if items exist
+	found, errCount := x.Where(`group_uid=?`, u.GroupUID).
+		And(`id=?`, itemUID).
+		Get(&item)
+
+	if errCount != nil {
+		return errCount
+
+	} else if !found {
+		return ErrListItemNotExist{ID: itemUID, GroupUID: u.GroupUID}
+	}
+
+	if item.BillUID != "" {
+		return ErrListItemHasBill{ID: itemUID, GroupUID: u.GroupUID}
+	}
+
+	_, err := x.Cols(`bought_by`, `bought_at`).
+		Where(`group_uid=?`, u.GroupUID).
+		And(`id=?`, itemUID).
+		Update(&ListItem{
+			BoughtAt: nil,
+			BoughtBy: "",
+		})
+	return err
+}
+
 func IsValidUserIDFormat(uid string) bool {
 	return len(uid) == 28 // Firebase IDs are 28 characters long
 }

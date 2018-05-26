@@ -556,6 +556,31 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
 
+  /shoppinglist/revert-purchase:
+    post:
+      tags:
+      - shoppinglist
+      description: Revert buying items.
+      operationId: revertItemPurchase
+      security:
+        - UserIDAuth: []
+      parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "#/definitions/SuccessResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
   /shoppinglist/{groupUID}:
     parameters:
     - name: groupUID

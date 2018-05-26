@@ -194,3 +194,33 @@ func TestBuyListItemsThatDoNotExist(t *testing.T) {
 	)
 	MakeRequest(t, req, http.StatusBadRequest)
 }
+
+func TestUnBuyListItems(t *testing.T) {
+	prepareTestEnv(t)
+	var (
+		boughtByID = "1234567890fakefirebaseid0002"
+		item       = "00112233-4455-6677-8899-000000000004"
+		req        = NewRequestWithJSON(t, "POST", boughtByID,
+			"/shoppinglist/revert-purchase", item)
+	)
+	MakeRequest(t, req, http.StatusOK)
+	// Check database
+	listItem := models.AssertExistsAndLoadBean(t,
+		&models.ListItem{ID: strfmt.UUID(item)}).(*models.ListItem)
+	assert.Equal(t, "", listItem.BoughtBy)
+}
+
+func TestUnBuyListItemsWithBill(t *testing.T) {
+	prepareTestEnv(t)
+	var (
+		boughtByID = "1234567890fakefirebaseid0002"
+		item       = "00112233-4455-6677-8899-000000000003"
+		req        = NewRequestWithJSON(t, "POST", boughtByID,
+			"/shoppinglist/revert-purchase", item)
+	)
+	MakeRequest(t, req, http.StatusBadRequest)
+	// Check database
+	listItem := models.AssertExistsAndLoadBean(t,
+		&models.ListItem{ID: strfmt.UUID(item)}).(*models.ListItem)
+	assert.Equal(t, boughtByID, listItem.BoughtBy)
+}
