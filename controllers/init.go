@@ -71,4 +71,5 @@ func InitializeControllers(api *operations.WgplanerAPI) {
 	api.ShoppinglistGetListItemsHandler = shoppinglist.GetListItemsHandlerFunc(getListItems)
 	api.ShoppinglistUpdateListItemHandler = shoppinglist.UpdateListItemHandlerFunc(updateListItem)
 	api.ShoppinglistBuyListItemsHandler = shoppinglist.BuyListItemsHandlerFunc(buyListItems)
+	api.ShoppinglistRevertItemPurchaseHandler = shoppinglist.RevertItemPurchaseHandlerFunc(revertItemPurchase)
 }

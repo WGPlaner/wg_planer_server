@@ -187,6 +187,23 @@ func (err ErrListItemNotExist) Error() string {
 		err.GroupUID, err.ID)
 }
 
+// ErrListItemHasBill represents a "ListItemNotExist" kind of error.
+type ErrListItemHasBill struct {
+	ID       strfmt.UUID
+	GroupUID strfmt.UUID
+}
+
+// IsErrListItemHasBill checks if an error is a ErrListItemNotExist.
+func IsErrListItemHasBill(err error) bool {
+	_, ok := err.(ErrListItemHasBill)
+	return ok
+}
+
+func (err ErrListItemHasBill) Error() string {
+	return fmt.Sprintf("list item cannot be 'un-bought'. Already has a bill [groupUID: %s, uid: %s]",
+		err.GroupUID, err.ID)
+}
+
 //  ____  _ _ _
 // | __ )(_) | |
 // |  _ \| | | |

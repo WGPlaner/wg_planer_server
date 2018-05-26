@@ -198,6 +198,7 @@ func buyListItems(params shoppinglist.BuyListItemsParams, principal *models.User
 		return NewBadRequest(err.Error())
 
 	} else if err != nil {
+		shoppingLog.Criticalf("Database error: %s", err)
 		return newInternalServerError("Error buying items")
 	}
 
@@ -210,6 +211,43 @@ func buyListItems(params shoppinglist.BuyListItemsParams, principal *models.User
 
 	return shoppinglist.NewBuyListItemsOK().WithPayload(&models.SuccessResponse{
 		Message: swag.String("bought items"),
+		Status:  swag.Int64(200),
+	})
+}
+
+func revertItemPurchase(params shoppinglist.RevertItemPurchaseParams, principal *models.User) middleware.Responder {
+	var err error
+	var g *models.Group
+
+	if g, err = models.GetGroupByUID(principal.GroupUID); models.IsErrGroupNotExist(err) {
+		shoppingLog.Criticalf("User has no group: %s", *principal.UID)
+		return newNotFoundResponse("Group not found")
+
+	} else if err != nil {
+		shoppingLog.Debugf(`Error validating group "%s": "%s"`, principal.GroupUID, err.Error())
+		return NewBadRequest(err.Error())
+	}
+
+	err = principal.RevertListItemPurchaseByUID(*params.Body)
+	if models.IsErrListItemNotExist(err) {
+		shoppingLog.Warningf("Item not found")
+		return NewBadRequest(err.Error())
+
+	} else if models.IsErrListItemHasBill(err) {
+		shoppingLog.Debugf("Item already has a bill")
+		return NewBadRequest(err.Error())
+
+	} else if err != nil {
+		shoppingLog.Criticalf("Database error: %s", err)
+		return newInternalServerError("Error reverting item purchase")
+	}
+
+	// Send push notification
+	mailer.SendPushUpdateToUserIDs(g.Members, mailer.PushShoppingListRevertPurchase,
+		[]string{string(*params.Body)})
+
+	return shoppinglist.NewRevertItemPurchaseOK().WithPayload(&models.SuccessResponse{
+		Message: swag.String("reverted purchase"),
 		Status:  swag.Int64(200),
 	})
 }
