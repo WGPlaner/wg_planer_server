@@ -2,7 +2,7 @@
   uid: 1234567890fakefirebaseid0001
   display_name: John Doe
   group_uid: 00112233-4455-6677-8899-aabbccddeeff
-  firebase_instance_id:
+  firebase_instance_id: 1
   locale: DE
   email: john@example.com
   created_at: 2017-11-07T17:43:40.000+01:00
@@ -12,7 +12,7 @@
   uid: 1234567890fakefirebaseid0002
   display_name: Max Meier
   group_uid: 00112233-4455-6677-8899-aabbccddeeff
-  firebase_instance_id:
+  firebase_instance_id: 1
   locale: DE
   email: max@example.com
   created_at: 2017-11-08T14:23:46.000+01:00
@@ -22,7 +22,7 @@
   uid: 1234567890fakefirebaseid0003
   display_name: Justus
   group_uid:
-  firebase_instance_id:
+  firebase_instance_id: 1
   locale: DE
   email: arne@example.com
   created_at: 2017-11-08T14:23:56.000+01:00
