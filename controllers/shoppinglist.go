@@ -21,14 +21,9 @@ func getListItems(params shoppinglist.GetListItemsParams, principal *models.User
 		items []*models.ListItem
 	)
 
-	if g, err = models.GetGroupByUID(params.GroupUID); models.IsErrGroupNotExist(err) {
-		return newNotFoundResponse("Group not found")
-	} else if err != nil {
+	if g, err = models.GetGroupByUID(principal.GroupUID); err != nil {
+		shoppingLog.Criticalf("Invalid database state. User's group does not exist.")
 		return newInternalServerError("Internal Server Error")
-	}
-
-	if !g.HasMember(*principal.UID) {
-		return NewUnauthorizedResponse("Not member of group")
 	}
 
 	if items, err = g.GetActiveShoppingListItems(); err != nil {
@@ -45,8 +40,7 @@ func getListItems(params shoppinglist.GetListItemsParams, principal *models.User
 }
 
 func updateListItem(params shoppinglist.UpdateListItemParams, principal *models.User) middleware.Responder {
-	shoppingLog.Debugf(`Updating shopping list item. User "%s" for group "%s"`,
-		*principal.UID, params.GroupUID)
+	shoppingLog.Debugf(`Updating shopping list item. User "%s"`, *principal.UID)
 
 	var (
 		err error
@@ -61,16 +55,9 @@ func updateListItem(params shoppinglist.UpdateListItemParams, principal *models.
 		return NewBadRequest("RequestedFor must contain at least one user")
 	}
 
-	if g, err = models.GetGroupByUID(params.GroupUID); models.IsErrGroupNotExist(err) {
-		return newNotFoundResponse("Group not found")
-
-	} else if err != nil {
-		shoppingLog.Debugf(`Error validating group "%s": "%s"`, params.GroupUID, err.Error())
-		return NewBadRequest(err.Error())
-	}
-
-	if !g.HasMember(*principal.UID) {
-		return NewUnauthorizedResponse("Unauthorized: Not member of group")
+	if g, err = models.GetGroupByUID(principal.GroupUID); err != nil {
+		shoppingLog.Criticalf("Invalid database state. User's group does not exist.")
+		return newInternalServerError("Internal Server Error")
 	}
 
 	// TODO: Check if user is unique
@@ -84,7 +71,7 @@ func updateListItem(params shoppinglist.UpdateListItemParams, principal *models.
 	// TODO: This is ugly.
 	listItem := &models.ListItem{
 		ID:           params.Body.ID,
-		GroupUID:     g.UID,
+		GroupUID:     principal.GroupUID,
 		Title:        params.Body.Title,
 		Category:     params.Body.Category,
 		Count:        params.Body.Count,
@@ -115,7 +102,7 @@ func updateListItem(params shoppinglist.UpdateListItemParams, principal *models.
 
 func createListItem(params shoppinglist.CreateListItemParams, principal *models.User) middleware.Responder {
 	shoppingLog.Debugf(`Creating shopping list item. User "%s" for group "%s"`,
-		*principal.UID, params.GroupUID)
+		*principal.UID, principal.GroupUID)
 
 	var (
 		err error
@@ -126,11 +113,11 @@ func createListItem(params shoppinglist.CreateListItemParams, principal *models.
 		return NewBadRequest("RequestedFor must contain at least one user")
 	}
 
-	if g, err = models.GetGroupByUID(params.GroupUID); models.IsErrGroupNotExist(err) {
+	if g, err = models.GetGroupByUID(principal.GroupUID); models.IsErrGroupNotExist(err) {
 		return newNotFoundResponse("Group not found")
 
 	} else if err != nil {
-		shoppingLog.Debugf(`Error validating group "%s": "%s"`, params.GroupUID, err.Error())
+		shoppingLog.Debugf(`Error validating group "%s": "%s"`, principal.GroupUID, err.Error())
 		return NewBadRequest(err.Error())
 	}
 
@@ -180,15 +167,15 @@ func buyListItems(params shoppinglist.BuyListItemsParams, principal *models.User
 	var err error
 	var g *models.Group
 
-	if g, err = models.GetGroupByUID(params.GroupUID); models.IsErrGroupNotExist(err) {
+	if g, err = models.GetGroupByUID(principal.GroupUID); models.IsErrGroupNotExist(err) {
 		return newNotFoundResponse("Group not found")
 
 	} else if err != nil {
-		shoppingLog.Debugf(`Error validating group "%s": "%s"`, params.GroupUID, err.Error())
+		shoppingLog.Debugf(`Error validating group "%s": "%s"`, principal.GroupUID, err.Error())
 		return NewBadRequest(err.Error())
 	}
 
-	if principal.GroupUID != params.GroupUID {
+	if principal.GroupUID != principal.GroupUID {
 		return NewUnauthorizedResponse("Can't buy items for another group")
 	}
 

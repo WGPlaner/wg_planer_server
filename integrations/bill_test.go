@@ -14,7 +14,7 @@ func TestCreateBill(t *testing.T) {
 	var (
 		authValid = "1234567890fakefirebaseid0002"
 		bill      = models.Bill{}
-		req       = NewRequest(t, "POST", authValid, "/group/00112233-4455-6677-8899-aabbccddeeff/bills/create")
+		req       = NewRequest(t, "POST", authValid, "/group/bills/create")
 		resp      = MakeRequest(t, req, http.StatusOK)
 	)
 	DecodeJSON(t, resp, &bill)
@@ -27,20 +27,12 @@ func TestCreateBill(t *testing.T) {
 	models.AssertCount(t, &models.Bill{}, 2)
 }
 
-func TestGetBillUnauthorizedGroup(t *testing.T) {
-	prepareTestEnv(t)
-	authValid := "1234567890fakefirebaseid0001"
-	groupUnauthorized := "00112233-4455-6677-8899-aabbccddeef0"
-	req := NewRequest(t, "GET", authValid, "/group/"+groupUnauthorized+"/bills")
-	MakeRequest(t, req, http.StatusUnauthorized)
-}
-
 func TestGetBills(t *testing.T) {
 	prepareTestEnv(t)
 	var (
 		billList  = models.BillList{}
 		authValid = "1234567890fakefirebaseid0001"
-		req       = NewRequest(t, "GET", authValid, "/group/00112233-4455-6677-8899-aabbccddeeff/bills")
+		req       = NewRequest(t, "GET", authValid, "/group/bills")
 		resp      = MakeRequest(t, req, http.StatusOK)
 	)
 	DecodeJSON(t, resp, &billList)

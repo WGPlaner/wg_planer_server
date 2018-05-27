@@ -57,17 +57,17 @@ paths:
           schema:
             $ref: "#/definitions/VersionInfo"
 
-  /groups:
-    parameters:
-      - in: body
-        name: body
-        description: The group to update (contains uid, displayName, etc)
-        required: true
-        schema:
-          $ref: "#/definitions/Group"
+  /group:
     post:
       tags:
       - group
+      parameters:
+        - in: body
+          name: body
+          description: The group to update (contains uid, displayName, etc)
+          required: true
+          schema:
+            $ref: "#/definitions/Group"
       description: Create a new group for the authenticated user. The authenticated user
                    will be a member and admin of the new group.
       operationId: createGroup
@@ -93,6 +93,13 @@ paths:
     put:
       tags:
       - group
+      parameters:
+        - in: body
+          name: body
+          description: The group to update (contains uid, displayName, etc)
+          required: true
+          schema:
+            $ref: "#/definitions/Group"
       description: Update the group that is given through the UID in the body.
                    The authenticated user has to be an admin.
       operationId: updateGroup
@@ -115,15 +122,6 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResponse"
-
-  /groups/{groupUID}:
-    parameters:
-    - name: groupUID
-      in: path
-      description: The internal ID of the group
-      required: true
-      type: string
-      format: uuid
     get:
       tags:
       - group
@@ -149,14 +147,7 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
 
-  /groups/{groupUID}/create-code:
-    parameters:
-      - name: groupUID
-        in: path
-        description: The internal ID of the group
-        required: true
-        type: string
-        format: uuid
+  /group/create-code:
     get:
       tags:
       - group
@@ -186,14 +177,7 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
 
-  /groups/{groupUID}/image:
-    parameters:
-      - name: groupUID
-        in: path
-        description: The internal ID of the group
-        required: true
-        type: string
-        format: uuid
+  /group/image:
     get:
       tags:
       - group
@@ -247,7 +231,7 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
 
-  /groups/join/{groupCode}:
+  /group/join/{groupCode}:
     get:
       tags:
       - group
@@ -293,7 +277,7 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResponse"
-  /groups/leave:
+  /group/leave:
     post:
       tags:
       - group
@@ -310,14 +294,7 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResponse"
-  /group/{groupUID}/bills:
-    parameters:
-    - name: groupUID
-      in: path
-      description: The internal ID of the group
-      required: true
-      type: string
-      format: uuid
+  /group/bills:
     get:
       tags:
       - bill
@@ -334,14 +311,7 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResponse"
-  /group/{groupUID}/bills/create:
-    parameters:
-    - name: groupUID
-      in: path
-      description: The internal ID of the group
-      required: true
-      type: string
-      format: uuid
+  /group/bills/create:
     post:
       tags:
       - bill
@@ -581,14 +551,7 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
 
-  /shoppinglist/{groupUID}:
-    parameters:
-    - name: groupUID
-      in: path
-      description: The internal ID of the group
-      required: true
-      type: string
-      format: uuid
+  /shoppinglist:
     get:
       tags:
       - shoppinglist
@@ -652,7 +615,7 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
 
-  /shoppinglist/{groupUID}/buy-items:
+  /shoppinglist/buy-items:
     post:
       tags:
       - shoppinglist
@@ -661,12 +624,6 @@ paths:
       security:
         - UserIDAuth: []
       parameters:
-      - name: groupUID
-        in: path
-        description: The internal ID of the group
-        required: true
-        type: string
-        format: uuid
       - name: body
         in: body
         required: true
@@ -685,14 +642,8 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
 
-  /shoppinglist/{groupUID}/item/{itemUID}:
+  /shoppinglist/item/{itemUID}:
     parameters:
-    - name: groupUID
-      in: path
-      description: The internal ID of the group
-      required: true
-      type: string
-      format: uuid
     - name: itemUID
       in: path
       description: The internal ID of the item
