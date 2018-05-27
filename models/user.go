@@ -291,12 +291,13 @@ func AreUsersExist(uids []string) (bool, error) {
 }
 
 func CreateUser(u *User) error {
-	if u.DisplayName == nil {
-		return ErrUserMissingProperty{}
+	// Validate using builder
+	userBuilder := UserBuilder{*u}
+	user, builderErr := userBuilder.Construct()
+	if builderErr != nil {
+		return builderErr
 	}
-	*u.DisplayName = strings.TrimSpace(*u.DisplayName)
-	_, err := x.InsertOne(u)
-	u.PhotoURL = strfmt.URI(GetUserImageURL(*u.UID))
+	_, err := x.InsertOne(&user)
 	return err
 }
 
@@ -414,4 +415,60 @@ func (u *User) GetBoughtItems() (ShoppingList, error) {
 	}
 
 	return shoppingList, nil
+}
+
+// UserBuilder is used to build a new user (and validate it)
+type UserBuilder struct {
+	user User
+}
+
+// Construct checks if user is valid an returns it.
+func (u *UserBuilder) Construct() (User, error) {
+	if u.user.UID == nil || *u.user.UID == "" {
+		return u.user, ErrUserMissingProperty{"user needs an UID"}
+	}
+	if u.user.DisplayName == nil || *u.user.DisplayName == "" {
+		return u.user, ErrUserMissingProperty{"user needs a DisplayName"}
+	}
+	if u.user.FirebaseInstanceID == "" {
+		return u.user, ErrUserMissingProperty{"user needs a firebase instance ID"}
+	}
+	*u.user.DisplayName = strings.TrimSpace(*u.user.DisplayName)
+	u.user.PhotoURL = strfmt.URI(GetUserImageURL(*u.user.UID))
+	return u.user, nil
+}
+
+// SetUID sets the user's UID
+func (u *UserBuilder) SetUID(uid *string) {
+	u.user.UID = uid
+}
+
+// SetDisplayName sets the user's DisplayName
+func (u *UserBuilder) SetDisplayName(name *string) {
+	u.user.DisplayName = name
+}
+
+// SetEmail sets the user's Email
+func (u *UserBuilder) SetEmail(email strfmt.Email) {
+	u.user.Email = email
+}
+
+// SetFirebaseInstanceID sets the user's FirebaseInstanceID
+func (u *UserBuilder) SetFirebaseInstanceID(id string) {
+	u.user.FirebaseInstanceID = id
+}
+
+// SetGroupUID sets the user's GroupUID
+func (u *UserBuilder) SetGroupUID(id strfmt.UUID) {
+	u.user.GroupUID = id
+}
+
+// SetLocale sets the user's Locale
+func (u *UserBuilder) SetLocale(loc string) {
+	u.user.Locale = loc
+}
+
+// SetPhotoURL sets the user's PhotoURL
+func (u *UserBuilder) SetPhotoURL(uri strfmt.URI) {
+	u.user.PhotoURL = uri
 }

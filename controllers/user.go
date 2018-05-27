@@ -40,23 +40,27 @@ func createUser(params user.CreateUserParams, principal *models.User) middleware
 	}
 
 	// Create new user
-	u := &models.User{
-		UID:                params.Body.UID,
-		DisplayName:        params.Body.DisplayName,
-		Email:              params.Body.Email,
-		FirebaseInstanceID: params.Body.FirebaseInstanceID,
-		GroupUID:           "",
+	userBuilder := models.UserBuilder{}
+	userBuilder.SetDisplayName(params.Body.DisplayName)
+	userBuilder.SetUID(params.Body.UID)
+	userBuilder.SetEmail(params.Body.Email)
+	userBuilder.SetFirebaseInstanceID(params.Body.FirebaseInstanceID)
+	u, err := userBuilder.Construct()
+
+	if err != nil {
+		userLog.Critical("Created invalid user!", err)
+		return newInternalServerError("Error")
 	}
 
 	// Insert new user into database
-	if err := models.CreateUser(u); err != nil {
+	if err := models.CreateUser(&u); err != nil {
 		userLog.Critical("Database error!", err)
 		return newInternalServerError("Internal Database Error")
 	}
 
 	userLog.Infof(`Created user "%s"`, *u.UID)
 
-	return user.NewCreateUserOK().WithPayload(u)
+	return user.NewCreateUserOK().WithPayload(&u)
 }
 
 func updateUser(params user.UpdateUserParams, principal *models.User) middleware.Responder {
