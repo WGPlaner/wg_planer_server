@@ -581,14 +581,7 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
 
-  /shoppinglist/{groupUID}:
-    parameters:
-    - name: groupUID
-      in: path
-      description: The internal ID of the group
-      required: true
-      type: string
-      format: uuid
+  /shoppinglist:
     get:
       tags:
       - shoppinglist
@@ -652,7 +645,7 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
 
-  /shoppinglist/{groupUID}/buy-items:
+  /shoppinglist/buy-items:
     post:
       tags:
       - shoppinglist
@@ -661,12 +654,6 @@ paths:
       security:
         - UserIDAuth: []
       parameters:
-      - name: groupUID
-        in: path
-        description: The internal ID of the group
-        required: true
-        type: string
-        format: uuid
       - name: body
         in: body
         required: true
@@ -685,14 +672,8 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
 
-  /shoppinglist/{groupUID}/item/{itemUID}:
+  /shoppinglist/item/{itemUID}:
     parameters:
-    - name: groupUID
-      in: path
-      description: The internal ID of the group
-      required: true
-      type: string
-      format: uuid
     - name: itemUID
       in: path
       description: The internal ID of the item
