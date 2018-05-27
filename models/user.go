@@ -151,7 +151,14 @@ func (u *User) IsAdmin() bool {
 }
 
 func (u *User) LeaveGroup() error {
+	// Delete "bought" with no bill.
+	x.Where(``).
+		Where(`bought_by=?`, *u.UID).
+		And(`bill_uid IS NULL OR bill_uid=""`).
+		Delete(&ListItem{})
+
 	u.GroupUID = ""
+
 	return UpdateUserCols(u, "group_uid")
 }
 
