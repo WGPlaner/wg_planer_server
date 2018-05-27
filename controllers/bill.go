@@ -12,12 +12,12 @@ var billLog = logging.MustGetLogger("Bill")
 
 // getBillList returns a list of bills for the requested group.
 func getBillList(params bill.GetBillListParams, principal *models.User) middleware.Responder {
-	groupLog.Debugf(`User %q gets bills for group "%s"`, *principal.UID, params.GroupUID)
+	groupLog.Debugf(`User %q gets bills for group "%s"`, *principal.UID, principal.GroupUID)
 
 	var g *models.Group
 	var errResp middleware.Responder
 
-	if g, errResp = getGroupAuthorizedOrError(params.GroupUID, *principal.UID); errResp != nil {
+	if g, errResp = getGroupAuthorizedOrError(principal.GroupUID, *principal.UID); errResp != nil {
 		return errResp
 	}
 
@@ -43,7 +43,7 @@ func createBill(params bill.CreateBillParams, principal *models.User) middleware
 
 	// TODO: Check authorization, etc
 
-	if _, errResp := getGroupAuthorizedOrError(params.GroupUID, *principal.UID); errResp != nil {
+	if _, errResp := getGroupAuthorizedOrError(principal.GroupUID, *principal.UID); errResp != nil {
 		return errResp
 	}
 

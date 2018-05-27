@@ -58,23 +58,23 @@ func getGroupAuthorizedOrError(groupUID strfmt.UUID, userID string) (*models.Gro
 }
 
 func getGroup(params group.GetGroupParams, principal *models.User) middleware.Responder {
-	groupLog.Debugf(`User %q gets group "%s"`, *principal.UID, params.GroupUID)
+	groupLog.Debugf(`User %q gets group "%s"`, *principal.UID, principal.GroupUID)
 
 	var g *models.Group
 	var errResp middleware.Responder
 
-	if g, errResp = getGroupAuthorizedOrError(params.GroupUID, *principal.UID); errResp != nil {
+	if g, errResp = getGroupAuthorizedOrError(principal.GroupUID, *principal.UID); errResp != nil {
 		return errResp
 	}
 	return group.NewGetGroupOK().WithPayload(g)
 }
 
 func getGroupImage(params group.GetGroupImageParams, principal *models.User) middleware.Responder {
-	groupLog.Debugf(`User %q gets image for group "%s"`, *principal.UID, params.GroupUID)
+	groupLog.Debugf(`User %q gets image for group "%s"`, *principal.UID, principal.GroupUID)
 	var g *models.Group
 	var errResp middleware.Responder
 
-	if g, errResp = getGroupOrError(params.GroupUID); errResp != nil {
+	if g, errResp = getGroupOrError(principal.GroupUID); errResp != nil {
 		return errResp
 	}
 
@@ -100,13 +100,13 @@ func getGroupImage(params group.GetGroupImageParams, principal *models.User) mid
 }
 
 func createGroupCode(params group.CreateGroupCodeParams, principal *models.User) middleware.Responder {
-	groupLog.Debugf(`User %q generates code for group %q!`, *principal.UID, params.GroupUID)
+	groupLog.Debugf(`User %q generates code for group %q!`, *principal.UID, principal.GroupUID)
 
 	var (
 		c   *models.GroupCode
 		err error
 
-		groupUID = strfmt.UUID(params.GroupUID)
+		groupUID = strfmt.UUID(principal.GroupUID)
 	)
 
 	if principal.GroupUID != groupUID {
@@ -115,7 +115,7 @@ func createGroupCode(params group.CreateGroupCodeParams, principal *models.User)
 
 	// Group MUST exist or we have inconsistencies
 	if _, err = models.GetGroupByUID(groupUID); err != nil {
-		groupLog.Debugf(`Error validating group "%s": "%s"`, params.GroupUID, err.Error())
+		groupLog.Debugf(`Error validating group "%s": "%s"`, principal.GroupUID, err.Error())
 		return newInternalServerError("Internal Server Error")
 	}
 
@@ -304,12 +304,12 @@ func leaveGroup(params group.LeaveGroupParams, principal *models.User) middlewar
 }
 
 func updateGroupImage(params group.UpdateGroupImageParams, principal *models.User) middleware.Responder {
-	groupLog.Debugf(`User %q starts updating image of group %q`, *principal.UID, params.GroupUID)
+	groupLog.Debugf(`User %q starts updating image of group %q`, *principal.UID, principal.GroupUID)
 
 	var g *models.Group
 	var errResp middleware.Responder
 
-	if g, errResp = getGroupOrError(params.GroupUID); errResp != nil {
+	if g, errResp = getGroupOrError(principal.GroupUID); errResp != nil {
 		return errResp
 	}
 

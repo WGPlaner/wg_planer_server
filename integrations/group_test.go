@@ -1,7 +1,6 @@
 package integrations
 
 import (
-	"fmt"
 	"net/http"
 	"testing"
 
@@ -12,38 +11,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetGroupUnauthorized(t *testing.T) {
-	prepareTestEnv(t)
-	authNotInGroup := "1234567890fakefirebaseid0003"
-	req := NewRequest(t, "GET", authNotInGroup, "/groups/00112233-4455-6677-8899-aabbccddeeff")
-	MakeRequest(t, req, http.StatusUnauthorized)
-}
-
 func TestGetGroup(t *testing.T) {
 	prepareTestEnv(t)
 	authInGroup := "1234567890fakefirebaseid0001"
-	req := NewRequest(t, "GET", authInGroup, "/groups/00112233-4455-6677-8899-aabbccddeeff")
-	MakeRequest(t, req, http.StatusOK)
-}
-
-func TestGetGroupNotFound(t *testing.T) {
-	prepareTestEnv(t)
-	authInGroup := "1234567890fakefirebaseid0001"
-	req := NewRequest(t, "GET", authInGroup, "/groups/00112233-4455-6677-8899-000000000000")
-	MakeRequest(t, req, http.StatusNotFound)
-}
-
-func TestGetGroupImageUnauthorized(t *testing.T) {
-	prepareTestEnv(t)
-	authInGroup := "1234567890fakefirebaseid0003"
-	req := NewRequest(t, "GET", authInGroup, "/groups/00112233-4455-6677-8899-aabbccddeeff/image")
+	req := NewRequest(t, "GET", authInGroup, "/group")
 	MakeRequest(t, req, http.StatusOK)
 }
 
 func TestGetGroupImage(t *testing.T) {
 	prepareTestEnv(t)
 	authInGroup := "1234567890fakefirebaseid0001"
-	req := NewRequest(t, "GET", authInGroup, "/groups/00112233-4455-6677-8899-aabbccddeeff/image")
+	req := NewRequest(t, "GET", authInGroup, "/group/image")
 	MakeRequest(t, req, http.StatusOK)
 }
 
@@ -54,7 +32,7 @@ func TestUpdateGroupImage(t *testing.T) {
 	request := NewRequestWithImage(t,
 		"PUT",
 		AuthValid,
-		"/groups/"+groupUID+"/image",
+		"/group/image",
 		"profileImage",
 		models.GetGroupImageDefaultPath())
 	resp := MakeRequest(t, request, http.StatusOK)
@@ -70,13 +48,6 @@ func TestUpdateGroupImage(t *testing.T) {
 	assert.NoError(t, fileErr, "Uploaded image not found")
 }
 
-func TestGetGroupNotFoundImage(t *testing.T) {
-	prepareTestEnv(t)
-	authInGroup := "1234567890fakefirebaseid0001"
-	req := NewRequest(t, "GET", authInGroup, "/groups/00112233-4455-6677-8899-000000000000/image")
-	MakeRequest(t, req, http.StatusNotFound)
-}
-
 func TestCreateGroup(t *testing.T) {
 	prepareTestEnv(t)
 	var (
@@ -85,7 +56,7 @@ func TestCreateGroup(t *testing.T) {
 		newGroup     = models.Group{
 			DisplayName: swag.String("New Group"),
 		}
-		req  = NewRequestWithJSON(t, "POST", authInGroup, "/groups", newGroup)
+		req  = NewRequestWithJSON(t, "POST", authInGroup, "/group", newGroup)
 		resp = MakeRequest(t, req, http.StatusOK)
 	)
 	DecodeJSON(t, resp, &createdGroup)
@@ -99,7 +70,7 @@ func TestCreateGroup(t *testing.T) {
 
 func TestCreateGroupInvalid(t *testing.T) {
 	prepareTestEnv(t)
-	req := NewRequestWithJSON(t, "POST", "1234567890fakefirebaseid0003", "/groups", models.Group{})
+	req := NewRequestWithJSON(t, "POST", "1234567890fakefirebaseid0003", "/group", models.Group{})
 	MakeRequest(t, req, http.StatusUnprocessableEntity)
 }
 
@@ -111,7 +82,7 @@ func TestUpdateGroup(t *testing.T) {
 			UID:         "00112233-4455-6677-8899-aabbccddeeff",
 			DisplayName: swag.String("Updated Group"),
 		}
-		req  = NewRequestWithJSON(t, "PUT", "1234567890fakefirebaseid0001", "/groups", g)
+		req  = NewRequestWithJSON(t, "PUT", "1234567890fakefirebaseid0001", "/group", g)
 		resp = MakeRequest(t, req, http.StatusOK)
 	)
 	DecodeJSON(t, resp, &uG)
@@ -126,7 +97,7 @@ func TestUpdateGroupNotFound(t *testing.T) {
 			UID:         "00112233-4455-6677-8899-000000000000",
 			DisplayName: swag.String("Non existent group"),
 		}
-		req = NewRequestWithJSON(t, "PUT", "1234567890fakefirebaseid0001", "/groups", g)
+		req = NewRequestWithJSON(t, "PUT", "1234567890fakefirebaseid0001", "/group", g)
 	)
 	MakeRequest(t, req, http.StatusNotFound)
 }
@@ -138,7 +109,7 @@ func TestUpdateGroupNotAdmin(t *testing.T) {
 			UID:         "00112233-4455-6677-8899-aabbccddeeff",
 			DisplayName: swag.String("Updated Group"),
 		}
-		req = NewRequestWithJSON(t, "PUT", "1234567890fakefirebaseid0002", "/groups", g)
+		req = NewRequestWithJSON(t, "PUT", "1234567890fakefirebaseid0002", "/group", g)
 	)
 	MakeRequest(t, req, http.StatusUnauthorized)
 }
@@ -148,7 +119,7 @@ func TestCreateGroupCode(t *testing.T) {
 	var (
 		code = models.GroupCode{}
 		uid  = strfmt.UUID("00112233-4455-6677-8899-aabbccddeeff")
-		url  = fmt.Sprintf("/groups/%s/create-code", uid)
+		url  = "/group/create-code"
 		req  = NewRequest(t, "GET", "1234567890fakefirebaseid0001", url)
 		resp = MakeRequest(t, req, http.StatusOK)
 	)
@@ -157,45 +128,22 @@ func TestCreateGroupCode(t *testing.T) {
 	assert.Len(t, *code.Code, 12)
 }
 
-func TestCreateGroupCodeInvalid(t *testing.T) {
-	prepareTestEnv(t)
-	var (
-		uid = strfmt.UUID("00112233-4455-6677-8899-000000000000")
-		url = fmt.Sprintf("/groups/%s/create-code", uid)
-		req = NewRequest(t, "GET", "1234567890fakefirebaseid0001", url)
-	)
-	MakeRequest(t, req, http.StatusUnauthorized)
-}
-
-func TestCreateGroupCodeUnauthorized(t *testing.T) {
-	prepareTestEnv(t)
-	var (
-		err  = models.ErrorResponse{}
-		uid  = strfmt.UUID("00112233-4455-6677-8899-aabbccddeeff")
-		url  = fmt.Sprintf("/groups/%s/create-code", uid)
-		req  = NewRequest(t, "GET", "1234567890fakefirebaseid0003", url)
-		resp = MakeRequest(t, req, http.StatusUnauthorized)
-	)
-	DecodeJSON(t, resp, &err)
-	assert.NotEmpty(t, *err.Message)
-}
-
 func TestGetJoinGroupHelp(t *testing.T) {
 	prepareTestEnv(t)
-	req := NewRequest(t, "GET", "1234567890fakefirebaseid0003", "/groups/join/123456789ABC")
+	req := NewRequest(t, "GET", "1234567890fakefirebaseid0003", "/group/join/123456789ABC")
 	MakeRequest(t, req, http.StatusOK)
 }
 
 func TestGetJoinGroupHelpInvalid(t *testing.T) {
 	prepareTestEnv(t)
 	// Invalid code => invalid format
-	req := NewRequest(t, "GET", "1234567890fakefirebaseid0003", "/groups/join/1234")
+	req := NewRequest(t, "GET", "1234567890fakefirebaseid0003", "/group/join/1234")
 	MakeRequest(t, req, http.StatusBadRequest)
 }
 
 func TestJoinGroupThroughCodeInvalid(t *testing.T) {
 	prepareTestEnv(t)
-	req := NewRequest(t, "POST", "1234567890fakefirebaseid0001", "/groups/join/123123123123")
+	req := NewRequest(t, "POST", "1234567890fakefirebaseid0001", "/group/join/123123123123")
 	MakeRequest(t, req, http.StatusBadRequest)
 }
 
@@ -204,20 +152,19 @@ func TestJoinGroupThroughCode(t *testing.T) {
 	var (
 		userUID = "1234567890fakefirebaseid0001"
 		code    = models.GroupCode{}
-		uid     = strfmt.UUID("00112233-4455-6677-8899-aabbccddeeff")
-		reqCode = NewRequest(t, "GET", userUID, fmt.Sprintf("/groups/%s/create-code", uid))
+		reqCode = NewRequest(t, "GET", userUID, "/group/create-code")
 		resp    = MakeRequest(t, reqCode, http.StatusOK)
 	)
 	DecodeJSON(t, resp, &code)
 	// Join with generated code
-	req := NewRequest(t, "POST", userUID, "/groups/join/"+*code.Code)
+	req := NewRequest(t, "POST", userUID, "/group/join/"+*code.Code)
 	MakeRequest(t, req, http.StatusOK)
 }
 
 func TestLeaveGroup(t *testing.T) {
 	prepareTestEnv(t)
 	authInGroup := "1234567890fakefirebaseid0001"
-	req := NewRequest(t, "POST", authInGroup, "/groups/leave")
+	req := NewRequest(t, "POST", authInGroup, "/group/leave")
 	MakeRequest(t, req, http.StatusOK)
 
 	u := &models.User{}
