@@ -171,6 +171,9 @@ func UpdateListItem(l *ListItem) error {
 }
 
 func UpdateListItemCols(l *ListItem, cols ...string) error {
-	_, err := x.Cols(cols...).Update(l)
+	_, err := x.Cols(cols...).
+		Where(`group_uid=?`, l.GroupUID).
+		And(`id=?`, l.ID).
+		Update(l)
 	return err
 }
