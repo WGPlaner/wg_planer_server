@@ -12,6 +12,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var validFirebaseID = "00000000000000000000000000000000000000000000000000" +
+	"00000000000000000000000000000000000000000000000000" +
+	"00000000000000000000000000000000000000000000000000" +
+	"01"
+
 func TestGetUserUnauthorized(t *testing.T) {
 	prepareTestEnv(t)
 	req := NewRequest(t, "GET", AuthInvalid, "/users/1234567890fakefirebaseid0001")
@@ -157,9 +162,10 @@ func TestCreateUser(t *testing.T) {
 	var (
 		uid     = "1234567890fakefirebaseid0010"
 		newUser = models.User{
-			UID:         &uid,
-			DisplayName: swag.String("Andre"),
-			GroupUID:    strfmt.UUID("0ec972c9-6c7a-40c8-82c3-000000000000"), // Random UID
+			UID:                &uid,
+			DisplayName:        swag.String("Andre"),
+			FirebaseInstanceID: validFirebaseID,
+			GroupUID:           strfmt.UUID("0ec972c9-6c7a-40c8-82c3-000000000000"), // Random UID
 		}
 		createdUser = models.User{}
 		req         = NewRequestWithJSON(t, "POST", uid, "/users", newUser)

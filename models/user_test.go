@@ -7,12 +7,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var validFirebaseID = "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001"
+
 func TestCreateUser(t *testing.T) {
 	assert.NoError(t, PrepareTestDatabase())
 
 	uid := "1234567890fakefirebaseid9999"
 	user1 := &User{UID: &uid}
-	user2 := &User{UID: &uid, DisplayName: swag.String("TestUser")}
+	user2 := &User{UID: &uid, DisplayName: swag.String("TestUser"), FirebaseInstanceID: validFirebaseID}
 
 	err1 := CreateUser(user1)
 	err2 := CreateUser(user2)
