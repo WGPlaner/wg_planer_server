@@ -179,12 +179,12 @@ func createGroup(params group.CreateGroupParams, principal *models.User) middlew
 }
 
 func updateGroup(params group.UpdateGroupParams, principal *models.User) middleware.Responder {
-	groupLog.Debugf(`User %q starts updating group %q`, *principal.UID, params.Body.UID)
+	groupLog.Debugf(`User %q starts updating his group`, *principal.UID)
 
 	var g *models.Group
 	var errResp middleware.Responder
 
-	if g, errResp = getGroupAuthorizedOrError(params.Body.UID, *principal.UID); errResp != nil {
+	if g, errResp = getGroupOrError(principal.GroupUID); errResp != nil {
 		return errResp
 	}
 
