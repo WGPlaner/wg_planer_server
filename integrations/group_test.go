@@ -90,18 +90,6 @@ func TestUpdateGroup(t *testing.T) {
 	assert.NotEqual(t, uG.UpdatedAt, uG.CreatedAt)
 }
 
-func TestUpdateGroupNotFound(t *testing.T) {
-	prepareTestEnv(t)
-	var (
-		g = models.Group{
-			UID:         "00112233-4455-6677-8899-000000000000",
-			DisplayName: swag.String("Non existent group"),
-		}
-		req = NewRequestWithJSON(t, "PUT", "1234567890fakefirebaseid0001", "/group", g)
-	)
-	MakeRequest(t, req, http.StatusNotFound)
-}
-
 func TestUpdateGroupNotAdmin(t *testing.T) {
 	prepareTestEnv(t)
 	var (
