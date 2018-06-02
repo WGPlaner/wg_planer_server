@@ -49,7 +49,7 @@ func createUser(params user.CreateUserParams, principal *models.User) middleware
 
 	if err != nil {
 		userLog.Critical("Created invalid user!", err)
-		return newInternalServerError("Error")
+		return NewBadRequest(err.Error())
 	}
 
 	// Insert new user into database
