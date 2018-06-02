@@ -430,9 +430,9 @@ func (u *UserBuilder) Construct() (User, error) {
 	if u.user.DisplayName == nil || *u.user.DisplayName == "" {
 		return u.user, ErrUserMissingProperty{"user needs a DisplayName"}
 	}
-	if u.user.FirebaseInstanceID == "" {
-		return u.user, ErrUserMissingProperty{"user needs a firebase instance ID"}
-	}
+	// if u.user.FirebaseInstanceID == "" {
+	//     return u.user, ErrUserMissingProperty{"user needs a firebase instance ID"}
+	// }
 	*u.user.DisplayName = strings.TrimSpace(*u.user.DisplayName)
 	u.user.PhotoURL = strfmt.URI(GetUserImageURL(*u.user.UID))
 	return u.user, nil
