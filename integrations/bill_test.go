@@ -14,7 +14,9 @@ func TestCreateBill(t *testing.T) {
 	var (
 		authValid = "1234567890fakefirebaseid0002"
 		bill      = models.Bill{}
-		req       = NewRequest(t, "POST", authValid, "/group/bills/create")
+		items     = []string{"00112233-4455-6677-8899-000000000004"}
+		newBill   = models.Bill{BoughtItems: items, DueDate: "2019-06-07"}
+		req       = NewRequestWithJSON(t, "POST", authValid, "/group/bills/create", newBill)
 		resp      = MakeRequest(t, req, http.StatusOK)
 	)
 	DecodeJSON(t, resp, &bill)

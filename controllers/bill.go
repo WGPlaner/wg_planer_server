@@ -43,11 +43,11 @@ func createBill(params bill.CreateBillParams, principal *models.User) middleware
 
 	// TODO: Check authorization, etc
 
-	if _, errResp := getGroupAuthorizedOrError(principal.GroupUID, *principal.UID); errResp != nil {
+	if _, errResp := getGroupOrError(principal.GroupUID); errResp != nil {
 		return errResp
 	}
 
-	b, err := models.CreateBillForUser(principal)
+	b, err := models.CreateBillForUser(principal, params.Body)
 	if err != nil {
 		billLog.Critical("Can't create bill for user", *principal.UID, err)
 		return newInternalServerError("Internal Server Error")

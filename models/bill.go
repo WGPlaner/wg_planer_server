@@ -21,14 +21,14 @@ type Bill struct {
 
 	// created by
 	// Required: true
-	CreatedBy *string `xorm:"VARCHAR(28)" json:"createdBy"`
+	CreatedBy *string `xorm:"VARCHAR(28)" json:"createdBy,omitempty"`
 
 	// sent to
 	// Required: true
-	SentTo []string `xorm:"VARCHAR(28)" json:"sentTo"`
+	SentTo []string `xorm:"VARCHAR(28)" json:"sentTo,omitempty"`
 
 	// payed by
-	PayedBy []string `xorm:"VARCHAR(28)" json:"payedBy"`
+	PayedBy []string `xorm:"VARCHAR(28)" json:"payedBy,omitempty"`
 
 	// due date
 	DueDate string `json:"dueDate,omitempty"`
@@ -60,14 +60,6 @@ func (m *Bill) Validate(formats strfmt.Registry) error {
 		// prop
 		res = append(res, err)
 	}
-	if err := m.validateCreatedBy(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-	if err := m.validateState(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -76,20 +68,6 @@ func (m *Bill) Validate(formats strfmt.Registry) error {
 
 func (m *Bill) validateBoughtItems(formats strfmt.Registry) error {
 	if err := validate.Required("boughtItems", "body", m.BoughtItems); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (m *Bill) validateCreatedBy(formats strfmt.Registry) error {
-	if err := validate.Required("createdBy", "body", m.CreatedBy); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (m *Bill) validateState(formats strfmt.Registry) error {
-	if err := validate.Required("state", "body", m.State); err != nil {
 		return err
 	}
 	return nil
@@ -151,7 +129,7 @@ func GetBillsByGroupUIDWithBoughtItems(guid strfmt.UUID) ([]*Bill, error) {
 }
 
 // CreateBillForUser create a bill for a user
-func CreateBillForUser(u *User) (*Bill, error) {
+func CreateBillForUser(u *User, billWithItems *Bill) (*Bill, error) {
 	billUID, err := uuid.NewV4()
 	if err != nil {
 		return nil, err
@@ -163,7 +141,7 @@ func CreateBillForUser(u *User) (*Bill, error) {
 		GroupUID:  u.GroupUID,
 		SentTo:    []string{},
 		PayedBy:   []string{},
-		DueDate:   "2019-01-01",
+		DueDate:   billWithItems.DueDate,
 		State:     swag.String("todo"),
 		// TODO: Other fields
 	}
@@ -176,6 +154,7 @@ func CreateBillForUser(u *User) (*Bill, error) {
 		Cols(`bill_uid`).
 		Where(`bill_uid IS NULL`).
 		And(`bought_by = ?`, *u.UID).
+		In(`id`, billWithItems.BoughtItems).
 		Update(ListItem{BillUID: b.UID})
 
 	if err != nil {
