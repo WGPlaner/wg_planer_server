@@ -315,10 +315,16 @@ paths:
     post:
       tags:
       - bill
-      description: Returns the bill object
+      description: Create a bill
       operationId: createBill
       security:
         - UserIDAuth: []
+      parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          $ref: "#/definitions/Bill"
       responses:
         200:
           description: Success
@@ -827,8 +833,7 @@ definitions:
   Bill:
     required:
       - boughtItems
-      - state
-      - createdBy
+      - dueDate
     type: object
     properties:
       uid:
@@ -858,6 +863,7 @@ definitions:
         type: string
       dueDate:
         type: string
+        format: date-time
       createdAt:
         type: string
         format: date-time
