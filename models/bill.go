@@ -152,7 +152,7 @@ func CreateBillForUser(u *User, billWithItems *Bill) (*Bill, error) {
 
 	_, err = x.
 		Cols(`bill_uid`).
-		Where(`bill_uid IS NULL`).
+		Where(`(bill_uid IS NULL OR bill_uid="")`).
 		And(`bought_by = ?`, *u.UID).
 		In(`id`, billWithItems.BoughtItems).
 		Update(ListItem{BillUID: b.UID})
