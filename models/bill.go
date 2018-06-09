@@ -121,16 +121,15 @@ func GetBillsByGroupUIDWithBoughtItems(guid strfmt.UUID) ([]*Bill, error) {
 
 	// Get items for each bill
 	for _, b := range bills {
-		var boughtItems []ListItem
-		err = x.Cols("id", "price", "count").Where(`bill_uid=?`, b.UID).Find(&boughtItems)
+		err := b.GetListItems()
 		if err != nil {
 			return nil, err
 		}
 		b.Sum = 0
-		for _, i := range boughtItems {
-			b.BoughtItems = append(b.BoughtItems, string(i.ID))
-			if i.Count != nil {
-				b.Sum += i.Price * *i.Count
+		for _, item := range b.BoughtListItems {
+			b.BoughtItems = append(b.BoughtItems, string(item.ID))
+			if item.Count != nil {
+				b.Sum += item.Price * *item.Count
 			}
 		}
 	}
@@ -172,10 +171,16 @@ func CreateBillForUser(u *User, billWithItems *Bill) (*Bill, error) {
 	}
 
 	// Get Items
-	var items []ListItem
-	err = x.Cols(`id`).Where(`bill_uid = ?`, b.UID).Find(&items)
-	for _, item := range items {
+	err = b.GetListItems()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, item := range b.BoughtListItems {
 		b.BoughtItems = append(b.BoughtItems, string(item.ID))
+		if item.Count != nil {
+			b.Sum += item.Price * *item.Count
+		}
 	}
 
 	if err != nil {

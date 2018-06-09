@@ -853,6 +853,7 @@ definitions:
           type: string
       boughtListItems:
         type: array
+        readOnly: true
         items:
           $ref: "#/definitions/ListItem"
       sentTo:
