@@ -851,6 +851,10 @@ definitions:
         type: array
         items:
           type: string
+      boughtListItems:
+        type: array
+        items:
+          $ref: "#/definitions/ListItem"
       sentTo:
         type: array
         items:

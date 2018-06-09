@@ -19,6 +19,10 @@ type Bill struct {
 	// Required: true
 	BoughtItems []string `xorm:"-" json:"boughtItems"`
 
+	// bill items (not just id)
+	// Required: true
+	BoughtListItems []ListItem `xorm:"-" json:"BoughtListItems"`
+
 	// created by
 	// Required: true
 	CreatedBy *string `xorm:"VARCHAR(28)" json:"createdBy,omitempty"`
@@ -89,6 +93,12 @@ func (m *Bill) UnmarshalBinary(b []byte) error {
 	}
 	*m = res
 	return nil
+}
+
+// GetListItems load the bill's list items
+func (m *Bill) GetListItems() error {
+	err := x.Where(`bill_uid=?`, m.UID).Find(&m.BoughtListItems)
+	return err
 }
 
 func GetBillsByGroupUID(guid strfmt.UUID) ([]*Bill, error) {
