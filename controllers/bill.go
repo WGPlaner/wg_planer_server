@@ -29,6 +29,10 @@ func getBillList(params bill.GetBillListParams, principal *models.User) middlewa
 
 	// TODO: Check authorization, etc
 
+	for _, bill := range bills {
+		bill.GetListItems()
+	}
+
 	billList := &models.BillList{
 		Bills: bills,
 		Count: int64(len(bills)),
