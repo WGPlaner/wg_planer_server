@@ -44,7 +44,7 @@ func TestGetBills(t *testing.T) {
 	assert.Len(t, billList.Bills[0].BoughtItems, 2)
 	assert.Len(t, billList.Bills[0].SentTo, 2)
 	assert.Equal(t, "todo", *billList.Bills[0].State)
-	assert.Equal(t, int64(370), billList.Bills[0].Sum)
+	assert.Equal(t, int64(270), billList.Bills[0].Sum)
 	assert.Equal(t, strfmt.UUID("00112233-4455-6677-8899-aabbccddeeff"), billList.Bills[0].GroupUID)
 	assert.Equal(t, strfmt.UUID("00112233-4455-6677-8899-000000000001"), billList.Bills[0].BoughtListItems[0].ID)
 	assert.Equal(t, strfmt.UUID("00112233-4455-6677-8899-123000000001"), billList.Bills[0].BoughtListItems[0].BillUID)

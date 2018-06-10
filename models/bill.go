@@ -128,9 +128,7 @@ func GetBillsByGroupUIDWithBoughtItems(guid strfmt.UUID) ([]*Bill, error) {
 		b.Sum = 0
 		for _, item := range b.BoughtListItems {
 			b.BoughtItems = append(b.BoughtItems, string(item.ID))
-			if item.Count != nil {
-				b.Sum += item.Price * *item.Count
-			}
+			b.Sum += item.Price
 		}
 	}
 
@@ -152,6 +150,7 @@ func CreateBillForUser(u *User, billWithItems *Bill) (*Bill, error) {
 		PayedBy:   []string{},
 		DueDate:   billWithItems.DueDate,
 		State:     swag.String("todo"),
+		Sum:       0,
 		// TODO: Other fields
 	}
 
@@ -178,9 +177,7 @@ func CreateBillForUser(u *User, billWithItems *Bill) (*Bill, error) {
 
 	for _, item := range b.BoughtListItems {
 		b.BoughtItems = append(b.BoughtItems, string(item.ID))
-		if item.Count != nil {
-			b.Sum += item.Price * *item.Count
-		}
+		b.Sum += item.Price
 	}
 
 	if err != nil {
