@@ -21,7 +21,7 @@ type Bill struct {
 
 	// bill items (not just id)
 	// Required: true
-	BoughtListItems []ListItem `xorm:"-" json:"BoughtListItems"`
+	BoughtListItems []ListItem `xorm:"-" json:"boughtListItems"`
 
 	// created by
 	// Required: true
