@@ -97,6 +97,7 @@ func (m *Bill) UnmarshalBinary(b []byte) error {
 
 // GetListItems load the bill's list items
 func (m *Bill) GetListItems() error {
+	m.BoughtListItems = []ListItem{}
 	err := x.Where(`bill_uid=?`, m.UID).Find(&m.BoughtListItems)
 	return err
 }
@@ -126,6 +127,7 @@ func GetBillsByGroupUIDWithBoughtItems(guid strfmt.UUID) ([]*Bill, error) {
 			return nil, err
 		}
 		b.Sum = 0
+		b.BoughtItems = []string{}
 		for _, item := range b.BoughtListItems {
 			b.BoughtItems = append(b.BoughtItems, string(item.ID))
 			b.Sum += item.Price

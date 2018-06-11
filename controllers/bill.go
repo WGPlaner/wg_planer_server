@@ -27,11 +27,7 @@ func getBillList(params bill.GetBillListParams, principal *models.User) middlewa
 		return newInternalServerError("Internal Server Error")
 	}
 
-	// TODO: Check authorization, etc
-
-	for _, bill := range bills {
-		bill.GetListItems()
-	}
+	// TODO: Check authorization, etc.
 
 	billList := &models.BillList{
 		Bills: bills,
