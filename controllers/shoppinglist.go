@@ -5,6 +5,7 @@ import (
 	"github.com/go-openapi/swag"
 	"github.com/satori/go.uuid"
 	"github.com/wgplaner/wg_planer_server/models"
+	"github.com/wgplaner/wg_planer_server/modules/base"
 	"github.com/wgplaner/wg_planer_server/modules/mailer"
 	"github.com/wgplaner/wg_planer_server/restapi/operations/shoppinglist"
 
@@ -50,7 +51,6 @@ func updateListItem(params shoppinglist.UpdateListItemParams, principal *models.
 	if !strfmt.IsUUID(string(params.Body.ID)) {
 		return NewBadRequest("Invalid item ID")
 	}
-
 	if len(params.Body.RequestedFor) == 0 {
 		return NewBadRequest("RequestedFor must contain at least one user")
 	}
@@ -60,15 +60,13 @@ func updateListItem(params shoppinglist.UpdateListItemParams, principal *models.
 		return newInternalServerError("Internal Server Error")
 	}
 
-	// TODO: Check if user is unique
-	if exists, err := models.AreUsersExist(params.Body.RequestedFor); err != nil {
+	if exists, err := models.AreUsersExist(base.Unique(params.Body.RequestedFor)); err != nil {
 		return newInternalServerError(err.Error())
 
 	} else if !exists {
 		return NewBadRequest("A requestedFor user does not exist")
 	}
 
-	// TODO: This is ugly.
 	listItem := &models.ListItem{
 		ID:           params.Body.ID,
 		GroupUID:     principal.GroupUID,

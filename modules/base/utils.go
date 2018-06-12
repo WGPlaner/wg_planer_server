@@ -97,3 +97,15 @@ func DoesFuncCrash(f string) bool {
 	}
 	return false
 }
+
+// Unique returns unique strings
+func Unique(e []string) []string {
+	var r []string
+
+	for _, s := range e {
+		if !StringInSlice(s, r[:]) {
+			r = append(r, s)
+		}
+	}
+	return r
+}

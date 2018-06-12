@@ -53,3 +53,11 @@ func TestAppendUniqueString(t *testing.T) {
 		t.Error("Should add non-unique values")
 	}
 }
+
+func TestUnique(t *testing.T) {
+	initialList := []string{"one", "two", "one", "two", "one", "three", "four", "three", "three"}
+	uniqueList := Unique(initialList)
+	if len(uniqueList) != 4 {
+		t.Error()
+	}
+}

@@ -313,7 +313,6 @@ func updateGroupImage(params group.UpdateGroupImageParams, principal *models.Use
 		return errResp
 	}
 
-	// TODO: use isAdmin
 	if !g.HasMember(*principal.UID) {
 		return NewUnauthorizedResponse("User not a member of the group.")
 	}

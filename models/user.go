@@ -191,7 +191,6 @@ func (u *User) JoinGroupWithCode(groupCode string) (*Group, error) {
 	}
 
 	// get updated group
-	// TODO: Is this necessary?
 	if g, err = GetGroupByUID(g.UID); err != nil {
 		return nil, err
 	}
